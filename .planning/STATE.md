@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 1 of 5 (GitHub App Foundation)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-07-13 — Roadmap created (5 phases, 60 requirements mapped)
+Plan: 1 of 6 in current phase
+Status: In progress
+Last activity: 2026-07-13 — Completed 01-01-PLAN.md (monorepo scaffold)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 4% (1/26 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: —
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: 3m 8s
+- Total execution time: ~3 minutes
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 1. GitHub App Foundation | 1/6 | ~3m | 3m |
 
 **Recent Trend:**
-- Last 5 plans: —
-- Trend: —
+- Last 5 plans: 01-01 (3m 8s)
+- Trend: Baseline established
 
 *Updated after each plan completion*
 
@@ -47,6 +47,9 @@ Recent decisions affecting current work:
 - [Init]: Split-process architecture — `apps/api` (webhook receiver) and `apps/worker` (BullMQ pipeline) are separate Railway services
 - [Init]: `packages/core` must be I/O-free — no Octokit, Redis, or Prisma; required for SDK publishability
 - [Init]: Permission scope locked before Phase 1 ships — `checks:write`, `contents:write`, `pull_requests:write`, `issues:write`, `actions:write`, `metadata:read`
+- [01-01]: Turborepo 2 tasks key schema (not pipeline) — v2 deprecated pipeline; tasks key required
+- [01-01]: module: nodenext + moduleResolution: nodenext — full ESM correctness in Node.js 22
+- [01-01]: composite: true across all packages — enables tsc --build project references for correct build ordering
 
 ### Pending Todos
 
@@ -60,6 +63,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-13
-Stopped at: Roadmap created — 5 phases, 60 requirements mapped, STATE.md initialized
+Last session: 2026-07-13T09:12Z
+Stopped at: Completed 01-01-PLAN.md — pnpm+Turborepo 2 monorepo scaffold, all 6 packages, CI workflow
 Resume file: None
