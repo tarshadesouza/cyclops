@@ -6,7 +6,6 @@ generator prisma-client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Installation {
@@ -17,13 +16,65 @@ model Installation {
   targetId          Int
   targetType        String
   suspended         Boolean   @default(false)
+  encryptedApiKey   String?
   deletedAt         DateTime?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
   webhookDeliveries WebhookDelivery[]
+  findings          Finding[]
+  tokenUsages       TokenUsage[]
 
   @@map("installations")
+}
+
+model Finding {
+  id               String    @id @default(uuid())
+  installationId   Int
+  repositoryId     Int
+  workflowRunId    Int
+  checkRunId       Int
+  detectorType     String
+  sha              String
+  ref              String
+  violations       Json      @default("[]")
+  rawExcerpt       String?
+  confidence       Float?
+  evidence         String[]  @default([])
+  caveat           String?
+  rootCause        String?
+  suggestedFix     String?
+  affectedFiles    String[]  @default([])
+  severity         String?
+  aiEnrichedAt     DateTime?
+  advancedToAction Boolean   @default(false)
+  budgetExceeded   Boolean   @default(false)
+  deletedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  installation     Installation @relation(fields: [installationId], references: [id])
+
+  @@index([installationId])
+  @@index([workflowRunId])
+  @@index([installationId, createdAt])
+  @@map("findings")
+}
+
+model TokenUsage {
+  id             String   @id @default(uuid())
+  installationId Int
+  detectorId     String
+  model          String
+  inputTokens    Int
+  outputTokens   Int
+  timestamp      DateTime @default(now())
+
+  installation   Installation @relation(fields: [installationId], references: [id])
+
+  @@index([installationId])
+  @@index([installationId, timestamp])
+  @@map("token_usages")
 }
 
 model WebhookDelivery {
