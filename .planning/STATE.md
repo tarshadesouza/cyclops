@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 2 of 5 (Detector Pipeline & AI Analysis) — In progress
-Plan: 1 of ~8 in phase 2 — COMPLETE
-Status: In progress — Phase 2 data foundation complete
-Last activity: 2026-07-13 — Completed 02-01-PLAN.md (Finding + TokenUsage models, RLS migration, core types, AiAnalysisJobSchema)
+Plan: 2 of ~8 in phase 2 — COMPLETE
+Status: In progress — Detectors package complete
+Last activity: 2026-07-13 — Completed 02-02-PLAN.md (@ciintel/detectors: 6 pure-function detectors, log-utils, runAllDetectors orchestrator)
 
-Progress: [███████░░░] 27% (7/26 estimated plans)
+Progress: [████████░░] 31% (8/26 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: 4m 26s
-- Total execution time: ~31 minutes
+- Total plans completed: 8
+- Average duration: 4m 19s
+- Total execution time: ~34 minutes
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. GitHub App Foundation | 6/6 | ~27m | 4m 27s |
-| 2. Detector Pipeline & AI Analysis | 1/~8 | ~4m | 4m 21s |
+| 2. Detector Pipeline & AI Analysis | 2/~8 | ~7m | 3m 41s |
 
 **Recent Trend:**
-- Last 7 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s)
+- Last 8 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s)
 - Phase 1 complete in ~27 minutes total
 
 *Updated after each plan completion*
@@ -77,6 +77,9 @@ Recent decisions affecting current work:
 - [02-01]: Prisma 7 generated entry point is client.ts (not index.js) — model types (Installation, Finding, etc.) exported directly from client.ts
 - [02-01]: findingId replaces failureType in AiAnalysisJobSchema — identifier-only payload; AI worker fetches log content from DB at execution time, never from Redis
 - [02-01]: encryptedApiKey String? is nullable — platforms without BYOK use the platform default Anthropic key
+- [02-02]: TEST_FAILURE_PATTERNS exported from flaky-test.ts and imported by test-failure.ts — single source of truth prevents pattern drift between mutually exclusive detectors
+- [02-02]: detectFlakyTest empty history returns notMatched — first-ever run cannot be classified as flaky by definition
+- [02-02]: detectLint returns notMatched when no linter inferred from workflow YAML — prevents false positives
 
 ### Pending Todos
 
@@ -93,6 +96,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-07-13T11:15Z
-Stopped at: Completed 02-01-PLAN.md — Phase 2 data foundation: Finding + TokenUsage models, 0003_phase2 RLS migration, core detector/AI types, AiAnalysisJobSchema with findingId.
+Last session: 2026-07-13T12:09Z
+Stopped at: Completed 02-02-PLAN.md — @ciintel/detectors package: 6 pure-function detectors (Lint, BuildFailure, MissingEnvVar, ExpiredSecret, FlakyTest, TestFailure), log-utils (stripLogFormatting, extractExcerpt, inferLinterFromWorkflow), runAllDetectors orchestrator with FlakyTest/TestFailure mutual exclusivity.
 Resume file: None
