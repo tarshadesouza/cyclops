@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 3 of 5 (Action Engine & Output Channels) — In progress
-Plan: 4 of 7 in phase 3 — COMPLETE
-Status: Phase 3 in progress — 03-04 complete, PR comment upsert and Check Run with batched annotations implemented
-Last activity: 2026-07-13 — Completed 03-04-PLAN.md (github-outputs.ts: getPrNumber, handleUpsertPrComment, handleUpdateCheckRun; both wired into HANDLERS map)
+Plan: 5 of 7 in phase 3 — COMPLETE
+Status: Phase 3 in progress — 03-05 complete, autofix PR handlers for Lint and Snapshot implemented with Git Data API chain
+Last activity: 2026-07-13 — Completed 03-05-PLAN.md (github-autofix.ts: handleAutofixLint, handleAutofixSnapshot; dedup, rate limit, content sanity; both wired into HANDLERS map)
 
-Progress: [█████████████░] 65% (17/26 estimated plans)
+Progress: [██████████████░] 69% (18/26 estimated plans)
 
 ## Performance Metrics
 
@@ -29,7 +29,7 @@ Progress: [█████████████░] 65% (17/26 estimated plan
 |-------|-------|-------|----------|
 | 1. GitHub App Foundation | 6/6 | ~27m | 4m 27s |
 | 2. Detector Pipeline & AI Analysis | 7/7 | ~28m | 4m 0s |
-| 3. Action Engine & Output Channels | 4/7 | ~14m | 3m 30s |
+| 3. Action Engine & Output Channels | 5/7 | ~16m | 3m 12s |
 
 **Recent Trend:**
 - Last 17 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s), 02-06 (2m 42s), 02-07 (6m 44s), 03-01 (3m 29s), 03-02 (4m 22s), 03-03 (3m), 03-04 (3m 11s)
@@ -113,6 +113,9 @@ Recent decisions affecting current work:
 - [03-04]: ActionContext extended with db + log — handlers need both; added as Rule 2 auto-fix
 - [03-04]: conclusion: neutral (not success) when confidence < confidenceThreshold — avoids false green signal
 - [03-04]: PR comment body consolidates all findings for workflowRunId — one comment per PR updated on each finding
+- [03-05]: ref normalization strips refs/heads/ prefix — Finding stores full ref but GitHub PR base parameter requires branch name only
+- [03-05]: isValidFileContent Snapshot check requires exports[ or // Jest — deliberately strict to prevent AI prose committed as source code
+- [03-05]: Guard order: confidence → sanity → dedup → rate limit → execution — cheapest/most certain checks first
 
 ### Pending Todos
 
@@ -123,7 +126,7 @@ Recent decisions affecting current work:
 - Pre-deploy: generate CYCLOPS_ENCRYPTION_KEY with `openssl rand -hex 32` (64-hex-char AES-256 key) — set in BOTH services
 - Pre-deploy: generate CYCLOPS_SETUP_SECRET with `openssl rand -hex 32` (setup endpoint shared secret) — apps/api only
 - Pre-deploy: register BYOK key via `POST /setup/:installationId` with x-setup-token after first deploy
-- Phase 3: implement action-execution worker handlers (03-05 through 03-07)
+- Phase 3: implement action-execution worker handlers (03-06 through 03-07)
 
 ### Blockers/Concerns
 
@@ -134,6 +137,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-07-13T15:30:30Z
-Stopped at: Completed 03-04-PLAN.md — github-outputs.ts: getPrNumber, handleUpsertPrComment, handleUpdateCheckRun. ActionContext extended with db/log. Both handlers wired into HANDLERS map. Worker builds cleanly.
+Last session: 2026-07-13T15:35:24Z
+Stopped at: Completed 03-05-PLAN.md — github-autofix.ts: handleAutofixLint, handleAutofixSnapshot with 5-step Git Data API chain, dedup, rate limit, content sanity. Both wired into HANDLERS map. Worker builds cleanly.
 Resume file: None
