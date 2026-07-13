@@ -20,6 +20,7 @@ must_haves:
     - "GET /health returns 200 with JSON status object"
     - "fastify-raw-body is registered BEFORE any routes so rawBody is available in preHandler"
     - "Duplicate deliveries (same X-GitHub-Delivery) are rejected using Redis SET NX EX 259200"
+    - "Redis dedup key follows namespace installation:{installationId}:delivery:{deliveryId} (TEN-03)"
     - "Accepted webhook is enqueued on webhook-ingestion queue with jobId = deliveryId (BullMQ dedup)"
     - "Webhook payload is NOT stored in the job — only deliveryId, installationId, eventName, action"
   artifacts:
@@ -176,9 +177,10 @@ CRITICAL implementation requirements:
 2. HMAC verification uses `request.rawBody` (the raw string), NOT `request.body` (parsed JSON)
 3. Signature is in `X-Hub-Signature-256` header, format: `sha256=<hex>`
 4. Return 202 BEFORE any async processing (enqueue is fire-and-forget from caller's perspective)
-5. Redis dedup: `SET delivery:{deliveryId} 1 NX EX 259200` — 259200 = 3 days in seconds
-6. BullMQ jobId = deliveryId provides second dedup layer (BullMQ ignores jobs with duplicate jobId)
-7. Job payload contains identifiers ONLY — no payload body, no token
+5. Extract installationId from body BEFORE the Redis dedup step — the dedup key requires it
+6. Redis dedup key follows TEN-03 namespace: `installation:{installationId}:delivery:{deliveryId}` with `SET ... 1 NX EX 259200` — 259200 = 3 days in seconds
+7. BullMQ jobId = deliveryId provides second dedup layer (BullMQ ignores jobs with duplicate jobId)
+8. Job payload contains identifiers ONLY — no payload body, no token
 
 ```typescript
 import type { FastifyInstance } from "fastify";
@@ -218,8 +220,6 @@ export async function webhookRoutes(app: FastifyInstance): Promise<void> {
       config: { rawBody: true },  // enables fastify-raw-body for this route
     },
     async (request, reply) => {
-      // Immediately return 202 — all processing is async
-      // We verify HMAC first to reject invalid requests synchronously
       const signature = request.headers["x-hub-signature-256"] as string | undefined;
       const deliveryId = request.headers["x-github-delivery"] as string | undefined;
       const eventName = request.headers["x-github-event"] as string | undefined;
@@ -239,17 +239,9 @@ export async function webhookRoutes(app: FastifyInstance): Promise<void> {
         return reply.status(401).send({ error: "Invalid signature" });
       }
 
-      // Redis dedup: SET NX EX 259200 (3 days)
-      const dedupKey = `delivery:${deliveryId}`;
-      const isNew = await app.redis.set(dedupKey, "1", "NX", "EX", 259200);
-      if (!isNew) {
-        app.log.info({ deliveryId }, "Duplicate webhook delivery — skipping");
-        return reply.status(202).send({ status: "duplicate" });
-      }
-
-      // Extract installationId from parsed body (safe to use after HMAC verified)
-      const body = request.body as Record<string, unknown>;
-      const installation = body["installation"] as { id?: number } | undefined;
+      // Extract installationId from parsed body BEFORE dedup — required for TEN-03 key namespace
+      // Safe to use request.body here because HMAC already verified the payload
+      const installation = (request.body as any).installation as { id?: number } | undefined;
       const installationId = installation?.id;
 
       if (!installationId || typeof installationId !== "number") {
@@ -257,6 +249,16 @@ export async function webhookRoutes(app: FastifyInstance): Promise<void> {
         return reply.status(202).send({ status: "no_installation" });
       }
 
+      // Redis dedup: SET NX EX 259200 (3 days)
+      // Key namespace: installation:{installationId}:delivery:{deliveryId} (TEN-03 compliance)
+      const dedupKey = `installation:${installationId}:delivery:${deliveryId}`;
+      const isNew = await app.redis.set(dedupKey, "1", "NX", "EX", 259200);
+      if (!isNew) {
+        app.log.info({ deliveryId }, "Duplicate webhook delivery — skipping");
+        return reply.status(202).send({ status: "duplicate" });
+      }
+
+      const body = request.body as Record<string, unknown>;
       const action = typeof body["action"] === "string" ? body["action"] : undefined;
 
       // Enqueue identifier-only job — jobId = deliveryId for BullMQ-level dedup
@@ -346,9 +348,10 @@ DATABASE_URL=postgresql://postgres:password@localhost:5432/ciintel
 4. `cat apps/api/src/routes/webhooks.ts | grep "202"` — 202 status returned
 5. `cat apps/api/src/routes/webhooks.ts | grep "259200"` — Redis TTL present
 6. `cat apps/api/src/routes/webhooks.ts | grep "jobId: deliveryId"` — BullMQ dedup jobId
-7. `pnpm --filter @ciintel/api exec tsc --noEmit` — exits 0 (or only missing @ciintel/db generated type errors)
+7. `cat apps/api/src/routes/webhooks.ts | grep "installation:"` — dedup key uses TEN-03 namespace
+8. `pnpm --filter @ciintel/api exec tsc --noEmit` — exits 0 (or only missing @ciintel/db generated type errors)
   </verify>
-  <done>Fastify server bootstraps with raw-body plugin registered first. POST /webhooks verifies HMAC, deduplicates on deliveryId in Redis, enqueues identifier-only job with jobId dedup, returns 202. GET /health returns 200.</done>
+  <done>Fastify server bootstraps with raw-body plugin registered first. POST /webhooks verifies HMAC, extracts installationId before dedup, deduplicates using namespaced key installation:{installationId}:delivery:{deliveryId} in Redis, enqueues identifier-only job with jobId dedup, returns 202. GET /health returns 200.</done>
 </task>
 
 </tasks>
@@ -357,10 +360,11 @@ DATABASE_URL=postgresql://postgres:password@localhost:5432/ciintel
 1. Plugin registration order in index.ts: rawBodyPlugin → redisDecorator → routes
 2. HMAC uses `request.rawBody` string (not parsed body) — critical for correctness
 3. `timingSafeEqual` used for constant-time comparison
-4. Redis dedup key `delivery:{deliveryId}` with NX EX 259200
-5. BullMQ enqueue uses `jobId: deliveryId`
-6. Job payload has no body content, no tokens — only identifiers
-7. fastify-plugin wraps redis decorator so it's not scoped to a child context
+4. installationId extracted BEFORE Redis dedup step
+5. Redis dedup key uses namespace `installation:{installationId}:delivery:{deliveryId}` with NX EX 259200
+6. BullMQ enqueue uses `jobId: deliveryId`
+7. Job payload has no body content, no tokens — only identifiers
+8. fastify-plugin wraps redis decorator so it's not scoped to a child context
 </verification>
 
 <success_criteria>
@@ -370,6 +374,7 @@ DATABASE_URL=postgresql://postgres:password@localhost:5432/ciintel
 - Job enqueued contains: installationId, deliveryId, eventName, action — nothing else
 - rawBodyPlugin registered before any routes in index.ts
 - GET /health returns 200 with JSON
+- Redis dedup key follows TEN-03 namespace: installation:{installationId}:delivery:{deliveryId}
 - TypeScript compiles cleanly
 </success_criteria>
 
@@ -377,5 +382,5 @@ DATABASE_URL=postgresql://postgres:password@localhost:5432/ciintel
 After completion, create `/Users/tsouza/Projects/ciintel/.planning/phases/01-github-app-foundation/01-04-SUMMARY.md` with:
 - frontmatter: phase, plan, subsystem: api, affects: [apps/api], tech-stack.added: [fastify@5, fastify-raw-body@5, fastify-plugin@5]
 - What was built (webhook receiver, HMAC verification, Redis dedup, queue enqueue)
-- Key decisions: rawBodyPlugin registration order, timingSafeEqual for HMAC, jobId=deliveryId for BullMQ dedup
+- Key decisions: rawBodyPlugin registration order, timingSafeEqual for HMAC, jobId=deliveryId for BullMQ dedup, TEN-03 namespaced dedup key
 </output>

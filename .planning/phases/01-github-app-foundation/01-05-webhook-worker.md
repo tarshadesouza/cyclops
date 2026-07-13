@@ -22,10 +22,11 @@ must_haves:
     - "Installation unsuspended event sets suspended: false — jobs resume processing"
     - "Installation tokens are minted at job-start using getInstallationClient(installationId) — never stored in job payloads"
     - "DLQ worker logs failed jobs and sends error telemetry"
+    - "Jobs that exhaust all retries are routed to the DLQ via onFailed handler in createWebhookIngestionWorker"
     - "Redis cache keys follow namespace: installation:{id}:{resource_type}:{resource_id}"
   artifacts:
     - path: "apps/worker/src/workers/webhook-ingestion.ts"
-      provides: "WebhookIngestionWorker handling installation lifecycle events"
+      provides: "WebhookIngestionWorker handling installation lifecycle events with DLQ routing"
     - path: "apps/worker/src/workers/dlq.ts"
       provides: "DLQWorker for dead-letter job logging"
     - path: "apps/worker/src/lib/installation.ts"
@@ -49,14 +50,18 @@ must_haves:
       to: "@ciintel/db"
       via: "getDb() to query installation status"
       pattern: "getDb"
+    - from: "apps/worker/src/workers/webhook-ingestion.ts"
+      to: "@ciintel/queue dlqQueue"
+      via: "onFailed handler routes exhausted jobs to DLQ"
+      pattern: "dlqQueue.add"
 ---
 
 <objective>
-Implement the apps/worker BullMQ worker process: WebhookIngestionWorker that handles GitHub App installation lifecycle events (created, deleted, suspended, unsuspended, repositories_added, repositories_removed), enforces TEN-04 job dropping for inactive installations, and a DLQ worker for failed job observability.
+Implement the apps/worker BullMQ worker process: WebhookIngestionWorker that handles GitHub App installation lifecycle events (created, deleted, suspended, unsuspended, repositories_added, repositories_removed), enforces TEN-04 job dropping for inactive installations, routes exhausted jobs to the DLQ via onFailed handler, and a DLQ worker for failed job observability.
 
 Purpose: The worker is where tenant isolation is enforced at execution time. Every job must gate on installation status before doing any work, and all database operations must go through getTenantClient() so the RLS layer is activated. Getting the lifecycle handling right here prevents ghost jobs and data leaks for suspended/deleted tenants.
 
-Output: A worker process that consumes the webhook-ingestion queue with concurrency 20, handles all installation lifecycle events, drops jobs for suspended/deleted installations, and logs all DLQ entries.
+Output: A worker process that consumes the webhook-ingestion queue with concurrency 20, handles all installation lifecycle events, drops jobs for suspended/deleted installations, routes exhausted-retry jobs to the DLQ, and logs all DLQ entries.
 </objective>
 
 <execution_context>
@@ -180,14 +185,14 @@ export function createDlqWorker(): Worker {
 </task>
 
 <task type="auto">
-  <name>Task 2: WebhookIngestionWorker — installation lifecycle handling and worker bootstrap</name>
+  <name>Task 2: WebhookIngestionWorker — installation lifecycle handling, DLQ onFailed routing, and worker bootstrap</name>
   <files>
     apps/worker/src/workers/webhook-ingestion.ts
     apps/worker/src/index.ts
     apps/worker/.env.example
   </files>
   <action>
-Implement the WebhookIngestionWorker that handles GitHub App installation lifecycle events and the worker process bootstrap.
+Implement the WebhookIngestionWorker that handles GitHub App installation lifecycle events, routes exhausted-retry jobs to the DLQ, and the worker process bootstrap.
 
 **apps/worker/src/workers/webhook-ingestion.ts:**
 
@@ -201,12 +206,15 @@ Handle the 6 installation lifecycle events defined in APP-02. For each event:
 
 All non-installation events (check_run, workflow_run, etc.) are passed through for dispatcher (implemented in Phase 2).
 
+IMPORTANT: Import `dlqQueue` from `@ciintel/queue` — the `onFailed` handler routes exhausted jobs to the DLQ.
+
 ```typescript
 import { Worker } from "bullmq";
 import {
   getRedis,
   webhookIngestionQueue,
   detectorDispatchQueue,
+  dlqQueue,
   WebhookIngestionJobSchema,
   type WebhookIngestionJob,
 } from "@ciintel/queue";
@@ -366,6 +374,23 @@ export function createWebhookIngestionWorker(): Worker<WebhookIngestionJob> {
     logger.error({ err }, "WebhookIngestionWorker error");
   });
 
+  // DLQ routing: when a job exhausts all retries, move it to the DLQ for observability.
+  // A separate onFailed handler is used so DLQ routing is independent of the error logger above.
+  worker.on('failed', async (job, err) => {
+    if (!job) return;
+    const maxAttempts = job.opts.attempts ?? 1;
+    if (job.attemptsMade >= maxAttempts) {
+      await dlqQueue.add('exhausted', {
+        originalQueue: 'webhook-ingestion',
+        jobId: job.id,
+        jobName: job.name,
+        jobData: job.data,
+        error: err.message,
+        failedAt: new Date().toISOString(),
+      }, { removeOnComplete: false });
+    }
+  });
+
   return worker;
 }
 ```
@@ -430,10 +455,12 @@ LOG_LEVEL=info
 3. `cat apps/worker/src/workers/webhook-ingestion.ts | grep "deletedAt"` — deletion handled
 4. `cat apps/worker/src/workers/webhook-ingestion.ts | grep "suspended"` — suspension handled
 5. `cat apps/worker/src/workers/webhook-ingestion.ts | grep "drain\|remove"` — job draining on delete
-6. `grep "token\|privateKey\|secret" apps/worker/src/workers/webhook-ingestion.ts` — 0 results (no credentials in job processing)
-7. `pnpm --filter @ciintel/worker exec tsc --noEmit` — exits 0 (or only generated type errors)
+6. `cat apps/worker/src/workers/webhook-ingestion.ts | grep "dlqQueue"` — DLQ import and onFailed routing present
+7. `cat apps/worker/src/workers/webhook-ingestion.ts | grep "attemptsMade"` — exhaustion check present
+8. `grep "token\|privateKey\|secret" apps/worker/src/workers/webhook-ingestion.ts` — 0 results (no credentials in job processing)
+9. `pnpm --filter @ciintel/worker exec tsc --noEmit` — exits 0 (or only generated type errors)
   </verify>
-  <done>WebhookIngestionWorker handles all 6 installation lifecycle events. TEN-04 gate runs at every job start. Deleted installations drain queued jobs. Concurrency=20. Worker process bootstraps both workers and handles SIGTERM/SIGINT gracefully.</done>
+  <done>WebhookIngestionWorker handles all 6 installation lifecycle events. TEN-04 gate runs at every job start. Deleted installations drain queued jobs. Concurrency=20. onFailed handler routes exhausted-retry jobs to dlqQueue. Worker process bootstraps both workers and handles SIGTERM/SIGINT gracefully.</done>
 </task>
 
 </tasks>
@@ -444,8 +471,9 @@ LOG_LEVEL=info
 3. `installation.deleted` sets deletedAt AND drains waiting/delayed jobs from queues
 4. `installation.suspend` and `installation.unsuspend` toggle `suspended` boolean
 5. Worker concurrency: webhook-ingestion=20, dlq=5
-6. Graceful shutdown via SIGTERM/SIGINT
-7. No tokens or secrets appear in job processing logic — only installationId used to mint on demand
+6. `dlqQueue` imported and `onFailed` handler routes exhausted jobs to DLQ after max retries
+7. Graceful shutdown via SIGTERM/SIGINT
+8. No tokens or secrets appear in job processing logic — only installationId used to mint on demand
 </verification>
 
 <success_criteria>
@@ -453,6 +481,7 @@ LOG_LEVEL=info
 - TEN-04 gate runs at the start of every webhook ingestion job
 - All 4 installation lifecycle actions handled: created (upsert), deleted (deletedAt + drain), suspend, unsuspend
 - Concurrency=20 on webhook-ingestion queue
+- onFailed handler moves exhausted-retry jobs to dlqQueue with full context
 - Graceful shutdown on SIGTERM
 - TypeScript compiles cleanly
 - No credentials or token values appear in job data or processing logic
@@ -461,6 +490,6 @@ LOG_LEVEL=info
 <output>
 After completion, create `/Users/tsouza/Projects/ciintel/.planning/phases/01-github-app-foundation/01-05-SUMMARY.md` with:
 - frontmatter: phase, plan, subsystem: worker, affects: [apps/worker], tech-stack.added: [pino@9]
-- What was built (WebhookIngestionWorker, DLQWorker, TEN-04 gate, lifecycle handlers)
-- Key decisions: checkInstallationActive gate pattern, drain approach for deleted installations, upsert for idempotent created events
+- What was built (WebhookIngestionWorker, DLQWorker, TEN-04 gate, lifecycle handlers, DLQ onFailed routing)
+- Key decisions: checkInstallationActive gate pattern, drain approach for deleted installations, upsert for idempotent created events, onFailed DLQ routing on retry exhaustion
 </output>

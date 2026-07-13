@@ -18,7 +18,7 @@ autonomous: true
 must_haves:
   truths:
     - "Four BullMQ queues are defined: webhook-ingestion, detector-dispatch, ai-analysis, action-execution"
-    - "Each queue has correct concurrency settings: webhook-ingestion=20, detector-dispatch=10, ai-analysis=5, action-execution=10"
+    - "Four BullMQ queues are defined with correct names and default job options; WebhookIngestionWorker concurrency is 20; concurrency for detector-dispatch (10), ai-analysis (5), and action-execution (10) will be set when those workers are created in Phase 2."
     - "getAppClient() returns an App-level Octokit instance (JWT auth)"
     - "getInstallationClient(installationId) returns an installation-scoped Octokit that auto-refreshes tokens"
     - "ioredis connection has maxRetriesPerRequest: null — BullMQ hard requirement"

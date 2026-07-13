@@ -23,7 +23,7 @@ must_haves:
     - "Prisma client is generated to packages/db/src/generated (not node_modules) using prisma-client generator name"
   artifacts:
     - path: "packages/db/prisma/schema.prisma"
-      provides: "Installation, WebhookDelivery, and AuditLog models"
+      provides: "Installation and WebhookDelivery models"
       contains: "generator prisma-client"
     - path: "packages/db/prisma.config.ts"
       provides: "Prisma 7 required config file"
