@@ -1,0 +1,26 @@
+{
+  "name": "@ciintel/detectors",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@ciintel/core": "workspace:*",
+    "js-yaml": "^4.1.0",
+    "strip-ansi": "^7.1.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "@types/node": "^22.0.0",
+    "@types/js-yaml": "^4.0.9"
+  }
+}
