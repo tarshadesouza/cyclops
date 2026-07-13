@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 
 ## Current Position
 
-Phase: 2 of 5 (Detector Pipeline & AI Analysis) — COMPLETE ✓
-Plan: 7 of 7 in phase 2 — COMPLETE
-Status: Phase 2 complete — goal verified 5/5, ready for Phase 3
-Last activity: 2026-07-13 — Completed 02-07-PLAN.md (env-var docs: .env.example, docs/environment.md, README.md; pnpm -r build exits 0; human checkpoint approved)
+Phase: 3 of 5 (Action Engine & Output Channels) — In progress
+Plan: 1 of 7 in phase 3 — COMPLETE
+Status: Phase 3 started — 03-01 complete, DB schema and queue types ready for action handlers
+Last activity: 2026-07-13 — Completed 03-01-PLAN.md (Phase 3 Prisma models, migration SQL, exported types, ActionExecutionJobSchema tightened)
 
-Progress: [███████████░] 50% (13/26 estimated plans)
+Progress: [████████████░] 54% (14/26 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
-- Average duration: 4m 5s
-- Total execution time: ~53 minutes
+- Total plans completed: 14
+- Average duration: 4m 0s
+- Total execution time: ~56 minutes
 
 **By Phase:**
 
@@ -29,9 +29,10 @@ Progress: [███████████░] 50% (13/26 estimated plans)
 |-------|-------|-------|----------|
 | 1. GitHub App Foundation | 6/6 | ~27m | 4m 27s |
 | 2. Detector Pipeline & AI Analysis | 7/7 | ~28m | 4m 0s |
+| 3. Action Engine & Output Channels | 1/7 | ~4m | 3m 29s |
 
 **Recent Trend:**
-- Last 13 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s), 02-06 (2m 42s), 02-07 (6m 44s)
+- Last 14 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s), 02-06 (2m 42s), 02-07 (6m 44s), 03-01 (3m 29s)
 - Phase 1 complete in ~27 minutes total; Phase 2 complete in ~28 minutes total
 
 *Updated after each plan completion*
@@ -97,17 +98,20 @@ Recent decisions affecting current work:
 - [02-07]: Anthropic API keys are BYOK only — no global ANTHROPIC_API_KEY env var; model is claude-sonnet-5
 - [02-07]: CYCLOPS_ENCRYPTION_KEY required in both services and must match — AES-256-GCM shared secret for BYOK key encryption at rest
 - [02-07]: e2e checkpoint approved without live infra — build verified clean; runtime verification deferred to first deploy
+- [03-01]: Migration created manually as SQL — no local PostgreSQL; follows hand-authored pattern from 0003_phase2; applied via prisma migrate resolve on deploy
+- [03-01]: New dedup/tracking tables have no @relation FK to Installation — RLS installationId isolation sufficient; FK deferred for high-write tables
+- [03-01]: actionParams removed from ActionExecutionJobSchema — handlers load all context via findingId from DB; identifier-only job payloads enforced
 
 ### Pending Todos
 
-- Pre-deploy: apply DATABASE_URL then run `pnpm --filter @ciintel/db db:migrate` (migration 0003_phase2: findings, token_usages, encryptedApiKey)
+- Pre-deploy: apply DATABASE_URL then run `pnpm --filter @ciintel/db db:migrate` (migrations 0003_phase2 and 0004_phase3_action_tables)
 - Pre-deploy: configure Railway Redis maxmemory-policy=noeviction and appendonly=yes
 - Pre-deploy: set DATABASE_URL to port 6543 (PgBouncer) in production Railway env
 - Pre-deploy: run ./scripts/test-webhook.sh to verify end-to-end delivery
 - Pre-deploy: generate CYCLOPS_ENCRYPTION_KEY with `openssl rand -hex 32` (64-hex-char AES-256 key) — set in BOTH services
 - Pre-deploy: generate CYCLOPS_SETUP_SECRET with `openssl rand -hex 32` (setup endpoint shared secret) — apps/api only
 - Pre-deploy: register BYOK key via `POST /setup/:installationId` with x-setup-token after first deploy
-- Phase 3: implement action-execution worker (replace actionType='phase3-placeholder' with real action types)
+- Phase 3: implement action-execution worker handlers (03-02 through 03-07)
 
 ### Blockers/Concerns
 
@@ -118,6 +122,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-07-13T14:11Z
-Stopped at: Completed 02-07-PLAN.md — Phase 2 COMPLETE. Env-var docs (.env.example, docs/environment.md, README.md), full build clean, human checkpoint approved. Ready for Phase 3 (Action Execution).
+Last session: 2026-07-13T15:15Z
+Stopped at: Completed 03-01-PLAN.md — Phase 3 started. DB schema (4 new models + cyclopsCheckRunId), migration 0004_phase3_action_tables, typed ActionExecutionJobSchema with findingId + ACTION_TYPES enum. Both packages build clean.
 Resume file: None
