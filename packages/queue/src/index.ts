@@ -12,10 +12,12 @@ export type {
   DetectorDispatchJob,
   AiAnalysisJob,
   ActionExecutionJob,
+  ActionType,
 } from "./jobs.js";
 export {
   WebhookIngestionJobSchema,
   DetectorDispatchJobSchema,
   AiAnalysisJobSchema,
   ActionExecutionJobSchema,
+  ACTION_TYPES,
 } from "./jobs.js";
