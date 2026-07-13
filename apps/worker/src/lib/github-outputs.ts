@@ -63,7 +63,7 @@ function renderPrCommentBody(findings: Array<{
 // ---------------------------------------------------------------------------
 export async function handleUpsertPrComment(
   ctx: ActionContext
-): Promise<{ skipped?: boolean; ok?: boolean }> {
+): Promise<{ skipped: true } | { ok: true }> {
   const { octokit, db, finding, owner, repo, log } = ctx;
   const { installationId, repositoryId, sha, workflowRunId } = finding;
 
@@ -71,7 +71,7 @@ export async function handleUpsertPrComment(
   const prNumber = await getPrNumber(octokit, owner, repo, sha);
   if (!prNumber) {
     log.info({ sha }, "No PR associated with commit — skipping PR comment");
-    return { skipped: true };
+    return { skipped: true as const };
   }
 
   // Load all findings for this workflow run (consolidated body — ACT-01)
@@ -119,7 +119,7 @@ export async function handleUpsertPrComment(
     log.info({ prNumber, commentId: resp.data.id }, "PR comment created");
   }
 
-  return { ok: true };
+  return { ok: true as const };
 }
 
 // ---------------------------------------------------------------------------
@@ -158,7 +158,7 @@ const CHECK_RUN_NAME = "Cyclops CI Analysis";
 
 export async function handleUpdateCheckRun(
   ctx: ActionContext
-): Promise<{ ok: boolean }> {
+): Promise<{ ok: true }> {
   const { octokit, db, finding, owner, repo, log, config } = ctx;
   const { sha } = finding;
 
@@ -258,5 +258,5 @@ export async function handleUpdateCheckRun(
     "Check run completed"
   );
 
-  return { ok: true };
+  return { ok: true as const };
 }
