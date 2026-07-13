@@ -1,0 +1,44 @@
+generator prisma-client {
+  provider        = "prisma-client"
+  output          = "../src/generated"
+  previewFeatures = []
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Installation {
+  id                Int       @id
+  accountLogin      String
+  accountType       String
+  appId             Int
+  targetId          Int
+  targetType        String
+  suspended         Boolean   @default(false)
+  deletedAt         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  webhookDeliveries WebhookDelivery[]
+
+  @@map("installations")
+}
+
+model WebhookDelivery {
+  id             String   @id @default(uuid())
+  deliveryId     String   @unique
+  installationId Int
+  eventName      String
+  action         String?
+  payload        Json
+  enqueuedAt     DateTime @default(now())
+  processedAt    DateTime?
+
+  installation   Installation @relation(fields: [installationId], references: [id])
+
+  @@index([installationId])
+  @@index([deliveryId])
+  @@map("webhook_deliveries")
+}
