@@ -96,10 +96,16 @@ Plans:
 
 ---
 
-**Plans**: TBD
+**Plans**: 7 plans
 
 Plans:
-- [ ] 03-01: TBD
+- [ ] 03-01-PLAN.md — DB schema additions: PrComment, ActionDedup, AutofixPr, TrackedIssue models + cyclopsCheckRunId on Finding; ActionExecutionJobSchema with findingId + typed actionType enum
+- [ ] 03-02-PLAN.md — packages/config: CyclopsConfigSchema (I/O-free Zod) + fetchConfig loader with 60s TTL cache; js-yaml added to worker
+- [ ] 03-03-PLAN.md — Action execution worker skeleton: handler map (8 stubs), config load + kill switches, finding DB load; ai-analysis.ts dispatches typed action types per detector
+- [ ] 03-04-PLAN.md — Core output channels: handleUpsertPrComment (DB-tracked, PATCH in-place) + handleUpdateCheckRun (50-annotation batching, cyclopsCheckRunId persisted)
+- [ ] 03-05-PLAN.md — Autofix PRs: handleAutofixLint + handleAutofixSnapshot via Git Data API 5-step chain; AutofixPr dedup + rate limiting
+- [ ] 03-06-PLAN.md — Secondary actions: handleRerunWorkflow, handleCancelWorkflow (409-safe), handleSlackAlert (native fetch), handleCreateGithubIssue; all with ActionDedup 24h window
+- [ ] 03-07-PLAN.md — ActionDedup cleanup + end-to-end verification checkpoint for all 5 phase success criteria
 
 ---
 
@@ -159,7 +165,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. GitHub App Foundation | 6/6 | Complete | 2026-07-13 |
 | 2. Detector Pipeline & AI Analysis | 7/7 | Complete | 2026-07-13 |
-| 3. Action Engine & Output Channels | 0/TBD | Not started | - |
+| 3. Action Engine & Output Channels | 0/7 | Not started | - |
 | 4. Public SDK | 0/TBD | Not started | - |
 | 5. Slack Integration & Marketplace | 0/TBD | Not started | - |
 
