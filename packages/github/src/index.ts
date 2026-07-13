@@ -1,2 +1,2 @@
-// @ciintel/github — Octokit App singleton, factory functions (implemented in Plan 03)
-export {};
+export { getApp } from "./app.js";
+export { getAppClient, getInstallationClient } from "./clients.js";
