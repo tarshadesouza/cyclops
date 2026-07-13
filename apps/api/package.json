@@ -15,6 +15,7 @@
     "@ciintel/github": "workspace:*",
     "@ciintel/queue": "workspace:*",
     "fastify": "^5.10.0",
+    "fastify-plugin": "^5.0.0",
     "fastify-raw-body": "^5.0.0",
     "ioredis": "^5.11.1",
     "pino": "^9.0.0",
