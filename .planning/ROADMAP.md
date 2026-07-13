@@ -13,7 +13,7 @@ CyclOps ships as a GitHub App that installs in under 30 seconds and immediately 
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: GitHub App Foundation** - Reliable multi-tenant webhook ingestion pipeline; GitHub App installable and receiving events
-- [ ] **Phase 2: Detector Pipeline & AI Analysis** - All 6 detectors running end-to-end with AI-enriched structured findings; no actions yet
+- [x] **Phase 2: Detector Pipeline & AI Analysis** - All 6 detectors running end-to-end with AI-enriched structured findings; no actions yet
 - [ ] **Phase 3: Action Engine & Output Channels** - cyclops[bot] posts consolidated PR comments, creates Check Runs, and executes safe auto-actions with full deduplication and kill switches
 - [ ] **Phase 4: Public SDK** - @cyclops/core published on npm; self-hosters can install and extend CyclOps detectors
 - [ ] **Phase 5: Slack Integration & Marketplace** - CyclOps listed on GitHub Marketplace with paid tiers; Slack integration live
@@ -158,7 +158,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. GitHub App Foundation | 6/6 | Complete | 2026-07-13 |
-| 2. Detector Pipeline & AI Analysis | 0/TBD | Not started | - |
+| 2. Detector Pipeline & AI Analysis | 7/7 | Complete | 2026-07-13 |
 | 3. Action Engine & Output Channels | 0/TBD | Not started | - |
 | 4. Public SDK | 0/TBD | Not started | - |
 | 5. Slack Integration & Marketplace | 0/TBD | Not started | - |
