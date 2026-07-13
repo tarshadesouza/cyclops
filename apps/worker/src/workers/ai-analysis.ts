@@ -5,6 +5,7 @@ import {
   dlqQueue,
   AiAnalysisJobSchema,
   type AiAnalysisJob,
+  type ActionType,
 } from "@ciintel/queue";
 import { getTenantClient } from "@ciintel/db";
 import { decryptApiKey } from "@ciintel/core";
@@ -14,6 +15,28 @@ import { checkInstallationActive } from "../lib/installation.js";
 import pino from "pino";
 
 const logger = pino({ level: process.env["LOG_LEVEL"] ?? "info" });
+
+// ---------------------------------------------------------------------------
+// getActionTypes — maps detector type to the full set of action jobs to dispatch
+// Base set always includes check-run update and PR comment.
+// ---------------------------------------------------------------------------
+function getActionTypes(detectorType: string): ActionType[] {
+  const base: ActionType[] = ["update-check-run", "upsert-pr-comment"];
+  switch (detectorType.toLowerCase()) {
+    case "lint":
+      return [...base, "create-autofix-pr-lint"];
+    case "snapshot":
+      return [...base, "create-autofix-pr-snapshot"];
+    case "flakytest":
+      return [...base, "rerun-workflow"];
+    case "hangingworkflow":
+      return [...base, "cancel-workflow"];
+    case "expiredsecret":
+      return [...base, "send-slack-alert", "create-github-issue"];
+    default:
+      return [...base, "create-github-issue"];
+  }
+}
 
 export function createAiAnalysisWorker(): Worker<AiAnalysisJob> {
   const worker = new Worker<AiAnalysisJob>(
@@ -129,18 +152,21 @@ export function createAiAnalysisWorker(): Worker<AiAnalysisJob> {
           where: { id: findingId },
           data: { advancedToAction: true },
         });
-        // Map detector type to action type; lint gets autofix, everything else
-        // gets a check-run update to surface findings to the developer.
-        const actionType =
-          detectorType === "lint" ? "create-autofix-pr-lint" : "update-check-run";
-        await actionExecutionQueue.add("execute", {
-          installationId,
-          repositoryId,
-          checkRunId,
-          findingId,
-          actionType,
-          sha,
-        });
+        // Dispatch one job per action type for this detector
+        const actionTypes = getActionTypes(detectorType);
+        await Promise.all(
+          actionTypes.map((actionType) =>
+            actionExecutionQueue.add("execute", {
+              installationId,
+              repositoryId,
+              checkRunId,
+              findingId,
+              actionType,
+              sha,
+              ref: finding.ref,
+            })
+          )
+        );
       }
 
       jobLog.info(

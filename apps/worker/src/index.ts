@@ -3,6 +3,7 @@ import { getRedis } from "@ciintel/queue";
 import { createWebhookIngestionWorker } from "./workers/webhook-ingestion.js";
 import { createDetectorDispatchWorker } from "./workers/detector-dispatch.js";
 import { createAiAnalysisWorker } from "./workers/ai-analysis.js";
+import { createActionExecutionWorker } from "./workers/action-execution.js";
 import { createDlqWorker } from "./workers/dlq.js";
 
 const logger = pino({
@@ -18,6 +19,7 @@ logger.info("Starting CyclOps worker process");
 const webhookIngestionWorker = createWebhookIngestionWorker();
 const detectorDispatchWorker = createDetectorDispatchWorker();
 const aiAnalysisWorker = createAiAnalysisWorker();
+const actionExecutionWorker = createActionExecutionWorker();
 const dlqWorker = createDlqWorker();
 
 logger.info(
@@ -26,6 +28,7 @@ logger.info(
       "webhook-ingestion (concurrency=20)",
       "detector-dispatch (concurrency=10)",
       "ai-analysis (concurrency=5)",
+      "action-execution (concurrency=10)",
       "dlq (concurrency=5)",
     ],
   },
@@ -59,6 +62,7 @@ async function shutdown(): Promise<void> {
     webhookIngestionWorker.close(),
     detectorDispatchWorker.close(),
     aiAnalysisWorker.close(),
+    actionExecutionWorker.close(),
     dlqWorker.close(),
   ]);
   logger.info("Workers stopped gracefully");
