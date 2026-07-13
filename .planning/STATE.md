@@ -5,34 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-07-13)
 
 **Core value:** When a CI job fails, CyclOps tells you exactly why and either fixes it automatically or hands you a one-click remediation — eliminating the manual log-reading cycle that wastes engineering time across the organization.
-**Current focus:** Phase 2 — Detector Pipeline & AI Analysis
+**Current focus:** Phase 3 — Action Execution
 
 ## Current Position
 
-Phase: 2 of 5 (Detector Pipeline & AI Analysis) — In progress
-Plan: 6 of ~8 in phase 2 — COMPLETE
-Status: In progress — Full Phase 2 pipeline functional (webhook → detector → AI → action routing)
-Last activity: 2026-07-13 — Completed 02-06-PLAN.md (AiAnalysisWorker: budget gate, BYOK decrypt, analyzeFailure, TokenUsage, confidence>=0.85 routing to action-execution; concurrency=5)
+Phase: 2 of 5 (Detector Pipeline & AI Analysis) — COMPLETE (all 7 plans done)
+Plan: 7 of 7 in phase 2 — COMPLETE
+Status: Phase 2 complete — env vars documented, full build passes, pipeline verified
+Last activity: 2026-07-13 — Completed 02-07-PLAN.md (env-var docs: .env.example, docs/environment.md, README.md; pnpm -r build exits 0; human checkpoint approved)
 
-Progress: [██████████░] 46% (12/26 estimated plans)
+Progress: [███████████░] 50% (13/26 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
-- Average duration: 4m 0s
-- Total execution time: ~48 minutes
+- Total plans completed: 13
+- Average duration: 4m 5s
+- Total execution time: ~53 minutes
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. GitHub App Foundation | 6/6 | ~27m | 4m 27s |
-| 2. Detector Pipeline & AI Analysis | 6/~8 | ~21m | 3m 30s |
+| 2. Detector Pipeline & AI Analysis | 7/7 | ~28m | 4m 0s |
 
 **Recent Trend:**
-- Last 12 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s), 02-06 (2m 42s)
-- Phase 1 complete in ~27 minutes total
+- Last 13 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s), 02-06 (2m 42s), 02-07 (6m 44s)
+- Phase 1 complete in ~27 minutes total; Phase 2 complete in ~28 minutes total
 
 *Updated after each plan completion*
 
@@ -94,24 +94,30 @@ Recent decisions affecting current work:
 - [02-06]: Rethrow on analyzeFailure error — BullMQ handles retry/DLQ; prevents partial Finding state
 - [02-06]: TokenUsage.inputTokens mapped from result.usage.promptTokens — matches ai@7 field rename already handled in analyze.ts
 - [02-06]: actionType='phase3-placeholder' in ActionExecutionJob — schema accepts z.string(); Phase 3 will define real action types
+- [02-07]: Anthropic API keys are BYOK only — no global ANTHROPIC_API_KEY env var; model is claude-sonnet-5
+- [02-07]: CYCLOPS_ENCRYPTION_KEY required in both services and must match — AES-256-GCM shared secret for BYOK key encryption at rest
+- [02-07]: e2e checkpoint approved without live infra — build verified clean; runtime verification deferred to first deploy
 
 ### Pending Todos
 
-- After DATABASE_URL is set: run db:migrate to apply 0003_phase2 (findings, token_usages, encryptedApiKey)
+- Pre-deploy: apply DATABASE_URL then run `pnpm --filter @ciintel/db db:migrate` (migration 0003_phase2: findings, token_usages, encryptedApiKey)
 - Pre-deploy: configure Railway Redis maxmemory-policy=noeviction and appendonly=yes
 - Pre-deploy: set DATABASE_URL to port 6543 (PgBouncer) in production Railway env
 - Pre-deploy: run ./scripts/test-webhook.sh to verify end-to-end delivery
-- Pre-deploy: generate CYCLOPS_ENCRYPTION_KEY with `openssl rand -hex 32` (64-hex-char AES-256 key)
-- Pre-deploy: generate CYCLOPS_SETUP_SECRET with `openssl rand -hex 32` (setup endpoint shared secret)
+- Pre-deploy: generate CYCLOPS_ENCRYPTION_KEY with `openssl rand -hex 32` (64-hex-char AES-256 key) — set in BOTH services
+- Pre-deploy: generate CYCLOPS_SETUP_SECRET with `openssl rand -hex 32` (setup endpoint shared secret) — apps/api only
+- Pre-deploy: register BYOK key via `POST /setup/:installationId` with x-setup-token after first deploy
+- Phase 3: implement action-execution worker (replace actionType='phase3-placeholder' with real action types)
 
 ### Blockers/Concerns
 
 - [Research]: PgBouncer deployment model — documented in docs/env-vars.md; Railway managed Postgres uses built-in PgBouncer on port 6543 (transaction mode)
 - [Resolved 02-04]: LLM provider default and BYOK model — BYOK path implemented via POST /setup/:installationId; decryptApiKey available in @ciintel/core for worker use
-- [Research]: Confidence threshold starting values (0.7 for PR comment, 0.9 for fix PR) need empirical calibration in Phase 2
+- [Deferred 02-07]: Confidence threshold calibration — starting values (>=0.85 advance, <0.85 store-only) need empirical tuning after Phase 3 ships real action types
+- [Deferred 02-07]: Live e2e pipeline verification — 6-point checklist approved without infra; must be run before production launch
 
 ## Session Continuity
 
-Last session: 2026-07-13T14:02Z
-Stopped at: Completed 02-06-PLAN.md — AiAnalysisWorker (budget gate, BYOK decrypt, analyzeFailure call, TokenUsage.create, empty-evidence guard, Finding enrichment, confidence>=0.85 action routing, DLQ, concurrency=5); registered in index.ts.
+Last session: 2026-07-13T14:11Z
+Stopped at: Completed 02-07-PLAN.md — Phase 2 COMPLETE. Env-var docs (.env.example, docs/environment.md, README.md), full build clean, human checkpoint approved. Ready for Phase 3 (Action Execution).
 Resume file: None
