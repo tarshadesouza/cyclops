@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 2 of 5 (Detector Pipeline & AI Analysis) — In progress
-Plan: 5 of ~8 in phase 2 — COMPLETE
-Status: In progress — Detector dispatch + GitHub Actions fetch layer complete
-Last activity: 2026-07-13 — Completed 02-05-PLAN.md (github-actions.ts: 5 fetch helpers; DetectorDispatchWorker: runAllDetectors + tenant Finding + identifiers-only ai-analysis dispatch; webhook-ingestion: CI stub → real workflow_run/check_run dispatch; pino redact)
+Plan: 6 of ~8 in phase 2 — COMPLETE
+Status: In progress — Full Phase 2 pipeline functional (webhook → detector → AI → action routing)
+Last activity: 2026-07-13 — Completed 02-06-PLAN.md (AiAnalysisWorker: budget gate, BYOK decrypt, analyzeFailure, TokenUsage, confidence>=0.85 routing to action-execution; concurrency=5)
 
-Progress: [█████████░] 42% (11/26 estimated plans)
+Progress: [██████████░] 46% (12/26 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
-- Average duration: 4m 5s
-- Total execution time: ~45 minutes
+- Total plans completed: 12
+- Average duration: 4m 0s
+- Total execution time: ~48 minutes
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. GitHub App Foundation | 6/6 | ~27m | 4m 27s |
-| 2. Detector Pipeline & AI Analysis | 5/~8 | ~18m | 3m 36s |
+| 2. Detector Pipeline & AI Analysis | 6/~8 | ~21m | 3m 30s |
 
 **Recent Trend:**
-- Last 11 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s)
+- Last 12 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s), 02-06 (2m 42s)
 - Phase 1 complete in ~27 minutes total
 
 *Updated after each plan completion*
@@ -90,6 +90,10 @@ Recent decisions affecting current work:
 - [02-05]: workflowRunId ?? checkRunId fallback — DetectorDispatchJobSchema.workflowRunId is optional; Finding model requires non-null Int
 - [02-05]: DB-stored payload lookup in webhook-ingestion — payload loaded from webhookDelivery table so Redis job payload stays identifier-only
 - [02-05]: workflow_run preferred over check_run — lower cardinality (one per run vs one per job); check_run kept as fallback
+- [02-06]: ai-analysis worker concurrency=5 — AI calls are latency-bound; lower concurrency avoids rate-limit storms
+- [02-06]: Rethrow on analyzeFailure error — BullMQ handles retry/DLQ; prevents partial Finding state
+- [02-06]: TokenUsage.inputTokens mapped from result.usage.promptTokens — matches ai@7 field rename already handled in analyze.ts
+- [02-06]: actionType='phase3-placeholder' in ActionExecutionJob — schema accepts z.string(); Phase 3 will define real action types
 
 ### Pending Todos
 
@@ -108,6 +112,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-07-13T14:00Z
-Stopped at: Completed 02-05-PLAN.md — github-actions.ts (5 Octokit helpers, module-level cache, log stripping); DetectorDispatchWorker (runAllDetectors loop, Unknown fallback, tenant Finding create, identifiers-only ai-analysis dispatch); webhook-ingestion CI stub replaced with DB-payload workflow_run/check_run dispatch; pino redact in index.ts.
+Last session: 2026-07-13T14:02Z
+Stopped at: Completed 02-06-PLAN.md — AiAnalysisWorker (budget gate, BYOK decrypt, analyzeFailure call, TokenUsage.create, empty-evidence guard, Finding enrichment, confidence>=0.85 action routing, DLQ, concurrency=5); registered in index.ts.
 Resume file: None
