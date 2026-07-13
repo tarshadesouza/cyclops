@@ -9,28 +9,29 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 
 ## Current Position
 
-Phase: 1 of 5 (GitHub App Foundation) — COMPLETE
-Plan: 6 of 6 in phase 1 — COMPLETE
-Status: Phase 1 complete — ready for Phase 2
-Last activity: 2026-07-13 — Completed 01-06-PLAN.md (Railway deployment configs, env docs, e2e test script)
+Phase: 2 of 5 (Detector Pipeline & AI Analysis) — In progress
+Plan: 1 of ~8 in phase 2 — COMPLETE
+Status: In progress — Phase 2 data foundation complete
+Last activity: 2026-07-13 — Completed 02-01-PLAN.md (Finding + TokenUsage models, RLS migration, core types, AiAnalysisJobSchema)
 
-Progress: [██████░░░░] 23% (6/26 estimated plans)
+Progress: [███████░░░] 27% (7/26 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 4m 27s
-- Total execution time: ~27 minutes
+- Total plans completed: 7
+- Average duration: 4m 26s
+- Total execution time: ~31 minutes
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. GitHub App Foundation | 6/6 | ~27m | 4m 27s |
+| 2. Detector Pipeline & AI Analysis | 1/~8 | ~4m | 4m 21s |
 
 **Recent Trend:**
-- Last 6 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m)
+- Last 7 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s)
 - Phase 1 complete in ~27 minutes total
 
 *Updated after each plan completion*
@@ -72,10 +73,14 @@ Recent decisions affecting current work:
 - [01-06]: RAILPACK builder for both services — Railway's next-gen builder; auto-detects pnpm workspaces
 - [01-06]: noeviction Redis requirement documented + worker WARNING — WHK-05: BullMQ jobs must never be silently evicted
 - [01-06]: PgBouncer port 6543 + connection_limit=1 documented — TEN-05: required for Prisma on Railway managed PostgreSQL
+- [02-01]: Prisma 7.8.0 datasource url removal — url moved from schema.prisma to prisma.config.ts migrate.adapter; client.ts uses PrismaPg adapter directly, unaffected
+- [02-01]: Prisma 7 generated entry point is client.ts (not index.js) — model types (Installation, Finding, etc.) exported directly from client.ts
+- [02-01]: findingId replaces failureType in AiAnalysisJobSchema — identifier-only payload; AI worker fetches log content from DB at execution time, never from Redis
+- [02-01]: encryptedApiKey String? is nullable — platforms without BYOK use the platform default Anthropic key
 
 ### Pending Todos
 
-- After DATABASE_URL is set: run db:migrate:dev, db:generate, then uncomment type exports in packages/db/src/index.ts
+- After DATABASE_URL is set: run db:migrate to apply 0003_phase2 (findings, token_usages, encryptedApiKey)
 - Pre-deploy: configure Railway Redis maxmemory-policy=noeviction and appendonly=yes
 - Pre-deploy: set DATABASE_URL to port 6543 (PgBouncer) in production Railway env
 - Pre-deploy: run ./scripts/test-webhook.sh to verify end-to-end delivery
@@ -88,6 +93,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-07-13T09:38Z
-Stopped at: Completed 01-06-PLAN.md — Railway deployment configs, env var documentation, e2e webhook test script. Phase 1 complete.
+Last session: 2026-07-13T11:15Z
+Stopped at: Completed 02-01-PLAN.md — Phase 2 data foundation: Finding + TokenUsage models, 0003_phase2 RLS migration, core detector/AI types, AiAnalysisJobSchema with findingId.
 Resume file: None
