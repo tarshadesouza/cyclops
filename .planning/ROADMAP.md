@@ -12,7 +12,7 @@ CyclOps ships as a GitHub App that installs in under 30 seconds and immediately 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: GitHub App Foundation** - Reliable multi-tenant webhook ingestion pipeline; GitHub App installable and receiving events
+- [x] **Phase 1: GitHub App Foundation** - Reliable multi-tenant webhook ingestion pipeline; GitHub App installable and receiving events
 - [ ] **Phase 2: Detector Pipeline & AI Analysis** - All 6 detectors running end-to-end with AI-enriched structured findings; no actions yet
 - [ ] **Phase 3: Action Engine & Output Channels** - cyclops[bot] posts consolidated PR comments, creates Check Runs, and executes safe auto-actions with full deduplication and kill switches
 - [ ] **Phase 4: Public SDK** - @cyclops/core published on npm; self-hosters can install and extend CyclOps detectors
@@ -45,7 +45,7 @@ Plans:
 - [x] 01-03-queue-and-github-packages.md — BullMQ 4-queue definitions, typed job payloads, Octokit App singleton and factory functions
 - [x] 01-04-webhook-receiver.md — Fastify 5 webhook receiver, HMAC verification, Redis dedup, BullMQ enqueue
 - [x] 01-05-webhook-worker.md — WebhookIngestionWorker with installation lifecycle handling, TEN-04 gate, DLQ worker
-- [ ] 01-06-railway-deployment.md — railway.toml for api and worker, env var docs, end-to-end test script
+- [x] 01-06-railway-deployment.md — railway.toml for api and worker, env var docs, end-to-end test script
 
 ---
 
@@ -151,7 +151,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. GitHub App Foundation | 4/6 | In progress | - |
+| 1. GitHub App Foundation | 6/6 | Complete | 2026-07-13 |
 | 2. Detector Pipeline & AI Analysis | 0/TBD | Not started | - |
 | 3. Action Engine & Output Channels | 0/TBD | Not started | - |
 | 4. Public SDK | 0/TBD | Not started | - |
