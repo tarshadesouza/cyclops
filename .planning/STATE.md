@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 2 of 5 (Detector Pipeline & AI Analysis) — In progress
-Plan: 3 of ~8 in phase 2 — COMPLETE
-Status: In progress — AI enrichment layer complete
-Last activity: 2026-07-13 — Completed 02-03-PLAN.md (@ciintel/ai: FindingSchema, analyzeFailure/Claude Sonnet 5, checkTokenBudget monthly cap, BYOK factory)
+Plan: 4 of ~8 in phase 2 — COMPLETE
+Status: In progress — BYOK encryption + setup endpoint complete
+Last activity: 2026-07-13 — Completed 02-04-PLAN.md (encryptApiKey/decryptApiKey AES-256-GCM in @ciintel/core; POST /setup/:installationId with timingSafeEqual auth, pino redact; both packages build clean)
 
-Progress: [████████░░] 35% (9/26 estimated plans)
+Progress: [████████░░] 38% (10/26 estimated plans)
 
 ## Performance Metrics
 
@@ -28,10 +28,10 @@ Progress: [████████░░] 35% (9/26 estimated plans)
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. GitHub App Foundation | 6/6 | ~27m | 4m 27s |
-| 2. Detector Pipeline & AI Analysis | 3/~8 | ~12m | 4m 0s |
+| 2. Detector Pipeline & AI Analysis | 4/~8 | ~14m | 3m 30s |
 
 **Recent Trend:**
-- Last 9 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m)
+- Last 10 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s)
 - Phase 1 complete in ~27 minutes total
 
 *Updated after each plan completion*
@@ -84,6 +84,8 @@ Recent decisions affecting current work:
 - [02-03]: zod@^3.25.76 required — ai@7 peer dep raises minimum from plan's ^3.24.0
 - [02-03]: ai@7 renamed usage fields: inputTokens/outputTokens → mapped to promptTokens/completionTokens in AnalyzeResult for stable caller API
 - [02-03]: Loose db interface in checkTokenBudget — accepts {$queryRaw} duck type so @ciintel/ai never imports @ciintel/db
+- [02-04]: Encryption lives in @ciintel/core (not apps/worker) — both apps/api (encrypt on store) and apps/worker (decrypt on use) share one implementation
+- [02-04]: timingSafeEqual length-mismatch guard — tokenHeader.length === setupSecret.length check before compare prevents RangeError on mismatched buffers
 
 ### Pending Todos
 
@@ -91,15 +93,17 @@ Recent decisions affecting current work:
 - Pre-deploy: configure Railway Redis maxmemory-policy=noeviction and appendonly=yes
 - Pre-deploy: set DATABASE_URL to port 6543 (PgBouncer) in production Railway env
 - Pre-deploy: run ./scripts/test-webhook.sh to verify end-to-end delivery
+- Pre-deploy: generate CYCLOPS_ENCRYPTION_KEY with `openssl rand -hex 32` (64-hex-char AES-256 key)
+- Pre-deploy: generate CYCLOPS_SETUP_SECRET with `openssl rand -hex 32` (setup endpoint shared secret)
 
 ### Blockers/Concerns
 
 - [Research]: PgBouncer deployment model — documented in docs/env-vars.md; Railway managed Postgres uses built-in PgBouncer on port 6543 (transaction mode)
-- [Research]: LLM provider default and BYOK model undecided — platform default key with token caps vs. every installation provides own key
+- [Resolved 02-04]: LLM provider default and BYOK model — BYOK path implemented via POST /setup/:installationId; decryptApiKey available in @ciintel/core for worker use
 - [Research]: Confidence threshold starting values (0.7 for PR comment, 0.9 for fix PR) need empirical calibration in Phase 2
 
 ## Session Continuity
 
-Last session: 2026-07-13T11:25Z
-Stopped at: Completed 02-03-PLAN.md — @ciintel/ai package: FindingSchema (evidence.min(1)), analyzeFailure (generateObject + Claude Sonnet 5, maps ai@7 token field names), checkTokenBudget (date_trunc month window, CYCLOPS_MONTHLY_TOKEN_BUDGET cap), createAnthropicForInstallation (per-request BYOK factory).
+Last session: 2026-07-13T13:52Z
+Stopped at: Completed 02-04-PLAN.md — encryptApiKey/decryptApiKey AES-256-GCM in @ciintel/core (node:crypto only); POST /setup/:installationId in apps/api (timingSafeEqual auth, sk-ant- validation, P2025 handling); pino redact for x-setup-token/apiKey/encryptedApiKey.
 Resume file: None
