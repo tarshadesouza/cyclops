@@ -11,6 +11,7 @@ import { getInstallationClient } from "@ciintel/github";
 import { fetchConfig, type CyclopsConfig } from "@ciintel/config";
 import { checkInstallationActive } from "../lib/installation.js";
 import { handleUpsertPrComment, handleUpdateCheckRun } from "../lib/github-outputs.js";
+import { handleAutofixLint, handleAutofixSnapshot } from "../lib/github-autofix.js";
 import pino from "pino";
 
 // Derive tenant DB client type
@@ -74,8 +75,8 @@ export function isActionKillSwitched(
 const HANDLERS: Record<ActionType, (ctx: ActionContext) => Promise<HandlerResult>> = {
   "upsert-pr-comment":        handleUpsertPrComment,
   "update-check-run":         handleUpdateCheckRun,
-  "create-autofix-pr-lint":   async (_ctx) => ({ skipped: true, reason: "not-yet-implemented" }),
-  "create-autofix-pr-snapshot": async (_ctx) => ({ skipped: true, reason: "not-yet-implemented" }),
+  "create-autofix-pr-lint":     handleAutofixLint,
+  "create-autofix-pr-snapshot": handleAutofixSnapshot,
   "rerun-workflow":            async (_ctx) => ({ skipped: true, reason: "not-yet-implemented" }),
   "cancel-workflow":           async (_ctx) => ({ skipped: true, reason: "not-yet-implemented" }),
   "send-slack-alert":          async (_ctx) => ({ skipped: true, reason: "not-yet-implemented" }),
