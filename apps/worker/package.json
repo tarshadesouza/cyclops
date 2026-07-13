@@ -1,0 +1,27 @@
+{
+  "name": "@ciintel/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@ciintel/core": "workspace:*",
+    "@ciintel/db": "workspace:*",
+    "@ciintel/github": "workspace:*",
+    "@ciintel/queue": "workspace:*",
+    "bullmq": "^5.79.3",
+    "ioredis": "^5.11.1",
+    "pino": "^9.0.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "tsx": "^4.19.0",
+    "@types/node": "^22.0.0"
+  }
+}

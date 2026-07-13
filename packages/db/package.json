@@ -1,0 +1,29 @@
+{
+  "name": "@ciintel/db",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "db:generate": "prisma generate --config prisma.config.ts",
+    "db:migrate": "prisma migrate deploy --config prisma.config.ts",
+    "db:migrate:dev": "prisma migrate dev --config prisma.config.ts",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@ciintel/core": "workspace:*",
+    "@prisma/adapter-pg": "^7.8.0",
+    "pg": "^8.13.0",
+    "prisma": "^7.8.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.0"
+  }
+}

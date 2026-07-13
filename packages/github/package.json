@@ -1,0 +1,25 @@
+{
+  "name": "@ciintel/github",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@ciintel/core": "workspace:*",
+    "@octokit/app": "^16.1.2",
+    "@octokit/auth-app": "^8.2.0",
+    "@octokit/webhooks": "^14.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "@types/node": "^22.0.0"
+  }
+}
