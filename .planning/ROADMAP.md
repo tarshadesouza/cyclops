@@ -42,7 +42,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 - [x] 01-01-monorepo-scaffold.md — pnpm + Turborepo 2 workspace, root tsconfig, all 6 package scaffolds, CI workflow
 - [x] 01-02-database-layer.md — Prisma 7 schema, RLS migrations, adapter-pg client factory, tenant extension
-- [ ] 01-03-queue-and-github-packages.md — BullMQ 4-queue definitions, typed job payloads, Octokit App singleton and factory functions
+- [x] 01-03-queue-and-github-packages.md — BullMQ 4-queue definitions, typed job payloads, Octokit App singleton and factory functions
 - [ ] 01-04-webhook-receiver.md — Fastify 5 webhook receiver, HMAC verification, Redis dedup, BullMQ enqueue
 - [ ] 01-05-webhook-worker.md — WebhookIngestionWorker with installation lifecycle handling, TEN-04 gate, DLQ worker
 - [ ] 01-06-railway-deployment.md — railway.toml for api and worker, env var docs, end-to-end test script

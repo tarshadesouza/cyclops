@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 1 of 5 (GitHub App Foundation)
-Plan: 2 of 6 in current phase
+Plan: 3 of 6 in current phase
 Status: In progress
-Last activity: 2026-07-13 — Completed 01-02-PLAN.md (database layer)
+Last activity: 2026-07-13 — Completed 01-03-PLAN.md (queue and github packages)
 
-Progress: [██░░░░░░░░] 8% (2/26 estimated plans)
+Progress: [███░░░░░░░] 12% (3/26 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 3m 0s
-- Total execution time: ~6 minutes
+- Total plans completed: 3
+- Average duration: 5m 10s
+- Total execution time: ~15 minutes
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. GitHub App Foundation | 2/6 | ~6m | 3m |
+| 1. GitHub App Foundation | 3/6 | ~15m | 5m |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3m 8s), 01-02 (2m 52s)
-- Trend: Consistent ~3m/plan
+- Last 5 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m)
+- Trend: 01-03 longer due to ioredis deduplication and tsconfig fixes
 
 *Updated after each plan completion*
 
@@ -55,6 +55,11 @@ Recent decisions affecting current work:
 - [01-02]: Generated output at ../src/generated — inside src so TypeScript includes it without extra config
 - [01-02]: createRequire(import.meta.url) for generated client — ESM package requires this pattern; bare require() unavailable in module:nodenext files
 - [01-02]: prisma.config.ts excluded from tsconfig include — Prisma runs it via its own TS executor; rootDir:src would cause TS2560
+- [01-03]: maxRetriesPerRequest: null on ioredis — BullMQ throws at worker startup if omitted; enforced in getRedis() singleton
+- [01-03]: Job payloads contain identifiers only — secrets/content fetched at execution time; never stored in Redis
+- [01-03]: Private key \n normalization in getApp() — Railway stores PEM keys with literal backslash-n; normalized before App instantiation
+- [01-03]: target changed from es2025 to esnext in tsconfig.base.json — TypeScript 5.9.3 does not accept es2025 as a --target value
+- [01-03]: pnpm.overrides for ioredis unification — BullMQ pinned 5.10.1, queue package used 5.11.1; type mismatch resolved via root override
 
 ### Pending Todos
 
@@ -68,6 +73,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-07-13T09:19Z
-Stopped at: Completed 01-02-PLAN.md — Prisma 7 schema, RLS migrations, getDb() + getTenantClient()
+Last session: 2026-07-13T09:25Z
+Stopped at: Completed 01-03-PLAN.md — @ciintel/queue (4 queues + DLQ + FlowProducer) and @ciintel/github (App singleton + dual client factories)
 Resume file: None
