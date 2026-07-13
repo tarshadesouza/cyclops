@@ -47,8 +47,9 @@ model Finding {
   affectedFiles    String[]  @default([])
   severity         String?
   aiEnrichedAt     DateTime?
-  advancedToAction Boolean   @default(false)
-  budgetExceeded   Boolean   @default(false)
+  advancedToAction  Boolean   @default(false)
+  cyclopsCheckRunId BigInt?
+  budgetExceeded    Boolean   @default(false)
   deletedAt        DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
@@ -92,4 +93,58 @@ model WebhookDelivery {
   @@index([installationId])
   @@index([deliveryId])
   @@map("webhook_deliveries")
+}
+
+model PrComment {
+  id               String   @id @default(uuid())
+  installationId   Int
+  repositoryId     Int
+  prNumber         Int
+  githubCommentId  BigInt
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  @@unique([installationId, repositoryId, prNumber], name: "installationId_repositoryId_prNumber")
+  @@index([installationId])
+  @@map("pr_comments")
+}
+
+model ActionDedup {
+  id             String   @id @default(uuid())
+  installationId Int
+  repositoryId   Int
+  detectorType   String
+  ref            String
+  actionType     String
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+  @@unique([installationId, repositoryId, detectorType, ref, actionType], name: "installationId_repositoryId_detectorType_ref_actionType")
+  @@index([expiresAt])
+  @@map("action_dedups")
+}
+
+model AutofixPr {
+  id             String   @id @default(uuid())
+  installationId Int
+  repositoryId   Int
+  detectorType   String
+  sha            String
+  branchName     String
+  prNumber       Int
+  createdAt      DateTime @default(now())
+  @@unique([installationId, repositoryId, detectorType, sha], name: "installationId_repositoryId_detectorType_sha")
+  @@index([installationId])
+  @@map("autofix_prs")
+}
+
+model TrackedIssue {
+  id                String   @id @default(uuid())
+  installationId    Int
+  repositoryId      Int
+  detectorType      String
+  ref               String
+  githubIssueNumber Int
+  createdAt         DateTime @default(now())
+  @@unique([installationId, repositoryId, detectorType, ref], name: "installationId_repositoryId_detectorType_ref")
+  @@index([installationId])
+  @@map("tracked_issues")
 }

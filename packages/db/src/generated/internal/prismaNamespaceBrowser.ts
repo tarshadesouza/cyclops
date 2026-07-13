@@ -54,7 +54,11 @@ export const ModelName = {
   Installation: 'Installation',
   Finding: 'Finding',
   TokenUsage: 'TokenUsage',
-  WebhookDelivery: 'WebhookDelivery'
+  WebhookDelivery: 'WebhookDelivery',
+  PrComment: 'PrComment',
+  ActionDedup: 'ActionDedup',
+  AutofixPr: 'AutofixPr',
+  TrackedIssue: 'TrackedIssue'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -110,6 +114,7 @@ export const FindingScalarFieldEnum = {
   severity: 'severity',
   aiEnrichedAt: 'aiEnrichedAt',
   advancedToAction: 'advancedToAction',
+  cyclopsCheckRunId: 'cyclopsCheckRunId',
   budgetExceeded: 'budgetExceeded',
   deletedAt: 'deletedAt',
   createdAt: 'createdAt',
@@ -144,6 +149,60 @@ export const WebhookDeliveryScalarFieldEnum = {
 } as const
 
 export type WebhookDeliveryScalarFieldEnum = (typeof WebhookDeliveryScalarFieldEnum)[keyof typeof WebhookDeliveryScalarFieldEnum]
+
+
+export const PrCommentScalarFieldEnum = {
+  id: 'id',
+  installationId: 'installationId',
+  repositoryId: 'repositoryId',
+  prNumber: 'prNumber',
+  githubCommentId: 'githubCommentId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PrCommentScalarFieldEnum = (typeof PrCommentScalarFieldEnum)[keyof typeof PrCommentScalarFieldEnum]
+
+
+export const ActionDedupScalarFieldEnum = {
+  id: 'id',
+  installationId: 'installationId',
+  repositoryId: 'repositoryId',
+  detectorType: 'detectorType',
+  ref: 'ref',
+  actionType: 'actionType',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ActionDedupScalarFieldEnum = (typeof ActionDedupScalarFieldEnum)[keyof typeof ActionDedupScalarFieldEnum]
+
+
+export const AutofixPrScalarFieldEnum = {
+  id: 'id',
+  installationId: 'installationId',
+  repositoryId: 'repositoryId',
+  detectorType: 'detectorType',
+  sha: 'sha',
+  branchName: 'branchName',
+  prNumber: 'prNumber',
+  createdAt: 'createdAt'
+} as const
+
+export type AutofixPrScalarFieldEnum = (typeof AutofixPrScalarFieldEnum)[keyof typeof AutofixPrScalarFieldEnum]
+
+
+export const TrackedIssueScalarFieldEnum = {
+  id: 'id',
+  installationId: 'installationId',
+  repositoryId: 'repositoryId',
+  detectorType: 'detectorType',
+  ref: 'ref',
+  githubIssueNumber: 'githubIssueNumber',
+  createdAt: 'createdAt'
+} as const
+
+export type TrackedIssueScalarFieldEnum = (typeof TrackedIssueScalarFieldEnum)[keyof typeof TrackedIssueScalarFieldEnum]
 
 
 export const SortOrder = {

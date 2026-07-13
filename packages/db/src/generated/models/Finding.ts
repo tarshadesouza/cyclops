@@ -32,6 +32,7 @@ export type FindingAvgAggregateOutputType = {
   workflowRunId: number | null
   checkRunId: number | null
   confidence: number | null
+  cyclopsCheckRunId: number | null
 }
 
 export type FindingSumAggregateOutputType = {
@@ -40,6 +41,7 @@ export type FindingSumAggregateOutputType = {
   workflowRunId: number | null
   checkRunId: number | null
   confidence: number | null
+  cyclopsCheckRunId: bigint | null
 }
 
 export type FindingMinAggregateOutputType = {
@@ -59,6 +61,7 @@ export type FindingMinAggregateOutputType = {
   severity: string | null
   aiEnrichedAt: Date | null
   advancedToAction: boolean | null
+  cyclopsCheckRunId: bigint | null
   budgetExceeded: boolean | null
   deletedAt: Date | null
   createdAt: Date | null
@@ -82,6 +85,7 @@ export type FindingMaxAggregateOutputType = {
   severity: string | null
   aiEnrichedAt: Date | null
   advancedToAction: boolean | null
+  cyclopsCheckRunId: bigint | null
   budgetExceeded: boolean | null
   deletedAt: Date | null
   createdAt: Date | null
@@ -108,6 +112,7 @@ export type FindingCountAggregateOutputType = {
   severity: number
   aiEnrichedAt: number
   advancedToAction: number
+  cyclopsCheckRunId: number
   budgetExceeded: number
   deletedAt: number
   createdAt: number
@@ -122,6 +127,7 @@ export type FindingAvgAggregateInputType = {
   workflowRunId?: true
   checkRunId?: true
   confidence?: true
+  cyclopsCheckRunId?: true
 }
 
 export type FindingSumAggregateInputType = {
@@ -130,6 +136,7 @@ export type FindingSumAggregateInputType = {
   workflowRunId?: true
   checkRunId?: true
   confidence?: true
+  cyclopsCheckRunId?: true
 }
 
 export type FindingMinAggregateInputType = {
@@ -149,6 +156,7 @@ export type FindingMinAggregateInputType = {
   severity?: true
   aiEnrichedAt?: true
   advancedToAction?: true
+  cyclopsCheckRunId?: true
   budgetExceeded?: true
   deletedAt?: true
   createdAt?: true
@@ -172,6 +180,7 @@ export type FindingMaxAggregateInputType = {
   severity?: true
   aiEnrichedAt?: true
   advancedToAction?: true
+  cyclopsCheckRunId?: true
   budgetExceeded?: true
   deletedAt?: true
   createdAt?: true
@@ -198,6 +207,7 @@ export type FindingCountAggregateInputType = {
   severity?: true
   aiEnrichedAt?: true
   advancedToAction?: true
+  cyclopsCheckRunId?: true
   budgetExceeded?: true
   deletedAt?: true
   createdAt?: true
@@ -311,6 +321,7 @@ export type FindingGroupByOutputType = {
   severity: string | null
   aiEnrichedAt: Date | null
   advancedToAction: boolean
+  cyclopsCheckRunId: bigint | null
   budgetExceeded: boolean
   deletedAt: Date | null
   createdAt: Date
@@ -360,6 +371,7 @@ export type FindingWhereInput = {
   severity?: Prisma.StringNullableFilter<"Finding"> | string | null
   aiEnrichedAt?: Prisma.DateTimeNullableFilter<"Finding"> | Date | string | null
   advancedToAction?: Prisma.BoolFilter<"Finding"> | boolean
+  cyclopsCheckRunId?: Prisma.BigIntNullableFilter<"Finding"> | bigint | number | null
   budgetExceeded?: Prisma.BoolFilter<"Finding"> | boolean
   deletedAt?: Prisma.DateTimeNullableFilter<"Finding"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Finding"> | Date | string
@@ -387,6 +399,7 @@ export type FindingOrderByWithRelationInput = {
   severity?: Prisma.SortOrderInput | Prisma.SortOrder
   aiEnrichedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   advancedToAction?: Prisma.SortOrder
+  cyclopsCheckRunId?: Prisma.SortOrderInput | Prisma.SortOrder
   budgetExceeded?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -417,6 +430,7 @@ export type FindingWhereUniqueInput = Prisma.AtLeast<{
   severity?: Prisma.StringNullableFilter<"Finding"> | string | null
   aiEnrichedAt?: Prisma.DateTimeNullableFilter<"Finding"> | Date | string | null
   advancedToAction?: Prisma.BoolFilter<"Finding"> | boolean
+  cyclopsCheckRunId?: Prisma.BigIntNullableFilter<"Finding"> | bigint | number | null
   budgetExceeded?: Prisma.BoolFilter<"Finding"> | boolean
   deletedAt?: Prisma.DateTimeNullableFilter<"Finding"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Finding"> | Date | string
@@ -444,6 +458,7 @@ export type FindingOrderByWithAggregationInput = {
   severity?: Prisma.SortOrderInput | Prisma.SortOrder
   aiEnrichedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   advancedToAction?: Prisma.SortOrder
+  cyclopsCheckRunId?: Prisma.SortOrderInput | Prisma.SortOrder
   budgetExceeded?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -478,6 +493,7 @@ export type FindingScalarWhereWithAggregatesInput = {
   severity?: Prisma.StringNullableWithAggregatesFilter<"Finding"> | string | null
   aiEnrichedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Finding"> | Date | string | null
   advancedToAction?: Prisma.BoolWithAggregatesFilter<"Finding"> | boolean
+  cyclopsCheckRunId?: Prisma.BigIntNullableWithAggregatesFilter<"Finding"> | bigint | number | null
   budgetExceeded?: Prisma.BoolWithAggregatesFilter<"Finding"> | boolean
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Finding"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Finding"> | Date | string
@@ -503,6 +519,7 @@ export type FindingCreateInput = {
   severity?: string | null
   aiEnrichedAt?: Date | string | null
   advancedToAction?: boolean
+  cyclopsCheckRunId?: bigint | number | null
   budgetExceeded?: boolean
   deletedAt?: Date | string | null
   createdAt?: Date | string
@@ -530,6 +547,7 @@ export type FindingUncheckedCreateInput = {
   severity?: string | null
   aiEnrichedAt?: Date | string | null
   advancedToAction?: boolean
+  cyclopsCheckRunId?: bigint | number | null
   budgetExceeded?: boolean
   deletedAt?: Date | string | null
   createdAt?: Date | string
@@ -555,6 +573,7 @@ export type FindingUpdateInput = {
   severity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   aiEnrichedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   advancedToAction?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cyclopsCheckRunId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   budgetExceeded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -582,6 +601,7 @@ export type FindingUncheckedUpdateInput = {
   severity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   aiEnrichedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   advancedToAction?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cyclopsCheckRunId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   budgetExceeded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -608,6 +628,7 @@ export type FindingCreateManyInput = {
   severity?: string | null
   aiEnrichedAt?: Date | string | null
   advancedToAction?: boolean
+  cyclopsCheckRunId?: bigint | number | null
   budgetExceeded?: boolean
   deletedAt?: Date | string | null
   createdAt?: Date | string
@@ -633,6 +654,7 @@ export type FindingUpdateManyMutationInput = {
   severity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   aiEnrichedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   advancedToAction?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cyclopsCheckRunId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   budgetExceeded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -659,6 +681,7 @@ export type FindingUncheckedUpdateManyInput = {
   severity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   aiEnrichedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   advancedToAction?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cyclopsCheckRunId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   budgetExceeded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -703,6 +726,7 @@ export type FindingCountOrderByAggregateInput = {
   severity?: Prisma.SortOrder
   aiEnrichedAt?: Prisma.SortOrder
   advancedToAction?: Prisma.SortOrder
+  cyclopsCheckRunId?: Prisma.SortOrder
   budgetExceeded?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -715,6 +739,7 @@ export type FindingAvgOrderByAggregateInput = {
   workflowRunId?: Prisma.SortOrder
   checkRunId?: Prisma.SortOrder
   confidence?: Prisma.SortOrder
+  cyclopsCheckRunId?: Prisma.SortOrder
 }
 
 export type FindingMaxOrderByAggregateInput = {
@@ -734,6 +759,7 @@ export type FindingMaxOrderByAggregateInput = {
   severity?: Prisma.SortOrder
   aiEnrichedAt?: Prisma.SortOrder
   advancedToAction?: Prisma.SortOrder
+  cyclopsCheckRunId?: Prisma.SortOrder
   budgetExceeded?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -757,6 +783,7 @@ export type FindingMinOrderByAggregateInput = {
   severity?: Prisma.SortOrder
   aiEnrichedAt?: Prisma.SortOrder
   advancedToAction?: Prisma.SortOrder
+  cyclopsCheckRunId?: Prisma.SortOrder
   budgetExceeded?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -769,6 +796,7 @@ export type FindingSumOrderByAggregateInput = {
   workflowRunId?: Prisma.SortOrder
   checkRunId?: Prisma.SortOrder
   confidence?: Prisma.SortOrder
+  cyclopsCheckRunId?: Prisma.SortOrder
 }
 
 export type FindingCreateNestedManyWithoutInstallationInput = {
@@ -839,6 +867,14 @@ export type FindingUpdateaffectedFilesInput = {
   push?: string | string[]
 }
 
+export type NullableBigIntFieldUpdateOperationsInput = {
+  set?: bigint | number | null
+  increment?: bigint | number
+  decrement?: bigint | number
+  multiply?: bigint | number
+  divide?: bigint | number
+}
+
 export type FindingCreateWithoutInstallationInput = {
   id?: string
   repositoryId: number
@@ -858,6 +894,7 @@ export type FindingCreateWithoutInstallationInput = {
   severity?: string | null
   aiEnrichedAt?: Date | string | null
   advancedToAction?: boolean
+  cyclopsCheckRunId?: bigint | number | null
   budgetExceeded?: boolean
   deletedAt?: Date | string | null
   createdAt?: Date | string
@@ -883,6 +920,7 @@ export type FindingUncheckedCreateWithoutInstallationInput = {
   severity?: string | null
   aiEnrichedAt?: Date | string | null
   advancedToAction?: boolean
+  cyclopsCheckRunId?: bigint | number | null
   budgetExceeded?: boolean
   deletedAt?: Date | string | null
   createdAt?: Date | string
@@ -938,6 +976,7 @@ export type FindingScalarWhereInput = {
   severity?: Prisma.StringNullableFilter<"Finding"> | string | null
   aiEnrichedAt?: Prisma.DateTimeNullableFilter<"Finding"> | Date | string | null
   advancedToAction?: Prisma.BoolFilter<"Finding"> | boolean
+  cyclopsCheckRunId?: Prisma.BigIntNullableFilter<"Finding"> | bigint | number | null
   budgetExceeded?: Prisma.BoolFilter<"Finding"> | boolean
   deletedAt?: Prisma.DateTimeNullableFilter<"Finding"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Finding"> | Date | string
@@ -963,6 +1002,7 @@ export type FindingCreateManyInstallationInput = {
   severity?: string | null
   aiEnrichedAt?: Date | string | null
   advancedToAction?: boolean
+  cyclopsCheckRunId?: bigint | number | null
   budgetExceeded?: boolean
   deletedAt?: Date | string | null
   createdAt?: Date | string
@@ -988,6 +1028,7 @@ export type FindingUpdateWithoutInstallationInput = {
   severity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   aiEnrichedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   advancedToAction?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cyclopsCheckRunId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   budgetExceeded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1013,6 +1054,7 @@ export type FindingUncheckedUpdateWithoutInstallationInput = {
   severity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   aiEnrichedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   advancedToAction?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cyclopsCheckRunId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   budgetExceeded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1038,6 +1080,7 @@ export type FindingUncheckedUpdateManyWithoutInstallationInput = {
   severity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   aiEnrichedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   advancedToAction?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cyclopsCheckRunId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   budgetExceeded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1066,6 +1109,7 @@ export type FindingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   severity?: boolean
   aiEnrichedAt?: boolean
   advancedToAction?: boolean
+  cyclopsCheckRunId?: boolean
   budgetExceeded?: boolean
   deletedAt?: boolean
   createdAt?: boolean
@@ -1093,6 +1137,7 @@ export type FindingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   severity?: boolean
   aiEnrichedAt?: boolean
   advancedToAction?: boolean
+  cyclopsCheckRunId?: boolean
   budgetExceeded?: boolean
   deletedAt?: boolean
   createdAt?: boolean
@@ -1120,6 +1165,7 @@ export type FindingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   severity?: boolean
   aiEnrichedAt?: boolean
   advancedToAction?: boolean
+  cyclopsCheckRunId?: boolean
   budgetExceeded?: boolean
   deletedAt?: boolean
   createdAt?: boolean
@@ -1147,13 +1193,14 @@ export type FindingSelectScalar = {
   severity?: boolean
   aiEnrichedAt?: boolean
   advancedToAction?: boolean
+  cyclopsCheckRunId?: boolean
   budgetExceeded?: boolean
   deletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type FindingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "installationId" | "repositoryId" | "workflowRunId" | "checkRunId" | "detectorType" | "sha" | "ref" | "violations" | "rawExcerpt" | "confidence" | "evidence" | "caveat" | "rootCause" | "suggestedFix" | "affectedFiles" | "severity" | "aiEnrichedAt" | "advancedToAction" | "budgetExceeded" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["finding"]>
+export type FindingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "installationId" | "repositoryId" | "workflowRunId" | "checkRunId" | "detectorType" | "sha" | "ref" | "violations" | "rawExcerpt" | "confidence" | "evidence" | "caveat" | "rootCause" | "suggestedFix" | "affectedFiles" | "severity" | "aiEnrichedAt" | "advancedToAction" | "cyclopsCheckRunId" | "budgetExceeded" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["finding"]>
 export type FindingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   installation?: boolean | Prisma.InstallationDefaultArgs<ExtArgs>
 }
@@ -1189,6 +1236,7 @@ export type $FindingPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     severity: string | null
     aiEnrichedAt: Date | null
     advancedToAction: boolean
+    cyclopsCheckRunId: bigint | null
     budgetExceeded: boolean
     deletedAt: Date | null
     createdAt: Date
@@ -1636,6 +1684,7 @@ export interface FindingFieldRefs {
   readonly severity: Prisma.FieldRef<"Finding", 'String'>
   readonly aiEnrichedAt: Prisma.FieldRef<"Finding", 'DateTime'>
   readonly advancedToAction: Prisma.FieldRef<"Finding", 'Boolean'>
+  readonly cyclopsCheckRunId: Prisma.FieldRef<"Finding", 'BigInt'>
   readonly budgetExceeded: Prisma.FieldRef<"Finding", 'Boolean'>
   readonly deletedAt: Prisma.FieldRef<"Finding", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Finding", 'DateTime'>

@@ -61,3 +61,23 @@ export type TokenUsage = Prisma.TokenUsageModel
  * 
  */
 export type WebhookDelivery = Prisma.WebhookDeliveryModel
+/**
+ * Model PrComment
+ * 
+ */
+export type PrComment = Prisma.PrCommentModel
+/**
+ * Model ActionDedup
+ * 
+ */
+export type ActionDedup = Prisma.ActionDedupModel
+/**
+ * Model AutofixPr
+ * 
+ */
+export type AutofixPr = Prisma.AutofixPrModel
+/**
+ * Model TrackedIssue
+ * 
+ */
+export type TrackedIssue = Prisma.TrackedIssueModel
