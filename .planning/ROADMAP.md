@@ -66,10 +66,16 @@ Plans:
 
 ---
 
-**Plans**: TBD
+**Plans**: 7 plans
 
 Plans:
-- [ ] 02-01: TBD
+- [ ] 02-01-PLAN.md — Data foundation: Finding + TokenUsage models, encryptedApiKey, RLS migration, core types, AiAnalysisJob schema
+- [ ] 02-02-PLAN.md — packages/detectors: all 6 pure detectors + log-utils + runAllDetectors
+- [ ] 02-03-PLAN.md — packages/ai: FindingSchema, Anthropic client, analyzeFailure, checkTokenBudget
+- [ ] 02-04-PLAN.md — AES-256-GCM encryption in core + POST /setup/:installationId (BYOK)
+- [ ] 02-05-PLAN.md — DetectorDispatchWorker + GitHub Actions API lib + webhook-ingestion dispatch
+- [ ] 02-06-PLAN.md — AiAnalysisWorker: budget gate, decrypt, enrich, high-confidence routing
+- [ ] 02-07-PLAN.md — Env var docs + end-to-end verification checkpoint
 
 ---
 
