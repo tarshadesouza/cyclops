@@ -1,18 +1,30 @@
 import pino from "pino";
 import { getRedis } from "@ciintel/queue";
 import { createWebhookIngestionWorker } from "./workers/webhook-ingestion.js";
+import { createDetectorDispatchWorker } from "./workers/detector-dispatch.js";
 import { createDlqWorker } from "./workers/dlq.js";
 
-const logger = pino({ level: process.env["LOG_LEVEL"] ?? "info" });
+const logger = pino({
+  level: process.env["LOG_LEVEL"] ?? "info",
+  redact: {
+    paths: ["apiKey", "encryptedApiKey", "*.apiKey", "*.encryptedApiKey"],
+    censor: "[REDACTED]",
+  },
+});
 
 logger.info("Starting CyclOps worker process");
 
 const webhookIngestionWorker = createWebhookIngestionWorker();
+const detectorDispatchWorker = createDetectorDispatchWorker();
 const dlqWorker = createDlqWorker();
 
 logger.info(
   {
-    workers: ["webhook-ingestion (concurrency=20)", "dlq (concurrency=5)"],
+    workers: [
+      "webhook-ingestion (concurrency=20)",
+      "detector-dispatch (concurrency=10)",
+      "dlq (concurrency=5)",
+    ],
   },
   "Workers started"
 );
@@ -42,6 +54,7 @@ async function shutdown(): Promise<void> {
   logger.info("Shutting down workers...");
   await Promise.all([
     webhookIngestionWorker.close(),
+    detectorDispatchWorker.close(),
     dlqWorker.close(),
   ]);
   logger.info("Workers stopped gracefully");

@@ -5,6 +5,7 @@ import {
   detectorDispatchQueue,
   dlqQueue,
   WebhookIngestionJobSchema,
+  DetectorDispatchJobSchema,
   type WebhookIngestionJob,
 } from "@ciintel/queue";
 import { getDb } from "@ciintel/db";
@@ -134,8 +135,70 @@ export function createWebhookIngestionWorker(): Worker<WebhookIngestionJob> {
         return { processed: true, eventName, action };
       }
 
-      // CI events — dispatcher implemented in Phase 2
-      jobLog.info({ eventName, action, installationId }, "CI event received — dispatcher implemented in Phase 2");
+      // CI events — dispatch to detector-dispatch queue on failure
+      if (
+        (eventName === "workflow_run" || eventName === "check_run") &&
+        action === "completed"
+      ) {
+        // Load the stored payload from DB
+        const delivery = await getDb().webhookDelivery.findUnique({
+          where: { deliveryId },
+        });
+
+        if (!delivery) {
+          jobLog.warn({ deliveryId }, "Webhook delivery not found in DB — skipping CI dispatch");
+          return { processed: true, eventName, action };
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const payload = delivery.payload as any;
+
+        let dispatchData: unknown;
+
+        if (eventName === "workflow_run" && payload.workflow_run?.conclusion === "failure") {
+          // PREFERRED: workflow_run completed with failure
+          dispatchData = {
+            installationId,
+            repositoryId: payload.repository.id,
+            checkRunId: payload.workflow_run.id,  // use run id as correlation id
+            workflowRunId: payload.workflow_run.id,
+            ref: payload.workflow_run.head_branch,
+            sha: payload.workflow_run.head_sha,
+          };
+        } else if (eventName === "check_run" && payload.check_run?.conclusion === "failure") {
+          // FALLBACK: check_run completed with failure
+          dispatchData = {
+            installationId,
+            repositoryId: payload.repository.id,
+            checkRunId: payload.check_run.id,
+            workflowRunId: payload.check_run.check_suite?.id ?? payload.check_run.id,
+            ref: payload.check_run.check_suite?.head_branch ?? "",
+            sha: payload.check_run.head_sha,
+          };
+        }
+
+        if (dispatchData) {
+          const validation = DetectorDispatchJobSchema.safeParse(dispatchData);
+          if (!validation.success) {
+            jobLog.warn(
+              { errors: validation.error.errors, eventName },
+              "Invalid detector-dispatch payload — skipping CI dispatch"
+            );
+          } else {
+            await detectorDispatchQueue.add("detect", validation.data);
+            jobLog.info(
+              { installationId, eventName, workflowRunId: validation.data.workflowRunId },
+              "CI failure dispatched to detector-dispatch queue"
+            );
+          }
+        } else {
+          jobLog.info({ eventName, action, conclusion: payload.workflow_run?.conclusion ?? payload.check_run?.conclusion }, "CI event not a failure — no dispatch needed");
+        }
+
+        return { processed: true, eventName, action };
+      }
+
+      jobLog.info({ eventName, action, installationId }, "Unhandled event — skipping");
 
       return { processed: true, eventName };
     },
