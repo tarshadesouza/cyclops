@@ -33,6 +33,7 @@ export function createAiAnalysisWorker(): Worker<AiAnalysisJob> {
         repositoryId,
         checkRunId,
         findingId,
+        detectorType,
         sha,
       } = parsed.data;
 
@@ -128,12 +129,16 @@ export function createAiAnalysisWorker(): Worker<AiAnalysisJob> {
           where: { id: findingId },
           data: { advancedToAction: true },
         });
+        // Map detector type to action type; lint gets autofix, everything else
+        // gets a check-run update to surface findings to the developer.
+        const actionType =
+          detectorType === "lint" ? "create-autofix-pr-lint" : "update-check-run";
         await actionExecutionQueue.add("execute", {
           installationId,
           repositoryId,
           checkRunId,
-          actionType: "phase3-placeholder",
-          actionParams: { findingId },
+          findingId,
+          actionType,
           sha,
         });
       }

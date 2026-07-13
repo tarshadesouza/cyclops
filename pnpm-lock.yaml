@@ -66,6 +66,9 @@ importers:
       '@ciintel/ai':
         specifier: workspace:*
         version: link:../../packages/ai
+      '@ciintel/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@ciintel/core':
         specifier: workspace:*
         version: link:../../packages/core
