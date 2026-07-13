@@ -63,12 +63,18 @@ importers:
 
   apps/worker:
     dependencies:
+      '@ciintel/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@ciintel/core':
         specifier: workspace:*
         version: link:../../packages/core
       '@ciintel/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@ciintel/detectors':
+        specifier: workspace:*
+        version: link:../../packages/detectors
       '@ciintel/github':
         specifier: workspace:*
         version: link:../../packages/github

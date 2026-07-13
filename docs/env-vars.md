@@ -11,12 +11,19 @@
 | `REDIS_URL` | Yes | Redis connection string | Railway Redis service → Connect tab |
 | `LOG_LEVEL` | No | Pino log level (default: `info`) | One of: trace, debug, info, warn, error |
 
+## Phase 2 additions — Shared (both apps/api and apps/worker)
+
+| Variable | Required | Description | How to Generate |
+|----------|----------|-------------|-----------------|
+| `CYCLOPS_ENCRYPTION_KEY` | Yes | 64 hex chars (32 bytes) — AES-256-GCM key used to encrypt BYOK Anthropic API keys at rest. **Must be identical across apps/api and apps/worker.** | `openssl rand -hex 32` |
+
 ## apps/api only
 
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `PORT` | No | HTTP server port (default: `3000`) | Set automatically by Railway |
 | `HOST` | No | Bind address (default: `0.0.0.0`) | Use `0.0.0.0` in Railway |
+| `CYCLOPS_SETUP_SECRET` | Yes | Shared secret for the `x-setup-token` header on `POST /setup/:installationId`. Prevents unauthorized BYOK key registration. | `openssl rand -hex 32` |
 
 ## Private Key Formatting for Railway
 
@@ -66,6 +73,14 @@ The `connection_limit=1` parameter is **required** when using PgBouncer with Pri
 **Why transaction mode is required:** The RLS `set_config('app.current_installation_id', ..., TRUE)` call uses the TRUE flag (transaction-local), which is compatible with PgBouncer transaction mode. Session-mode PgBouncer would allow the setting to leak across connections.
 
 Railway's Connect tab shows two connection strings — use the one labeled "Prisma" or the one on port 6543.
+
+## apps/worker only (Phase 2)
+
+| Variable | Required | Description | Default |
+|----------|----------|-------------|---------|
+| `CYCLOPS_MONTHLY_TOKEN_BUDGET` | No | Per-installation monthly token cap. AI analysis is skipped once this budget is exceeded. Default 1 000 000 tokens ≈ $2–10/mo at `claude-sonnet-5` pricing. | `1000000` |
+
+> **Anthropic API keys are BYOK** — supplied per installation via `POST /setup/:installationId`, never a global environment variable. Model in use: `claude-sonnet-5`.
 
 ## GitHub App Permissions Required (APP-04)
 
