@@ -147,23 +147,23 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| APP-01 | Phase 1 | Pending |
-| APP-02 | Phase 1 | Pending |
-| APP-03 | Phase 1 | Pending |
-| APP-04 | Phase 1 | Pending |
-| APP-05 | Phase 1 | Pending |
-| APP-06 | Phase 1 | Pending |
-| WHK-01 | Phase 1 | Pending |
-| WHK-02 | Phase 1 | Pending |
-| WHK-03 | Phase 1 | Pending |
-| WHK-04 | Phase 1 | Pending |
-| WHK-05 | Phase 1 | Pending |
-| WHK-06 | Phase 1 | Pending |
-| TEN-01 | Phase 1 | Pending |
-| TEN-02 | Phase 1 | Pending |
-| TEN-03 | Phase 1 | Pending |
-| TEN-04 | Phase 1 | Pending |
-| TEN-05 | Phase 1 | Pending |
+| APP-01 | Phase 1 | Complete |
+| APP-02 | Phase 1 | Complete |
+| APP-03 | Phase 1 | Complete |
+| APP-04 | Phase 1 | Complete |
+| APP-05 | Phase 1 | Complete |
+| APP-06 | Phase 1 | Complete |
+| WHK-01 | Phase 1 | Complete |
+| WHK-02 | Phase 1 | Complete |
+| WHK-03 | Phase 1 | Complete |
+| WHK-04 | Phase 1 | Complete |
+| WHK-05 | Phase 1 | Complete |
+| WHK-06 | Phase 1 | Complete |
+| TEN-01 | Phase 1 | Complete |
+| TEN-02 | Phase 1 | Complete |
+| TEN-03 | Phase 1 | Complete |
+| TEN-04 | Phase 1 | Complete |
+| TEN-05 | Phase 1 | Complete |
 | DET-01 | Phase 2 | Pending |
 | DET-02 | Phase 2 | Pending |
 | DET-03 | Phase 2 | Pending |
