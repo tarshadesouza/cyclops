@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 1 of 5 (GitHub App Foundation)
-Plan: 3 of 6 in current phase
+Plan: 4 of 6 in current phase
 Status: In progress
-Last activity: 2026-07-13 — Completed 01-03-PLAN.md (queue and github packages)
+Last activity: 2026-07-13 — Completed 01-04-PLAN.md (Fastify webhook receiver)
 
-Progress: [███░░░░░░░] 12% (3/26 estimated plans)
+Progress: [████░░░░░░] 15% (4/26 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 5m 10s
-- Total execution time: ~15 minutes
+- Total plans completed: 4
+- Average duration: 5m 2s
+- Total execution time: ~20 minutes
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. GitHub App Foundation | 3/6 | ~15m | 5m |
+| 1. GitHub App Foundation | 4/6 | ~20m | 5m |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m)
-- Trend: 01-03 longer due to ioredis deduplication and tsconfig fixes
+- Last 5 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s)
+- Trend: 01-04 fast — ioredis and tsconfig learnings from 01-03 applied immediately
 
 *Updated after each plan completion*
 
@@ -60,6 +60,10 @@ Recent decisions affecting current work:
 - [01-03]: Private key \n normalization in getApp() — Railway stores PEM keys with literal backslash-n; normalized before App instantiation
 - [01-03]: target changed from es2025 to esnext in tsconfig.base.json — TypeScript 5.9.3 does not accept es2025 as a --target value
 - [01-03]: pnpm.overrides for ioredis unification — BullMQ pinned 5.10.1, queue package used 5.11.1; type mismatch resolved via root override
+- [01-04]: rawBodyPlugin must be registered first — Fastify processes plugins in registration order; raw-body must intercept before content-type parser
+- [01-04]: ioredis set() EX before NX — v5 overloads require secondsToken "EX" before nx "NX"; reversed order fails type-check
+- [01-04]: tsconfig references required for workspace packages — apps/api must declare references to @ciintel/* for tsc --noEmit to resolve imports
+- [01-04]: Redis dedup key TEN-03 namespace — installation:{installationId}:delivery:{deliveryId} EX 259200 covers GitHub 72h redelivery window
 
 ### Pending Todos
 
@@ -73,6 +77,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-07-13T09:25Z
-Stopped at: Completed 01-03-PLAN.md — @ciintel/queue (4 queues + DLQ + FlowProducer) and @ciintel/github (App singleton + dual client factories)
+Last session: 2026-07-13T09:31Z
+Stopped at: Completed 01-04-PLAN.md — Fastify webhook receiver (POST /webhooks HMAC+dedup, GET /health, rawBodyPlugin, Redis decorator)
 Resume file: None
