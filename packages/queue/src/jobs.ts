@@ -28,12 +28,26 @@ export const AiAnalysisJobSchema = z.object({
 });
 export type AiAnalysisJob = z.infer<typeof AiAnalysisJobSchema>;
 
+export const ACTION_TYPES = [
+  'upsert-pr-comment',
+  'update-check-run',
+  'create-autofix-pr-lint',
+  'create-autofix-pr-snapshot',
+  'rerun-workflow',
+  'cancel-workflow',
+  'send-slack-alert',
+  'create-github-issue',
+] as const;
+
+export type ActionType = typeof ACTION_TYPES[number];
+
 export const ActionExecutionJobSchema = z.object({
   installationId: z.number().int().positive(),
-  repositoryId: z.number().int().positive(),
-  checkRunId: z.number().int().positive(),
-  actionType: z.string(),
-  actionParams: z.record(z.unknown()),
-  sha: z.string().length(40),
+  repositoryId:   z.number().int().positive(),
+  checkRunId:     z.number().int().positive(),
+  findingId:      z.string().uuid(),
+  actionType:     z.enum(ACTION_TYPES),
+  sha:            z.string().length(40),
+  ref:            z.string().optional(),
 });
 export type ActionExecutionJob = z.infer<typeof ActionExecutionJobSchema>;
