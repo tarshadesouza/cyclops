@@ -1,0 +1,262 @@
+import type { ActionContext } from "../workers/action-execution.js";
+
+// ---------------------------------------------------------------------------
+// getPrNumber — resolve the open PR number for a given commit SHA
+// Returns undefined when no open PR is associated (ACT-02)
+// ---------------------------------------------------------------------------
+export async function getPrNumber(
+  octokit: any,
+  owner: string,
+  repo: string,
+  sha: string
+): Promise<number | undefined> {
+  try {
+    const resp = await (octokit as any).request(
+      "GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls",
+      { owner, repo, commit_sha: sha, per_page: 5 }
+    );
+    return (resp.data as Array<{ number: number }>)[0]?.number;
+  } catch {
+    return undefined;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// renderPrCommentBody — markdown table of all findings for a workflow run
+// ---------------------------------------------------------------------------
+function truncate(str: string | null | undefined, max: number): string {
+  if (!str) return "—";
+  return str.length > max ? str.slice(0, max - 1) + "…" : str;
+}
+
+function renderPrCommentBody(findings: Array<{
+  detectorType: string;
+  confidence: number | null;
+  rootCause: string | null;
+  violations: unknown;
+}>): string {
+  const rows = findings
+    .map((f) => {
+      const confidence = f.confidence != null ? `${Math.round(f.confidence * 100)}%` : "—";
+      const rootCause = truncate(f.rootCause, 120);
+      const violations = Array.isArray(f.violations) ? f.violations.length : 0;
+      return `| ${f.detectorType} | ${confidence} | ${rootCause} | ${violations} |`;
+    })
+    .join("\n");
+
+  const header = [
+    "## Cyclops CI Analysis",
+    "",
+    "| Detector | Confidence | Root Cause | Files |",
+    "|----------|------------|------------|-------|",
+    rows,
+    "",
+    "---",
+    "*Analysis by [cyclops[bot]](https://github.com/apps/cyclops) · [View Check Run](#)*",
+  ].join("\n");
+
+  return header;
+}
+
+// ---------------------------------------------------------------------------
+// handleUpsertPrComment — ACT-01, ACT-02, ACT-13
+// ---------------------------------------------------------------------------
+export async function handleUpsertPrComment(
+  ctx: ActionContext
+): Promise<{ skipped?: boolean; ok?: boolean }> {
+  const { octokit, db, finding, owner, repo, log } = ctx;
+  const { installationId, repositoryId, sha, workflowRunId } = finding;
+
+  // ACT-02: skip if no PR is associated with this commit
+  const prNumber = await getPrNumber(octokit, owner, repo, sha);
+  if (!prNumber) {
+    log.info({ sha }, "No PR associated with commit — skipping PR comment");
+    return { skipped: true };
+  }
+
+  // Load all findings for this workflow run (consolidated body — ACT-01)
+  const allFindings = await db.finding.findMany({
+    where: { installationId, workflowRunId, deletedAt: null },
+  });
+
+  const body = renderPrCommentBody(allFindings);
+
+  // ACT-13: check DB before creating — never list GitHub comments
+  const existing = await db.prComment.findUnique({
+    where: {
+      installationId_repositoryId_prNumber: {
+        installationId,
+        repositoryId,
+        prNumber,
+      },
+    },
+  });
+
+  if (existing) {
+    // ACT-01: PATCH existing comment
+    await (octokit as any).request(
+      "PATCH /repos/{owner}/{repo}/issues/comments/{comment_id}",
+      { owner, repo, comment_id: existing.githubCommentId, body }
+    );
+    log.info(
+      { prNumber, commentId: existing.githubCommentId },
+      "PR comment updated"
+    );
+  } else {
+    // ACT-01: POST new comment and persist PrComment row
+    const resp = await (octokit as any).request(
+      "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+      { owner, repo, issue_number: prNumber, body }
+    );
+    await db.prComment.create({
+      data: {
+        installationId,
+        repositoryId,
+        prNumber,
+        githubCommentId: BigInt(resp.data.id),
+      },
+    });
+    log.info({ prNumber, commentId: resp.data.id }, "PR comment created");
+  }
+
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// renderCheckRunSummary — markdown summary for a single finding
+// ---------------------------------------------------------------------------
+function renderCheckRunSummary(finding: {
+  detectorType: string;
+  confidence: number | null;
+  rootCause: string | null;
+  evidence: string[];
+}): string {
+  const confidence =
+    finding.confidence != null
+      ? `${Math.round(finding.confidence * 100)}%`
+      : "unknown";
+  const evidenceList =
+    finding.evidence.length > 0
+      ? finding.evidence.map((e) => `- ${e}`).join("\n")
+      : "- No evidence collected";
+
+  return [
+    `**Detector:** ${finding.detectorType}`,
+    `**Confidence:** ${confidence}`,
+    `**Root Cause:** ${finding.rootCause ?? "Not determined"}`,
+    "",
+    "**Evidence:**",
+    evidenceList,
+  ].join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// handleUpdateCheckRun — ACT-03, ACT-04, ACT-13
+// ---------------------------------------------------------------------------
+const ANNOTATION_BATCH_SIZE = 50;
+const CHECK_RUN_NAME = "Cyclops CI Analysis";
+
+export async function handleUpdateCheckRun(
+  ctx: ActionContext
+): Promise<{ ok: boolean }> {
+  const { octokit, db, finding, owner, repo, log, config } = ctx;
+  const { sha } = finding;
+
+  // ACT-13: reuse existing check run id if already persisted
+  let checkRunId = finding.cyclopsCheckRunId
+    ? Number(finding.cyclopsCheckRunId)
+    : null;
+
+  if (!checkRunId) {
+    // ACT-03: create check run with status in_progress
+    const createResp = await (octokit as any).request(
+      "POST /repos/{owner}/{repo}/check-runs",
+      {
+        owner,
+        repo,
+        name: CHECK_RUN_NAME,
+        head_sha: sha,
+        status: "in_progress",
+        started_at: new Date().toISOString(),
+      }
+    );
+    checkRunId = createResp.data.id as number;
+
+    // ACT-03: persist cyclopsCheckRunId to DB
+    await db.finding.update({
+      where: { id: finding.id },
+      data: { cyclopsCheckRunId: BigInt(checkRunId) },
+    });
+    log.info({ checkRunId }, "Check run created");
+  }
+
+  // Build annotations from violations
+  const violations =
+    (finding.violations as Array<{
+      path?: string;
+      line?: number;
+      message?: string;
+    }>) ?? [];
+
+  const annotations = violations
+    .filter((v) => v.path && v.message)
+    .map((v) => ({
+      path: v.path!,
+      start_line: v.line ?? 1,
+      end_line: v.line ?? 1,
+      annotation_level: "failure" as const,
+      message: v.message!,
+    }));
+
+  const summary = renderCheckRunSummary(finding);
+  const conclusion =
+    finding.confidence != null &&
+    finding.confidence >= config.confidenceThreshold
+      ? "failure"
+      : "neutral";
+
+  if (annotations.length === 0) {
+    // Complete with no annotations
+    await (octokit as any).request(
+      "PATCH /repos/{owner}/{repo}/check-runs/{check_run_id}",
+      {
+        owner,
+        repo,
+        check_run_id: checkRunId,
+        status: "completed",
+        conclusion,
+        completed_at: new Date().toISOString(),
+        output: { title: "Cyclops Analysis", summary, annotations: [] },
+      }
+    );
+  } else {
+    // ACT-04: batch annotations 50 per PATCH call
+    for (let i = 0; i < annotations.length; i += ANNOTATION_BATCH_SIZE) {
+      const batch = annotations.slice(i, i + ANNOTATION_BATCH_SIZE);
+      const isLast = i + ANNOTATION_BATCH_SIZE >= annotations.length;
+      await (octokit as any).request(
+        "PATCH /repos/{owner}/{repo}/check-runs/{check_run_id}",
+        {
+          owner,
+          repo,
+          check_run_id: checkRunId,
+          output: { title: "Cyclops Analysis", summary, annotations: batch },
+          ...(isLast
+            ? {
+                status: "completed",
+                conclusion,
+                completed_at: new Date().toISOString(),
+              }
+            : {}),
+        }
+      );
+    }
+  }
+
+  log.info(
+    { checkRunId, annotationCount: annotations.length, conclusion },
+    "Check run completed"
+  );
+
+  return { ok: true };
+}

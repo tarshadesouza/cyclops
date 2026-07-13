@@ -12,6 +12,9 @@ import { fetchConfig, type CyclopsConfig } from "@ciintel/config";
 import { checkInstallationActive } from "../lib/installation.js";
 import pino from "pino";
 
+// Derive tenant DB client type
+type TenantDb = ReturnType<typeof getTenantClient>;
+
 const logger = pino({ level: process.env["LOG_LEVEL"] ?? "info" });
 
 // Derive Octokit type from the factory — avoids adding @octokit/core as a direct dep
@@ -25,6 +28,8 @@ export interface ActionContext {
   ref: string | undefined;
   actionType: ActionType;
   octokit: Octokit;
+  db: TenantDb;
+  log: pino.Logger;
   finding: Finding;
   config: CyclopsConfig;
   owner: string;
@@ -158,6 +163,8 @@ export function createActionExecutionWorker(): Worker<ActionExecutionJob> {
         ref,
         actionType,
         octokit,
+        db,
+        log: jobLog as pino.Logger,
         finding,
         config,
         owner,
