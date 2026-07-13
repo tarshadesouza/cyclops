@@ -76,7 +76,14 @@ export function isActionKillSwitched(
 }
 
 // ---------------------------------------------------------------------------
-// Handler map — all 8 action types registered; stubs until 03-04..03-07
+// ACT-11: Action deduplication is enforced in each handler:
+// - upsert-pr-comment: PrComment table (installationId+repositoryId+prNumber unique)
+// - update-check-run: Finding.cyclopsCheckRunId (reuses existing run)
+// - create-autofix-pr-*: AutofixPr table (installationId+repositoryId+detectorType+sha unique)
+// - rerun/cancel/slack: ActionDedup table (24h TTL window)
+// - create-github-issue: TrackedIssue table only (repeat failures add a comment, not a skip)
+// ---------------------------------------------------------------------------
+// Handler map — all 8 action types registered
 // ---------------------------------------------------------------------------
 const HANDLERS: Record<ActionType, (ctx: ActionContext) => Promise<HandlerResult>> = {
   "upsert-pr-comment":        handleUpsertPrComment,
@@ -185,6 +192,17 @@ export function createActionExecutionWorker(): Worker<ActionExecutionJob> {
         { findingId, actionType, result },
         "Action execution complete"
       );
+
+      // Probabilistic cleanup of expired ActionDedup rows (1% of jobs)
+      // Prevents unbounded table growth without requiring a separate cron
+      if (Math.random() < 0.01) {
+        const deleted = await db.actionDedup.deleteMany({
+          where: { expiresAt: { lt: new Date() } },
+        });
+        if (deleted.count > 0) {
+          jobLog.info({ deleted: deleted.count }, 'Cleaned up expired ActionDedup rows');
+        }
+      }
 
       return result;
     },
