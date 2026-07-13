@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 3 of 5 (Action Engine & Output Channels) — In progress
-Plan: 3 of 7 in phase 3 — COMPLETE
-Status: Phase 3 in progress — 03-03 complete, action-execution worker with HANDLERS map, kill switches, multi-action dispatch
-Last activity: 2026-07-13 — Completed 03-03-PLAN.md (action-execution worker: 8 stub handlers, isActionKillSwitched, ai-analysis multi-action dispatch, worker registered in index.ts)
+Plan: 4 of 7 in phase 3 — COMPLETE
+Status: Phase 3 in progress — 03-04 complete, PR comment upsert and Check Run with batched annotations implemented
+Last activity: 2026-07-13 — Completed 03-04-PLAN.md (github-outputs.ts: getPrNumber, handleUpsertPrComment, handleUpdateCheckRun; both wired into HANDLERS map)
 
-Progress: [████████████░] 61% (16/26 estimated plans)
+Progress: [█████████████░] 65% (17/26 estimated plans)
 
 ## Performance Metrics
 
@@ -29,10 +29,10 @@ Progress: [████████████░] 61% (16/26 estimated plans)
 |-------|-------|-------|----------|
 | 1. GitHub App Foundation | 6/6 | ~27m | 4m 27s |
 | 2. Detector Pipeline & AI Analysis | 7/7 | ~28m | 4m 0s |
-| 3. Action Engine & Output Channels | 3/7 | ~11m | 3m 40s |
+| 3. Action Engine & Output Channels | 4/7 | ~14m | 3m 30s |
 
 **Recent Trend:**
-- Last 16 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s), 02-06 (2m 42s), 02-07 (6m 44s), 03-01 (3m 29s), 03-02 (4m 22s), 03-03 (3m)
+- Last 17 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s), 02-06 (2m 42s), 02-07 (6m 44s), 03-01 (3m 29s), 03-02 (4m 22s), 03-03 (3m), 03-04 (3m 11s)
 - Phase 1 complete in ~27 minutes total; Phase 2 complete in ~28 minutes total
 
 *Updated after each plan completion*
@@ -109,6 +109,10 @@ Recent decisions affecting current work:
 - [03-03]: Kill switch order: per-detector gate first, then per-action-type gate (prComments/checkRuns/autofix)
 - [03-03]: getActionTypes base set always includes update-check-run + upsert-pr-comment — every finding surfaces to developer regardless of detector
 - [03-03]: ACTION_TYPES and ActionType were missing from @ciintel/queue public index.ts exports — added (Rule 3 fix)
+- [03-04]: HandlerResult union uses literal true — return sites use `as const` to satisfy TS discriminated union
+- [03-04]: ActionContext extended with db + log — handlers need both; added as Rule 2 auto-fix
+- [03-04]: conclusion: neutral (not success) when confidence < confidenceThreshold — avoids false green signal
+- [03-04]: PR comment body consolidates all findings for workflowRunId — one comment per PR updated on each finding
 
 ### Pending Todos
 
@@ -119,7 +123,7 @@ Recent decisions affecting current work:
 - Pre-deploy: generate CYCLOPS_ENCRYPTION_KEY with `openssl rand -hex 32` (64-hex-char AES-256 key) — set in BOTH services
 - Pre-deploy: generate CYCLOPS_SETUP_SECRET with `openssl rand -hex 32` (setup endpoint shared secret) — apps/api only
 - Pre-deploy: register BYOK key via `POST /setup/:installationId` with x-setup-token after first deploy
-- Phase 3: implement action-execution worker handlers (03-04 through 03-07)
+- Phase 3: implement action-execution worker handlers (03-05 through 03-07)
 
 ### Blockers/Concerns
 
@@ -130,6 +134,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-07-13T15:22:26Z
-Stopped at: Completed 03-03-PLAN.md — action-execution worker: 8-entry HANDLERS map (all stubs), isActionKillSwitched, ActionContext type. ai-analysis.ts: getActionTypes() multi-action dispatch, zero phase3-placeholder. index.ts: actionExecutionWorker registered. ACTION_TYPES/ActionType added to @ciintel/queue public exports.
+Last session: 2026-07-13T15:30:30Z
+Stopped at: Completed 03-04-PLAN.md — github-outputs.ts: getPrNumber, handleUpsertPrComment, handleUpdateCheckRun. ActionContext extended with db/log. Both handlers wired into HANDLERS map. Worker builds cleanly.
 Resume file: None
