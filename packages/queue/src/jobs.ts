@@ -20,10 +20,11 @@ export type DetectorDispatchJob = z.infer<typeof DetectorDispatchJobSchema>;
 
 export const AiAnalysisJobSchema = z.object({
   installationId: z.number().int().positive(),
-  repositoryId: z.number().int().positive(),
-  checkRunId: z.number().int().positive(),
-  failureType: z.string(),
-  sha: z.string().length(40),
+  repositoryId:   z.number().int().positive(),
+  checkRunId:     z.number().int().positive(),
+  findingId:      z.string().uuid(),
+  detectorType:   z.string(),
+  sha:            z.string().length(40),
 });
 export type AiAnalysisJob = z.infer<typeof AiAnalysisJobSchema>;
 
