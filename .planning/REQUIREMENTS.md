@@ -86,6 +86,14 @@
 - [ ] **SDK-04**: `publint` and `@arethetypeswrong/cli` validation runs in CI before every npm publish
 - [ ] **SDK-05**: Strict semver policy: breaking changes in `IDetector` interface require major version bump
 
+### Marketplace & Slack
+
+- [ ] **MKT-01**: `marketplace_purchase`, `marketplace_purchase_cancelled`, and `marketplace_plan_changed` webhook events handled; each transitions the installation billing state correctly
+- [ ] **MKT-02**: Billing state machine with states: `trial` (14-day) → `active` → `suspended` (payment failure) → `cancelled`; suspended installations stop all bot actions
+- [ ] **MKT-03**: Public `/status` endpoint returning real-time health for API and worker processes; accessible without authentication
+- [ ] **SLK-01**: Slack OAuth per-installation workspace connection; OAuth tokens stored encrypted; connection revocable via `.cyclops.yml` or installation deletion
+- [ ] **SLK-02**: Repeat failure Slack alerts (3+ failures on the same `(repo, branch, detector)` tuple within 7 days) route to the configurable team channel, not just the committer
+
 ---
 
 ## v2 Requirements
@@ -139,21 +147,73 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| APP-01–06 | Phase 1 | Pending |
-| WHK-01–06 | Phase 1 | Pending |
-| TEN-01–05 | Phase 1 | Pending |
-| DET-01–09 | Phase 2 | Pending |
-| AI-01–06 | Phase 2 | Pending |
-| ACT-01–14 | Phase 3 | Pending |
-| CFG-01–04 | Phase 3 | Pending |
-| SDK-01–05 | Phase 4 | Pending |
+| APP-01 | Phase 1 | Pending |
+| APP-02 | Phase 1 | Pending |
+| APP-03 | Phase 1 | Pending |
+| APP-04 | Phase 1 | Pending |
+| APP-05 | Phase 1 | Pending |
+| APP-06 | Phase 1 | Pending |
+| WHK-01 | Phase 1 | Pending |
+| WHK-02 | Phase 1 | Pending |
+| WHK-03 | Phase 1 | Pending |
+| WHK-04 | Phase 1 | Pending |
+| WHK-05 | Phase 1 | Pending |
+| WHK-06 | Phase 1 | Pending |
+| TEN-01 | Phase 1 | Pending |
+| TEN-02 | Phase 1 | Pending |
+| TEN-03 | Phase 1 | Pending |
+| TEN-04 | Phase 1 | Pending |
+| TEN-05 | Phase 1 | Pending |
+| DET-01 | Phase 2 | Pending |
+| DET-02 | Phase 2 | Pending |
+| DET-03 | Phase 2 | Pending |
+| DET-04 | Phase 2 | Pending |
+| DET-05 | Phase 2 | Pending |
+| DET-06 | Phase 2 | Pending |
+| DET-07 | Phase 2 | Pending |
+| DET-08 | Phase 2 | Pending |
+| DET-09 | Phase 2 | Pending |
+| AI-01 | Phase 2 | Pending |
+| AI-02 | Phase 2 | Pending |
+| AI-03 | Phase 2 | Pending |
+| AI-04 | Phase 2 | Pending |
+| AI-05 | Phase 2 | Pending |
+| AI-06 | Phase 2 | Pending |
+| ACT-01 | Phase 3 | Pending |
+| ACT-02 | Phase 3 | Pending |
+| ACT-03 | Phase 3 | Pending |
+| ACT-04 | Phase 3 | Pending |
+| ACT-05 | Phase 3 | Pending |
+| ACT-06 | Phase 3 | Pending |
+| ACT-07 | Phase 3 | Pending |
+| ACT-08 | Phase 3 | Pending |
+| ACT-09 | Phase 3 | Pending |
+| ACT-10 | Phase 3 | Pending |
+| ACT-11 | Phase 3 | Pending |
+| ACT-12 | Phase 3 | Pending |
+| ACT-13 | Phase 3 | Pending |
+| ACT-14 | Phase 3 | Pending |
+| CFG-01 | Phase 3 | Pending |
+| CFG-02 | Phase 3 | Pending |
+| CFG-03 | Phase 3 | Pending |
+| CFG-04 | Phase 3 | Pending |
+| SDK-01 | Phase 4 | Pending |
+| SDK-02 | Phase 4 | Pending |
+| SDK-03 | Phase 4 | Pending |
+| SDK-04 | Phase 4 | Pending |
+| SDK-05 | Phase 4 | Pending |
+| MKT-01 | Phase 5 | Pending |
+| MKT-02 | Phase 5 | Pending |
+| MKT-03 | Phase 5 | Pending |
+| SLK-01 | Phase 5 | Pending |
+| SLK-02 | Phase 5 | Pending |
 
 **Coverage:**
-- v1 requirements: 54 total
-- Mapped to phases: 54
+- v1 requirements: 60 total
+- Mapped to phases: 60
 - Unmapped: 0 ✓
 
 ---
 
 *Requirements defined: 2026-07-13*
-*Last updated: 2026-07-13 after initial definition*
+*Last updated: 2026-07-13 — Phase 5 requirements added (MKT-01–03, SLK-01–02); traceability expanded to individual requirement rows*
