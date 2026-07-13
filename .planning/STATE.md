@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 1 of 5 (GitHub App Foundation)
-Plan: 1 of 6 in current phase
+Plan: 2 of 6 in current phase
 Status: In progress
-Last activity: 2026-07-13 — Completed 01-01-PLAN.md (monorepo scaffold)
+Last activity: 2026-07-13 — Completed 01-02-PLAN.md (database layer)
 
-Progress: [█░░░░░░░░░] 4% (1/26 estimated plans)
+Progress: [██░░░░░░░░] 8% (2/26 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 3m 8s
-- Total execution time: ~3 minutes
+- Total plans completed: 2
+- Average duration: 3m 0s
+- Total execution time: ~6 minutes
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. GitHub App Foundation | 1/6 | ~3m | 3m |
+| 1. GitHub App Foundation | 2/6 | ~6m | 3m |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3m 8s)
-- Trend: Baseline established
+- Last 5 plans: 01-01 (3m 8s), 01-02 (2m 52s)
+- Trend: Consistent ~3m/plan
 
 *Updated after each plan completion*
 
@@ -50,19 +50,24 @@ Recent decisions affecting current work:
 - [01-01]: Turborepo 2 tasks key schema (not pipeline) — v2 deprecated pipeline; tasks key required
 - [01-01]: module: nodenext + moduleResolution: nodenext — full ESM correctness in Node.js 22
 - [01-01]: composite: true across all packages — enables tsc --build project references for correct build ordering
+- [01-02]: set_config with TRUE (transaction-local) — PgBouncer-safe RLS context injection; plain SET leaks across connections
+- [01-02]: Prisma 7 generator name is prisma-client (not prisma-client-js) — breaking change in Prisma 7
+- [01-02]: Generated output at ../src/generated — inside src so TypeScript includes it without extra config
+- [01-02]: createRequire(import.meta.url) for generated client — ESM package requires this pattern; bare require() unavailable in module:nodenext files
+- [01-02]: prisma.config.ts excluded from tsconfig include — Prisma runs it via its own TS executor; rootDir:src would cause TS2560
 
 ### Pending Todos
 
-None yet.
+- After DATABASE_URL is set: run db:migrate:dev, db:generate, then uncomment type exports in packages/db/src/index.ts
 
 ### Blockers/Concerns
 
-- [Research]: PgBouncer deployment model undecided — Railway managed Postgres does not include PgBouncer; decide sidecar vs Supabase vs external before Phase 1 data model work
+- [Research]: PgBouncer deployment model undecided — Railway managed Postgres does not include PgBouncer; transaction-local set_config is ready; decide sidecar vs Supabase vs external before deploy
 - [Research]: LLM provider default and BYOK model undecided — platform default key with token caps vs. every installation provides own key
 - [Research]: Confidence threshold starting values (0.7 for PR comment, 0.9 for fix PR) need empirical calibration in Phase 2
 
 ## Session Continuity
 
-Last session: 2026-07-13T09:12Z
-Stopped at: Completed 01-01-PLAN.md — pnpm+Turborepo 2 monorepo scaffold, all 6 packages, CI workflow
+Last session: 2026-07-13T09:19Z
+Stopped at: Completed 01-02-PLAN.md — Prisma 7 schema, RLS migrations, getDb() + getTenantClient()
 Resume file: None
