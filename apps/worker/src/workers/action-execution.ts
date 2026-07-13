@@ -12,6 +12,12 @@ import { fetchConfig, type CyclopsConfig } from "@ciintel/config";
 import { checkInstallationActive } from "../lib/installation.js";
 import { handleUpsertPrComment, handleUpdateCheckRun } from "../lib/github-outputs.js";
 import { handleAutofixLint, handleAutofixSnapshot } from "../lib/github-autofix.js";
+import {
+  handleRerunWorkflow,
+  handleCancelWorkflow,
+  handleSlackAlert,
+  handleCreateGithubIssue,
+} from "../lib/github-secondary.js";
 import pino from "pino";
 
 // Derive tenant DB client type
@@ -77,10 +83,10 @@ const HANDLERS: Record<ActionType, (ctx: ActionContext) => Promise<HandlerResult
   "update-check-run":         handleUpdateCheckRun,
   "create-autofix-pr-lint":     handleAutofixLint,
   "create-autofix-pr-snapshot": handleAutofixSnapshot,
-  "rerun-workflow":            async (_ctx) => ({ skipped: true, reason: "not-yet-implemented" }),
-  "cancel-workflow":           async (_ctx) => ({ skipped: true, reason: "not-yet-implemented" }),
-  "send-slack-alert":          async (_ctx) => ({ skipped: true, reason: "not-yet-implemented" }),
-  "create-github-issue":       async (_ctx) => ({ skipped: true, reason: "not-yet-implemented" }),
+  "rerun-workflow":            handleRerunWorkflow,
+  "cancel-workflow":           handleCancelWorkflow,
+  "send-slack-alert":          handleSlackAlert,
+  "create-github-issue":       handleCreateGithubIssue,
 };
 
 // ---------------------------------------------------------------------------
