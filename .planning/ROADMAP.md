@@ -37,10 +37,15 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Deleting or suspending a GitHub App installation stops all queued jobs for that tenant without processing them
   5. Four BullMQ queues (`webhook-ingestion`, `detector-dispatch`, `ai-analysis`, `action-execution`) exist in Redis with correct concurrency and retention settings
 
-**Plans**: TBD
+**Plans**: 6 plans
 
 Plans:
-- [ ] 01-01: TBD
+- [ ] 01-01-monorepo-scaffold.md — pnpm + Turborepo 2 workspace, root tsconfig, all 6 package scaffolds, CI workflow
+- [ ] 01-02-database-layer.md — Prisma 7 schema, RLS migrations, adapter-pg client factory, tenant extension
+- [ ] 01-03-queue-and-github-packages.md — BullMQ 4-queue definitions, typed job payloads, Octokit App singleton and factory functions
+- [ ] 01-04-webhook-receiver.md — Fastify 5 webhook receiver, HMAC verification, Redis dedup, BullMQ enqueue
+- [ ] 01-05-webhook-worker.md — WebhookIngestionWorker with installation lifecycle handling, TEN-04 gate, DLQ worker
+- [ ] 01-06-railway-deployment.md — railway.toml for api and worker, env var docs, end-to-end test script
 
 ---
 
@@ -146,7 +151,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. GitHub App Foundation | 0/TBD | Not started | - |
+| 1. GitHub App Foundation | 0/6 | Planned | - |
 | 2. Detector Pipeline & AI Analysis | 0/TBD | Not started | - |
 | 3. Action Engine & Output Channels | 0/TBD | Not started | - |
 | 4. Public SDK | 0/TBD | Not started | - |
