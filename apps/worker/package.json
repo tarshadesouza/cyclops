@@ -12,6 +12,7 @@
   "dependencies": {
     "@ciintel/core": "workspace:*",
     "@ciintel/db": "workspace:*",
+    "@ciintel/detectors": "workspace:*",
     "@ciintel/github": "workspace:*",
     "@ciintel/queue": "workspace:*",
     "bullmq": "^5.79.3",

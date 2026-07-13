@@ -8,6 +8,7 @@
   "references": [
     { "path": "../../packages/core" },
     { "path": "../../packages/db" },
+    { "path": "../../packages/detectors" },
     { "path": "../../packages/github" },
     { "path": "../../packages/queue" }
   ]
