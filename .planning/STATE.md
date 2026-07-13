@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 3 of 5 (Action Engine & Output Channels) — In progress
-Plan: 1 of 7 in phase 3 — COMPLETE
-Status: Phase 3 started — 03-01 complete, DB schema and queue types ready for action handlers
-Last activity: 2026-07-13 — Completed 03-01-PLAN.md (Phase 3 Prisma models, migration SQL, exported types, ActionExecutionJobSchema tightened)
+Plan: 2 of 7 in phase 3 — COMPLETE
+Status: Phase 3 in progress — 03-02 complete, @ciintel/config package with Zod schema + TTL-cached loader ready
+Last activity: 2026-07-13 — Completed 03-02-PLAN.md (@ciintel/config: CyclopsConfigSchema, fetchConfig with 60s TTL, zero-config defaults, worker wired)
 
-Progress: [████████████░] 54% (14/26 estimated plans)
+Progress: [████████████░] 58% (15/26 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
-- Average duration: 4m 0s
-- Total execution time: ~56 minutes
+- Total plans completed: 15
+- Average duration: 4m 1s
+- Total execution time: ~60 minutes
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [████████████░] 54% (14/26 estimated plans)
 |-------|-------|-------|----------|
 | 1. GitHub App Foundation | 6/6 | ~27m | 4m 27s |
 | 2. Detector Pipeline & AI Analysis | 7/7 | ~28m | 4m 0s |
-| 3. Action Engine & Output Channels | 1/7 | ~4m | 3m 29s |
+| 3. Action Engine & Output Channels | 2/7 | ~8m | 3m 55s |
 
 **Recent Trend:**
-- Last 14 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s), 02-06 (2m 42s), 02-07 (6m 44s), 03-01 (3m 29s)
+- Last 15 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s), 02-06 (2m 42s), 02-07 (6m 44s), 03-01 (3m 29s), 03-02 (4m 22s)
 - Phase 1 complete in ~27 minutes total; Phase 2 complete in ~28 minutes total
 
 *Updated after each plan completion*
@@ -94,7 +94,11 @@ Recent decisions affecting current work:
 - [02-06]: ai-analysis worker concurrency=5 — AI calls are latency-bound; lower concurrency avoids rate-limit storms
 - [02-06]: Rethrow on analyzeFailure error — BullMQ handles retry/DLQ; prevents partial Finding state
 - [02-06]: TokenUsage.inputTokens mapped from result.usage.promptTokens — matches ai@7 field rename already handled in analyze.ts
-- [02-06]: actionType='phase3-placeholder' in ActionExecutionJob — schema accepts z.string(); Phase 3 will define real action types
+- [02-06]: actionType='phase3-placeholder' in ActionExecutionJob — schema accepts z.string(); Phase 3 will define real action types [RESOLVED 03-02]
+- [03-02]: fetchConfig uses duck-typed octokit interface — no direct @ciintel/github dep in loader.ts; caller passes octokit instance
+- [03-02]: yaml.load() used (not yaml.safeLoad()) — js-yaml v4 removed safeLoad; yaml.load() is the v4 API
+- [03-02]: On any fetch/parse error, fetchConfig falls back to CyclopsConfigSchema.parse({}) — zero-config CFG-04 requirement
+- [03-02]: detectorType→actionType mapping in ai-analysis.ts: lint→create-autofix-pr-lint, else→update-check-run
 - [02-07]: Anthropic API keys are BYOK only — no global ANTHROPIC_API_KEY env var; model is claude-sonnet-5
 - [02-07]: CYCLOPS_ENCRYPTION_KEY required in both services and must match — AES-256-GCM shared secret for BYOK key encryption at rest
 - [02-07]: e2e checkpoint approved without live infra — build verified clean; runtime verification deferred to first deploy
@@ -111,7 +115,7 @@ Recent decisions affecting current work:
 - Pre-deploy: generate CYCLOPS_ENCRYPTION_KEY with `openssl rand -hex 32` (64-hex-char AES-256 key) — set in BOTH services
 - Pre-deploy: generate CYCLOPS_SETUP_SECRET with `openssl rand -hex 32` (setup endpoint shared secret) — apps/api only
 - Pre-deploy: register BYOK key via `POST /setup/:installationId` with x-setup-token after first deploy
-- Phase 3: implement action-execution worker handlers (03-02 through 03-07)
+- Phase 3: implement action-execution worker handlers (03-03 through 03-07)
 
 ### Blockers/Concerns
 
@@ -122,6 +126,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-07-13T15:15Z
-Stopped at: Completed 03-01-PLAN.md — Phase 3 started. DB schema (4 new models + cyclopsCheckRunId), migration 0004_phase3_action_tables, typed ActionExecutionJobSchema with findingId + ACTION_TYPES enum. Both packages build clean.
+Last session: 2026-07-13T15:16:55Z
+Stopped at: Completed 03-02-PLAN.md — @ciintel/config package: CyclopsConfigSchema (Zod, I/O-free), fetchConfig (60s TTL cache, yaml.load, zero-config defaults). Worker wired with dep + tsconfig ref. ai-analysis.ts bug fixed (detectorType→actionType mapping).
 Resume file: None
