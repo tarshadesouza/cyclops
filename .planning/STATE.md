@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 2 of 5 (Detector Pipeline & AI Analysis) — In progress
-Plan: 4 of ~8 in phase 2 — COMPLETE
-Status: In progress — BYOK encryption + setup endpoint complete
-Last activity: 2026-07-13 — Completed 02-04-PLAN.md (encryptApiKey/decryptApiKey AES-256-GCM in @ciintel/core; POST /setup/:installationId with timingSafeEqual auth, pino redact; both packages build clean)
+Plan: 5 of ~8 in phase 2 — COMPLETE
+Status: In progress — Detector dispatch + GitHub Actions fetch layer complete
+Last activity: 2026-07-13 — Completed 02-05-PLAN.md (github-actions.ts: 5 fetch helpers; DetectorDispatchWorker: runAllDetectors + tenant Finding + identifiers-only ai-analysis dispatch; webhook-ingestion: CI stub → real workflow_run/check_run dispatch; pino redact)
 
-Progress: [████████░░] 38% (10/26 estimated plans)
+Progress: [█████████░] 42% (11/26 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
-- Average duration: 4m 10s
-- Total execution time: ~39 minutes
+- Total plans completed: 11
+- Average duration: 4m 5s
+- Total execution time: ~45 minutes
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. GitHub App Foundation | 6/6 | ~27m | 4m 27s |
-| 2. Detector Pipeline & AI Analysis | 4/~8 | ~14m | 3m 30s |
+| 2. Detector Pipeline & AI Analysis | 5/~8 | ~18m | 3m 36s |
 
 **Recent Trend:**
-- Last 10 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s)
+- Last 11 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s)
 - Phase 1 complete in ~27 minutes total
 
 *Updated after each plan completion*
@@ -86,6 +86,10 @@ Recent decisions affecting current work:
 - [02-03]: Loose db interface in checkTokenBudget — accepts {$queryRaw} duck type so @ciintel/ai never imports @ciintel/db
 - [02-04]: Encryption lives in @ciintel/core (not apps/worker) — both apps/api (encrypt on store) and apps/worker (decrypt on use) share one implementation
 - [02-04]: timingSafeEqual length-mismatch guard — tokenHeader.length === setupSecret.length check before compare prevents RangeError on mismatched buffers
+- [02-05]: Octokit type derived from Awaited<ReturnType<typeof getInstallationClient>> — @octokit/core not in worker deps; deriving from clients.ts avoids adding it
+- [02-05]: workflowRunId ?? checkRunId fallback — DetectorDispatchJobSchema.workflowRunId is optional; Finding model requires non-null Int
+- [02-05]: DB-stored payload lookup in webhook-ingestion — payload loaded from webhookDelivery table so Redis job payload stays identifier-only
+- [02-05]: workflow_run preferred over check_run — lower cardinality (one per run vs one per job); check_run kept as fallback
 
 ### Pending Todos
 
@@ -104,6 +108,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-07-13T13:52Z
-Stopped at: Completed 02-04-PLAN.md — encryptApiKey/decryptApiKey AES-256-GCM in @ciintel/core (node:crypto only); POST /setup/:installationId in apps/api (timingSafeEqual auth, sk-ant- validation, P2025 handling); pino redact for x-setup-token/apiKey/encryptedApiKey.
+Last session: 2026-07-13T14:00Z
+Stopped at: Completed 02-05-PLAN.md — github-actions.ts (5 Octokit helpers, module-level cache, log stripping); DetectorDispatchWorker (runAllDetectors loop, Unknown fallback, tenant Finding create, identifiers-only ai-analysis dispatch); webhook-ingestion CI stub replaced with DB-payload workflow_run/check_run dispatch; pino redact in index.ts.
 Resume file: None
