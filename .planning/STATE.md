@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 2 of 5 (Detector Pipeline & AI Analysis) — In progress
-Plan: 2 of ~8 in phase 2 — COMPLETE
-Status: In progress — Detectors package complete
-Last activity: 2026-07-13 — Completed 02-02-PLAN.md (@ciintel/detectors: 6 pure-function detectors, log-utils, runAllDetectors orchestrator)
+Plan: 3 of ~8 in phase 2 — COMPLETE
+Status: In progress — AI enrichment layer complete
+Last activity: 2026-07-13 — Completed 02-03-PLAN.md (@ciintel/ai: FindingSchema, analyzeFailure/Claude Sonnet 5, checkTokenBudget monthly cap, BYOK factory)
 
-Progress: [████████░░] 31% (8/26 estimated plans)
+Progress: [████████░░] 35% (9/26 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: 4m 19s
-- Total execution time: ~34 minutes
+- Total plans completed: 9
+- Average duration: 4m 10s
+- Total execution time: ~39 minutes
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. GitHub App Foundation | 6/6 | ~27m | 4m 27s |
-| 2. Detector Pipeline & AI Analysis | 2/~8 | ~7m | 3m 41s |
+| 2. Detector Pipeline & AI Analysis | 3/~8 | ~12m | 4m 0s |
 
 **Recent Trend:**
-- Last 8 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s)
+- Last 9 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m)
 - Phase 1 complete in ~27 minutes total
 
 *Updated after each plan completion*
@@ -80,6 +80,10 @@ Recent decisions affecting current work:
 - [02-02]: TEST_FAILURE_PATTERNS exported from flaky-test.ts and imported by test-failure.ts — single source of truth prevents pattern drift between mutually exclusive detectors
 - [02-02]: detectFlakyTest empty history returns notMatched — first-ever run cannot be classified as flaky by definition
 - [02-02]: detectLint returns notMatched when no linter inferred from workflow YAML — prevents false positives
+- [02-03]: ai@7.0.18 + @ai-sdk/anthropic@4.0.10 used — plan's ^7.0.19 non-existent, ^2.0.0 now major version 4; both resolved to latest compatible
+- [02-03]: zod@^3.25.76 required — ai@7 peer dep raises minimum from plan's ^3.24.0
+- [02-03]: ai@7 renamed usage fields: inputTokens/outputTokens → mapped to promptTokens/completionTokens in AnalyzeResult for stable caller API
+- [02-03]: Loose db interface in checkTokenBudget — accepts {$queryRaw} duck type so @ciintel/ai never imports @ciintel/db
 
 ### Pending Todos
 
@@ -96,6 +100,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-07-13T12:09Z
-Stopped at: Completed 02-02-PLAN.md — @ciintel/detectors package: 6 pure-function detectors (Lint, BuildFailure, MissingEnvVar, ExpiredSecret, FlakyTest, TestFailure), log-utils (stripLogFormatting, extractExcerpt, inferLinterFromWorkflow), runAllDetectors orchestrator with FlakyTest/TestFailure mutual exclusivity.
+Last session: 2026-07-13T11:25Z
+Stopped at: Completed 02-03-PLAN.md — @ciintel/ai package: FindingSchema (evidence.min(1)), analyzeFailure (generateObject + Claude Sonnet 5, maps ai@7 token field names), checkTokenBudget (date_trunc month window, CYCLOPS_MONTHLY_TOKEN_BUDGET cap), createAnthropicForInstallation (per-request BYOK factory).
 Resume file: None
