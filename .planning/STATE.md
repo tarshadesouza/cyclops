@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 1 of 5 (GitHub App Foundation)
-Plan: 4 of 6 in current phase
+Plan: 5 of 6 in current phase
 Status: In progress
-Last activity: 2026-07-13 — Completed 01-04-PLAN.md (Fastify webhook receiver)
+Last activity: 2026-07-13 — Completed 01-05-PLAN.md (BullMQ webhook worker with TEN-04 gate)
 
-Progress: [████░░░░░░] 15% (4/26 estimated plans)
+Progress: [█████░░░░░] 19% (5/26 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 5m 2s
-- Total execution time: ~20 minutes
+- Total plans completed: 5
+- Average duration: 4m 32s
+- Total execution time: ~23 minutes
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. GitHub App Foundation | 4/6 | ~20m | 5m |
+| 1. GitHub App Foundation | 5/6 | ~23m | 4m 36s |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s)
-- Trend: 01-04 fast — ioredis and tsconfig learnings from 01-03 applied immediately
+- Last 5 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s)
+- Trend: 01-05 fast — tsconfig references pattern now established across apps
 
 *Updated after each plan completion*
 
@@ -64,6 +64,10 @@ Recent decisions affecting current work:
 - [01-04]: ioredis set() EX before NX — v5 overloads require secondsToken "EX" before nx "NX"; reversed order fails type-check
 - [01-04]: tsconfig references required for workspace packages — apps/api must declare references to @ciintel/* for tsc --noEmit to resolve imports
 - [01-04]: Redis dedup key TEN-03 namespace — installation:{installationId}:delivery:{deliveryId} EX 259200 covers GitHub 72h redelivery window
+- [01-05]: checkInstallationActive gate runs at every job start — TEN-04: no side effects for inactive installations; called before any DB write
+- [01-05]: upsert for installation.created — idempotent; handles reinstalls and webhook redelivery without duplicate key errors
+- [01-05]: drain on installation.deleted — iterate waiting/delayed jobs across queues; job-level gate alone still processes them
+- [01-05]: DLQ routing via onFailed — BullMQ has no native DLQ; second onFailed handler routes exhausted-retry jobs (attemptsMade >= maxAttempts) to dlqQueue
 
 ### Pending Todos
 
@@ -77,6 +81,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-07-13T09:31Z
-Stopped at: Completed 01-04-PLAN.md — Fastify webhook receiver (POST /webhooks HMAC+dedup, GET /health, rawBodyPlugin, Redis decorator)
+Last session: 2026-07-13T09:32Z
+Stopped at: Completed 01-05-PLAN.md — BullMQ webhook worker (WebhookIngestionWorker concurrency=20, TEN-04 gate, DLQ worker, SIGTERM shutdown)
 Resume file: None
