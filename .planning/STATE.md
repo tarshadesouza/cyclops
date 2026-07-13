@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 3 of 5 (Action Engine & Output Channels) — In progress
-Plan: 5 of 7 in phase 3 — COMPLETE
-Status: Phase 3 in progress — 03-05 complete, autofix PR handlers for Lint and Snapshot implemented with Git Data API chain
-Last activity: 2026-07-13 — Completed 03-05-PLAN.md (github-autofix.ts: handleAutofixLint, handleAutofixSnapshot; dedup, rate limit, content sanity; both wired into HANDLERS map)
+Plan: 6 of 7 in phase 3 — COMPLETE
+Status: Phase 3 in progress — 03-06 complete, all 8 HANDLERS entries live, zero stubs remaining
+Last activity: 2026-07-13 — Completed 03-06-PLAN.md (github-secondary.ts: handleRerunWorkflow, handleCancelWorkflow, handleSlackAlert, handleCreateGithubIssue; full HANDLERS map, zero stubs)
 
-Progress: [██████████████░] 69% (18/26 estimated plans)
+Progress: [███████████████░] 73% (19/26 estimated plans)
 
 ## Performance Metrics
 
@@ -29,10 +29,10 @@ Progress: [██████████████░] 69% (18/26 estimated p
 |-------|-------|-------|----------|
 | 1. GitHub App Foundation | 6/6 | ~27m | 4m 27s |
 | 2. Detector Pipeline & AI Analysis | 7/7 | ~28m | 4m 0s |
-| 3. Action Engine & Output Channels | 5/7 | ~16m | 3m 12s |
+| 3. Action Engine & Output Channels | 6/7 | ~19m | 3m 10s |
 
 **Recent Trend:**
-- Last 17 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s), 02-06 (2m 42s), 02-07 (6m 44s), 03-01 (3m 29s), 03-02 (4m 22s), 03-03 (3m), 03-04 (3m 11s)
+- Last 18 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s), 02-06 (2m 42s), 02-07 (6m 44s), 03-01 (3m 29s), 03-02 (4m 22s), 03-03 (3m), 03-04 (3m 11s), 03-06 (3m)
 - Phase 1 complete in ~27 minutes total; Phase 2 complete in ~28 minutes total
 
 *Updated after each plan completion*
@@ -116,6 +116,10 @@ Recent decisions affecting current work:
 - [03-05]: ref normalization strips refs/heads/ prefix — Finding stores full ref but GitHub PR base parameter requires branch name only
 - [03-05]: isValidFileContent Snapshot check requires exports[ or // Jest — deliberately strict to prevent AI prose committed as source code
 - [03-05]: Guard order: confidence → sanity → dedup → rate limit → execution — cheapest/most certain checks first
+- [03-06]: checkActionDedup uses findFirst with expiresAt filter, not findUnique — TTL check must be part of the query
+- [03-06]: TrackedIssue used for GitHub Issue dedup (not ActionDedup) — githubIssueNumber stored to route repeat failures to comments
+- [03-06]: Slack webhookUrl: config.notifications.slack.webhookUrl takes precedence, falls back to SLACK_WEBHOOK_URL env var
+- [03-06]: HandlerResult discriminated union requires skipped: true as const and ok: true as const at all return sites
 
 ### Pending Todos
 
@@ -126,7 +130,7 @@ Recent decisions affecting current work:
 - Pre-deploy: generate CYCLOPS_ENCRYPTION_KEY with `openssl rand -hex 32` (64-hex-char AES-256 key) — set in BOTH services
 - Pre-deploy: generate CYCLOPS_SETUP_SECRET with `openssl rand -hex 32` (setup endpoint shared secret) — apps/api only
 - Pre-deploy: register BYOK key via `POST /setup/:installationId` with x-setup-token after first deploy
-- Phase 3: implement action-execution worker handlers (03-06 through 03-07)
+- Phase 3: implement action-execution worker handlers (03-07 — only 1 plan remaining)
 
 ### Blockers/Concerns
 
@@ -137,6 +141,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-07-13T15:35:24Z
-Stopped at: Completed 03-05-PLAN.md — github-autofix.ts: handleAutofixLint, handleAutofixSnapshot with 5-step Git Data API chain, dedup, rate limit, content sanity. Both wired into HANDLERS map. Worker builds cleanly.
+Last session: 2026-07-13T15:40:09Z
+Stopped at: Completed 03-06-PLAN.md — github-secondary.ts: handleRerunWorkflow, handleCancelWorkflow, handleSlackAlert, handleCreateGithubIssue. Full HANDLERS map, zero stubs. Worker builds cleanly.
 Resume file: None
