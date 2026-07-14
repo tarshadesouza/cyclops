@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 4 of 5 (Public SDK) — In progress
-Plan: 3 of ~6 in phase 4 — COMPLETE
-Status: Phase 4 plan 03 complete — tsup dual-format build for @cyclops/core, ESM+CJS+.d.ts/.d.cts, exports map, publishConfig
-Last activity: 2026-07-14 — Completed 04-03 (tsup dual-format: @cyclops/core ships ESM+CJS, exports map, npm-ready)
+Plan: 4 of ~6 in phase 4 — COMPLETE
+Status: Phase 4 plan 04 complete — publint + attw validation gate for @cyclops/core, validate-sdk CI job blocking on every push/PR
+Last activity: 2026-07-14 — Completed 04-04 (SDK validation: publint --strict + attw all-green, validate-sdk CI hard gate)
 
 Progress: [█████████████████░] 85% (23/27 estimated plans)
 
@@ -30,7 +30,7 @@ Progress: [█████████████████░] 85% (23/27 es
 | 1. GitHub App Foundation | 6/6 | ~27m | 4m 27s |
 | 2. Detector Pipeline & AI Analysis | 7/7 | ~28m | 4m 0s |
 | 3. Action Engine & Output Channels | 7/7 | ~24m | 3m 25s |
-| 4. Public SDK | 2/~6 | ~6m | 3m 12s |
+| 4. Public SDK | 4/~6 | ~25m | ~6m 15s |
 
 **Recent Trend:**
 - Last 19 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s), 02-06 (2m 42s), 02-07 (6m 44s), 03-01 (3m 29s), 03-02 (4m 22s), 03-03 (3m), 03-04 (3m 11s), 03-06 (3m), 03-07 (5m)
@@ -133,6 +133,10 @@ Recent decisions affecting current work:
 - [04-03]: composite:false + incremental:false in core tsconfig — tsup DTS fails with composite+incremental (TS5074, TS6307); tsup owns all JS/DTS emission
 - [04-03]: @cyclops/core removed from all downstream tsconfig project references — composite:false makes core ineligible as tsc project reference; consumers get types from dist/index.d.ts
 - [04-03]: publishConfig.access:public + repository placeholder — required for npm OIDC trusted publisher; actual org/repo filled in before first publish
+- [04-04]: attw@^0.18.5 required — 0.17.x and below crash on Node.js v25 (fflate Gunzip streaming incompatibility in untar.js; unzipped undefined)
+- [04-04]: engines.node >= 22 added to @cyclops/core — publint --strict elevates missing engines to error
+- [04-04]: repository.url git+ prefix required — publint --strict requires full git protocol prefix in repository.url
+- [04-04]: validate-sdk job has no continue-on-error — hard blocking gate; any publint/attw error fails CI
 
 ### Pending Todos
 
@@ -159,5 +163,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-07-14
-Stopped at: Completed 04-03-PLAN.md — tsup dual-format build for @cyclops/core, ESM+CJS+.d.ts/.d.cts verified, all 10 packages build clean
+Stopped at: Completed 04-04-PLAN.md — publint + attw SDK validation gate, validate-sdk CI job, zero errors on @cyclops/core
 Resume file: None
