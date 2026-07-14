@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 4 of 5 (Public SDK) — In progress
-Plan: 1 of ~6 in phase 4 — COMPLETE
-Status: Phase 4 plan 01 complete — @ciintel → @cyclops scope rename done; pnpm build clean
-Last activity: 2026-07-14 — Completed 04-01 (full monorepo scope rename @ciintel/* → @cyclops/*)
+Plan: 2 of ~6 in phase 4 — COMPLETE
+Status: Phase 4 plan 02 complete — crypto to @cyclops/internal, IDetector/DetectorContext added to @cyclops/core, build clean
+Last activity: 2026-07-14 — Completed 04-02 (SDK type surface: @cyclops/internal, IDetector, DetectorContext, zero I/O in core)
 
-Progress: [█████████████████░] 78% (21/27 estimated plans)
+Progress: [█████████████████░] 81% (22/27 estimated plans)
 
 ## Performance Metrics
 
@@ -30,7 +30,7 @@ Progress: [█████████████████░] 78% (21/27 es
 | 1. GitHub App Foundation | 6/6 | ~27m | 4m 27s |
 | 2. Detector Pipeline & AI Analysis | 7/7 | ~28m | 4m 0s |
 | 3. Action Engine & Output Channels | 7/7 | ~24m | 3m 25s |
-| 4. Public SDK | 1/~6 | ~3m | 3m 0s |
+| 4. Public SDK | 2/~6 | ~6m | 3m 12s |
 
 **Recent Trend:**
 - Last 19 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s), 02-06 (2m 42s), 02-07 (6m 44s), 03-01 (3m 29s), 03-02 (4m 22s), 03-03 (3m), 03-04 (3m 11s), 03-06 (3m), 03-07 (5m)
@@ -127,6 +127,9 @@ Recent decisions affecting current work:
 - [04-01]: tsconfig references are path-based — zero changes needed for scope rename
 - [04-01]: pnpm-workspace.yaml and turbo.json require no changes — globs and task names are name-agnostic
 - [04-01]: @cyclops/* is the stable npm scope for all workspace packages; root package is cyclops (no scope)
+- [04-02]: crypto moved to @cyclops/internal (private:true) — node:crypto + process.env disqualify it from publishable SDK; I/O-free boundary enforced in @cyclops/core
+- [04-02]: DetectorType/Violation/DetectorResult relocated to detector.ts alongside IDetector/DetectorContext — avoids circular imports
+- [04-02]: DetectorInput kept as type alias for DetectorContext — 6 detector implementation files compile unchanged via structural compatibility
 
 ### Pending Todos
 
@@ -153,5 +156,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-07-14
-Stopped at: Completed 04-01-PLAN.md — monorepo scope rename @ciintel/* → @cyclops/* complete; pnpm install + build clean
+Stopped at: Completed 04-02-PLAN.md — @cyclops/internal created, IDetector/DetectorContext in @cyclops/core, all 10 packages build clean
 Resume file: None
