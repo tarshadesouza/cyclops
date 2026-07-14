@@ -10,7 +10,7 @@ import {
 import { getTenantClient } from "@cyclops/db";
 import { decryptApiKey } from "@cyclops/internal";
 import { analyzeFailure, checkTokenBudget, type AnalyzeResult } from "@cyclops/ai";
-import type { DetectorType } from "@cyclops/core";
+import type { DetectorType } from "@tdesouza/cyclops";
 import { checkInstallationActive } from "../lib/installation.js";
 import pino from "pino";
 
