@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 5 of 5 (Slack Integration & Marketplace) — In progress
-Plan: 3/? complete (05-01, 05-02, 05-03 complete)
-Status: Marketplace webhook route + BillingWorker live; billing state machine wired end-to-end
-Last activity: 2026-07-14 — Completed 05-02 (POST /marketplace/webhooks, BillingWorker, future-dated cancellation guard)
+Plan: 4/? complete (05-01, 05-02, 05-03, 05-04 complete)
+Status: Slack OAuth workspace connection live; encrypted bot token stored per installation
+Last activity: 2026-07-14 — Completed 05-04 (GET /slack/install, GET /slack/oauth/callback, DELETE /slack/disconnect)
 
 Progress: [█████████████████████░] 97% (29/~30 estimated plans)
 
@@ -147,6 +147,10 @@ Recent decisions affecting current work:
 - [05-02]: MARKETPLACE_WEBHOOK_SECRET separate from GITHUB_WEBHOOK_SECRET — marketplace events lack installation.id; dedicated route and secret required
 - [05-02]: Future-dated cancellation guard in BillingWorker checks billingCancelAt > new Date() — partial update (billingCancelAt only) keeps billingStatus active until lazy expiry flip
 - [05-02]: accountType cast to "Organization"|"User" literal before jobData construction — TS strict mode requirement; safeParse validates at runtime
+- [05-04]: CSRF state encoded as {installationId}:{nonce} in Redis key — single split() in callback extracts installationId without extra lookup
+- [05-04]: CSRF state deleted immediately after validation (one-time use) — prevents replay if attacker intercepts callback URL
+- [05-04]: xoxb- prefix validated before AES-256-GCM encryption — rejects app tokens (xoxa-) and user tokens (xoxp-) at the gate
+- [05-04]: No Slack SDK added — native fetch() sufficient for single oauth.v2.access call
 
 ### Pending Todos
 
@@ -173,5 +177,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-07-14
-Stopped at: Completed 05-02-PLAN.md — POST /marketplace/webhooks route, BillingWorker with deriveTransition(), future-dated cancellation guard
+Stopped at: Completed 05-04-PLAN.md — GET /slack/install, GET /slack/oauth/callback, DELETE /slack/disconnect; encrypted bot token per installation
 Resume file: None
