@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 
 ## Current Position
 
-Phase: 3 of 5 (Action Engine & Output Channels) — Awaiting human verification
-Plan: 7 of 7 in phase 3 — CHECKPOINT (human-verify)
-Status: Phase 3 task execution complete — 03-07 Task 1 committed; awaiting human verification of 5 success criteria
-Last activity: 2026-07-14 — Completed 03-07 Task 1 (ActionDedup cleanup + ACT-11 audit); checkpoint reached for Phase 3 end-to-end verification
+Phase: 3 of 5 (Action Engine & Output Channels) — COMPLETE
+Plan: 7 of 7 in phase 3 — COMPLETE
+Status: Phase 3 execution complete — all 7 plans done; live e2e deferred to first deploy
+Last activity: 2026-07-14 — Completed 03-07 (ActionDedup cleanup, dedup audit, checkpoint approved)
 
 Progress: [████████████████░] 76% (20/26 estimated plans)
 
@@ -133,7 +133,11 @@ Recent decisions affecting current work:
 - Pre-deploy: generate CYCLOPS_ENCRYPTION_KEY with `openssl rand -hex 32` (64-hex-char AES-256 key) — set in BOTH services
 - Pre-deploy: generate CYCLOPS_SETUP_SECRET with `openssl rand -hex 32` (setup endpoint shared secret) — apps/api only
 - Pre-deploy: register BYOK key via `POST /setup/:installationId` with x-setup-token after first deploy
-- Phase 3: human verification of 5 success criteria (checkpoint in 03-07) — AWAITING
+- Pre-deploy verify Criterion 1: Single PR comment per PR, PATCH on subsequent failures — trigger failing workflow on PR, confirm one cyclops[bot] comment edited in-place
+- Pre-deploy verify Criterion 2: GitHub Check Run visible in PR Checks tab with pass/fail status and markdown summary
+- Pre-deploy verify Criterion 3: High-confidence Lint failure → autofix PR within 2 minutes; duplicate suppressed within 24h
+- Pre-deploy verify Criterion 4: autofix: false in .cyclops.yml suppresses autofix PR within 60 seconds (cache TTL)
+- Pre-deploy verify Criterion 5: Zero-config installation (no .cyclops.yml) produces PR comment + check run with sensible defaults
 
 ### Blockers/Concerns
 
@@ -144,6 +148,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-07-14T00:05:00Z
-Stopped at: 03-07 checkpoint:human-verify — Task 1 committed (3e8aa53), awaiting human verification of Phase 3 success criteria. Upon "verified", Phase 3 is complete and Phase 4 (API Endpoints) can begin.
+Last session: 2026-07-14
+Stopped at: Completed 03-07-PLAN.md — Phase 3 complete; checkpoint approved (Option A, live e2e deferred to first deploy); Phase 4 (API Endpoints) can begin.
 Resume file: None
