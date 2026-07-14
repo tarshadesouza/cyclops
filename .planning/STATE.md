@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 
 ## Current Position
 
-Phase: 3 of 5 (Action Engine & Output Channels) — In progress
-Plan: 6 of 7 in phase 3 — COMPLETE
-Status: Phase 3 in progress — 03-06 complete, all 8 HANDLERS entries live, zero stubs remaining
-Last activity: 2026-07-13 — Completed 03-06-PLAN.md (github-secondary.ts: handleRerunWorkflow, handleCancelWorkflow, handleSlackAlert, handleCreateGithubIssue; full HANDLERS map, zero stubs)
+Phase: 3 of 5 (Action Engine & Output Channels) — Awaiting human verification
+Plan: 7 of 7 in phase 3 — CHECKPOINT (human-verify)
+Status: Phase 3 task execution complete — 03-07 Task 1 committed; awaiting human verification of 5 success criteria
+Last activity: 2026-07-14 — Completed 03-07 Task 1 (ActionDedup cleanup + ACT-11 audit); checkpoint reached for Phase 3 end-to-end verification
 
-Progress: [███████████████░] 73% (19/26 estimated plans)
+Progress: [████████████████░] 76% (20/26 estimated plans)
 
 ## Performance Metrics
 
@@ -29,10 +29,10 @@ Progress: [███████████████░] 73% (19/26 estimate
 |-------|-------|-------|----------|
 | 1. GitHub App Foundation | 6/6 | ~27m | 4m 27s |
 | 2. Detector Pipeline & AI Analysis | 7/7 | ~28m | 4m 0s |
-| 3. Action Engine & Output Channels | 6/7 | ~19m | 3m 10s |
+| 3. Action Engine & Output Channels | 7/7 | ~24m | 3m 25s |
 
 **Recent Trend:**
-- Last 18 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s), 02-06 (2m 42s), 02-07 (6m 44s), 03-01 (3m 29s), 03-02 (4m 22s), 03-03 (3m), 03-04 (3m 11s), 03-06 (3m)
+- Last 19 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s), 02-06 (2m 42s), 02-07 (6m 44s), 03-01 (3m 29s), 03-02 (4m 22s), 03-03 (3m), 03-04 (3m 11s), 03-06 (3m), 03-07 (5m)
 - Phase 1 complete in ~27 minutes total; Phase 2 complete in ~28 minutes total
 
 *Updated after each plan completion*
@@ -120,6 +120,9 @@ Recent decisions affecting current work:
 - [03-06]: TrackedIssue used for GitHub Issue dedup (not ActionDedup) — githubIssueNumber stored to route repeat failures to comments
 - [03-06]: Slack webhookUrl: config.notifications.slack.webhookUrl takes precedence, falls back to SLACK_WEBHOOK_URL env var
 - [03-06]: HandlerResult discriminated union requires skipped: true as const and ok: true as const at all return sites
+- [03-07]: ActionDedup cleanup runs after handler success (not finally) — avoids DB write pressure on error/retry paths
+- [03-07]: 1% probability cleanup sufficient to bound table growth without measurable per-job latency
+- [03-07]: All 8 handler dedup strategies confirmed present — no gaps found in audit
 
 ### Pending Todos
 
@@ -130,7 +133,7 @@ Recent decisions affecting current work:
 - Pre-deploy: generate CYCLOPS_ENCRYPTION_KEY with `openssl rand -hex 32` (64-hex-char AES-256 key) — set in BOTH services
 - Pre-deploy: generate CYCLOPS_SETUP_SECRET with `openssl rand -hex 32` (setup endpoint shared secret) — apps/api only
 - Pre-deploy: register BYOK key via `POST /setup/:installationId` with x-setup-token after first deploy
-- Phase 3: implement action-execution worker handlers (03-07 — only 1 plan remaining)
+- Phase 3: human verification of 5 success criteria (checkpoint in 03-07) — AWAITING
 
 ### Blockers/Concerns
 
@@ -141,6 +144,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-07-13T15:40:09Z
-Stopped at: Completed 03-06-PLAN.md — github-secondary.ts: handleRerunWorkflow, handleCancelWorkflow, handleSlackAlert, handleCreateGithubIssue. Full HANDLERS map, zero stubs. Worker builds cleanly.
+Last session: 2026-07-14T00:05:00Z
+Stopped at: 03-07 checkpoint:human-verify — Task 1 committed (3e8aa53), awaiting human verification of Phase 3 success criteria. Upon "verified", Phase 3 is complete and Phase 4 (API Endpoints) can begin.
 Resume file: None
