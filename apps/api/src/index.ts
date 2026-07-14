@@ -4,6 +4,8 @@ import { redisDecorator } from "./plugins/redis.js";
 import { webhookRoutes } from "./routes/webhooks.js";
 import { healthRoutes } from "./routes/health.js";
 import { setupRoutes } from "./routes/setup.js";
+import { marketplaceRoutes } from "./routes/marketplace.js";
+import { statusRoutes } from "./routes/status.js";
 
 const app = Fastify({
   logger: {
@@ -28,6 +30,8 @@ await app.register(redisDecorator);
 await app.register(healthRoutes);
 await app.register(webhookRoutes);
 await app.register(setupRoutes);
+await app.register(marketplaceRoutes);
+await app.register(statusRoutes);
 
 const port = parseInt(process.env["PORT"] ?? "3000", 10);
 const host = process.env["HOST"] ?? "0.0.0.0";
