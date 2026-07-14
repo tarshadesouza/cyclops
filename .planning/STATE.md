@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-07-13)
 
 **Core value:** When a CI job fails, CyclOps tells you exactly why and either fixes it automatically or hands you a one-click remediation — eliminating the manual log-reading cycle that wastes engineering time across the organization.
-**Current focus:** Phase 3 — Action Execution
+**Current focus:** Phase 4 — Public SDK
 
 ## Current Position
 
 Phase: 4 of 5 (Public SDK) — In progress
-Plan: 2 of ~6 in phase 4 — COMPLETE
-Status: Phase 4 plan 02 complete — crypto to @cyclops/internal, IDetector/DetectorContext added to @cyclops/core, build clean
-Last activity: 2026-07-14 — Completed 04-02 (SDK type surface: @cyclops/internal, IDetector, DetectorContext, zero I/O in core)
+Plan: 3 of ~6 in phase 4 — COMPLETE
+Status: Phase 4 plan 03 complete — tsup dual-format build for @cyclops/core, ESM+CJS+.d.ts/.d.cts, exports map, publishConfig
+Last activity: 2026-07-14 — Completed 04-03 (tsup dual-format: @cyclops/core ships ESM+CJS, exports map, npm-ready)
 
-Progress: [█████████████████░] 81% (22/27 estimated plans)
+Progress: [█████████████████░] 85% (23/27 estimated plans)
 
 ## Performance Metrics
 
@@ -130,6 +130,9 @@ Recent decisions affecting current work:
 - [04-02]: crypto moved to @cyclops/internal (private:true) — node:crypto + process.env disqualify it from publishable SDK; I/O-free boundary enforced in @cyclops/core
 - [04-02]: DetectorType/Violation/DetectorResult relocated to detector.ts alongside IDetector/DetectorContext — avoids circular imports
 - [04-02]: DetectorInput kept as type alias for DetectorContext — 6 detector implementation files compile unchanged via structural compatibility
+- [04-03]: composite:false + incremental:false in core tsconfig — tsup DTS fails with composite+incremental (TS5074, TS6307); tsup owns all JS/DTS emission
+- [04-03]: @cyclops/core removed from all downstream tsconfig project references — composite:false makes core ineligible as tsc project reference; consumers get types from dist/index.d.ts
+- [04-03]: publishConfig.access:public + repository placeholder — required for npm OIDC trusted publisher; actual org/repo filled in before first publish
 
 ### Pending Todos
 
@@ -156,5 +159,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-07-14
-Stopped at: Completed 04-02-PLAN.md — @cyclops/internal created, IDetector/DetectorContext in @cyclops/core, all 10 packages build clean
+Stopped at: Completed 04-03-PLAN.md — tsup dual-format build for @cyclops/core, ESM+CJS+.d.ts/.d.cts verified, all 10 packages build clean
 Resume file: None
