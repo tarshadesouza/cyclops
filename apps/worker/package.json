@@ -1,5 +1,5 @@
 {
-  "name": "@ciintel/worker",
+  "name": "@cyclops/worker",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,13 +10,13 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "@ciintel/ai": "workspace:*",
-    "@ciintel/config": "workspace:*",
-    "@ciintel/core": "workspace:*",
-    "@ciintel/db": "workspace:*",
-    "@ciintel/detectors": "workspace:*",
-    "@ciintel/github": "workspace:*",
-    "@ciintel/queue": "workspace:*",
+    "@cyclops/ai": "workspace:*",
+    "@cyclops/config": "workspace:*",
+    "@cyclops/core": "workspace:*",
+    "@cyclops/db": "workspace:*",
+    "@cyclops/detectors": "workspace:*",
+    "@cyclops/github": "workspace:*",
+    "@cyclops/queue": "workspace:*",
     "bullmq": "^5.79.3",
     "ioredis": "^5.11.1",
     "pino": "^9.0.0",

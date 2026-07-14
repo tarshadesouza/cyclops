@@ -1,5 +1,5 @@
 {
-  "name": "@ciintel/ai",
+  "name": "@cyclops/ai",
   "version": "0.0.0",
   "type": "module",
   "exports": {
@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.10",
-    "@ciintel/core": "workspace:*",
+    "@cyclops/core": "workspace:*",
     "ai": "^7.0.18",
     "zod": "^3.25.76"
   },

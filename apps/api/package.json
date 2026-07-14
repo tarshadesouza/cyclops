@@ -1,5 +1,5 @@
 {
-  "name": "@ciintel/api",
+  "name": "@cyclops/api",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,10 +10,10 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "@ciintel/core": "workspace:*",
-    "@ciintel/db": "workspace:*",
-    "@ciintel/github": "workspace:*",
-    "@ciintel/queue": "workspace:*",
+    "@cyclops/core": "workspace:*",
+    "@cyclops/db": "workspace:*",
+    "@cyclops/github": "workspace:*",
+    "@cyclops/queue": "workspace:*",
     "fastify": "^5.10.0",
     "fastify-plugin": "^5.0.0",
     "fastify-raw-body": "^5.0.0",

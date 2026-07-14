@@ -1,5 +1,5 @@
 {
-  "name": "@ciintel/config",
+  "name": "@cyclops/config",
   "version": "0.0.0",
   "type": "module",
   "exports": {
@@ -13,7 +13,7 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "@ciintel/github": "workspace:*",
+    "@cyclops/github": "workspace:*",
     "js-yaml": "^4.1.0",
     "zod": "^3.24.0"
   },
