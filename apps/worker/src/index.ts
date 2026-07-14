@@ -1,5 +1,5 @@
 import pino from "pino";
-import { getRedis } from "@ciintel/queue";
+import { getRedis } from "@cyclops/queue";
 import { createWebhookIngestionWorker } from "./workers/webhook-ingestion.js";
 import { createDetectorDispatchWorker } from "./workers/detector-dispatch.js";
 import { createAiAnalysisWorker } from "./workers/ai-analysis.js";

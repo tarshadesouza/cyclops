@@ -6,11 +6,11 @@ import {
   AiAnalysisJobSchema,
   type AiAnalysisJob,
   type ActionType,
-} from "@ciintel/queue";
-import { getTenantClient } from "@ciintel/db";
-import { decryptApiKey } from "@ciintel/core";
-import { analyzeFailure, checkTokenBudget, type AnalyzeResult } from "@ciintel/ai";
-import type { DetectorType } from "@ciintel/core";
+} from "@cyclops/queue";
+import { getTenantClient } from "@cyclops/db";
+import { decryptApiKey } from "@cyclops/core";
+import { analyzeFailure, checkTokenBudget, type AnalyzeResult } from "@cyclops/ai";
+import type { DetectorType } from "@cyclops/core";
 import { checkInstallationActive } from "../lib/installation.js";
 import pino from "pino";
 

@@ -1,4 +1,4 @@
-import { getDb } from "@ciintel/db";
+import { getDb } from "@cyclops/db";
 import type { Logger } from "pino";
 
 export type InstallationCheckResult =

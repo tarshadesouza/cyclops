@@ -1,6 +1,6 @@
 export type BudgetStatus = { exceeded: boolean; used: number; cap: number };
 
-// Accept a loosely-typed db client so @ciintel/ai does NOT import @ciintel/db.
+// Accept a loosely-typed db client so @cyclops/ai does NOT import @cyclops/db.
 // IMPORTANT: caller MUST pass a tenant-scoped client so RLS + the WHERE both resolve correctly.
 export async function checkTokenBudget(
   db: { $queryRaw: <T = unknown>(q: TemplateStringsArray, ...v: unknown[]) => Promise<T> },

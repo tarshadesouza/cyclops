@@ -5,10 +5,10 @@ import {
   ActionExecutionJobSchema,
   type ActionExecutionJob,
   type ActionType,
-} from "@ciintel/queue";
-import { getTenantClient, type Finding } from "@ciintel/db";
-import { getInstallationClient } from "@ciintel/github";
-import { fetchConfig, type CyclopsConfig } from "@ciintel/config";
+} from "@cyclops/queue";
+import { getTenantClient, type Finding } from "@cyclops/db";
+import { getInstallationClient } from "@cyclops/github";
+import { fetchConfig, type CyclopsConfig } from "@cyclops/config";
 import { checkInstallationActive } from "../lib/installation.js";
 import { handleUpsertPrComment, handleUpdateCheckRun } from "../lib/github-outputs.js";
 import { handleAutofixLint, handleAutofixSnapshot } from "../lib/github-autofix.js";

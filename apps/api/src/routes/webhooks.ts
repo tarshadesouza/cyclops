@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { webhookIngestionQueue } from "@ciintel/queue";
-import type { WebhookIngestionJob } from "@ciintel/queue";
+import { webhookIngestionQueue } from "@cyclops/queue";
+import type { WebhookIngestionJob } from "@cyclops/queue";
 
 function verifyWebhookSignature(
   secret: string,

@@ -1,4 +1,4 @@
-// @ciintel/core — shared types, I/O-free
+// @cyclops/core — shared types, I/O-free
 export { encryptApiKey, decryptApiKey } from './crypto.js';
 export type InstallationId = number;
 export type TenantContext = {

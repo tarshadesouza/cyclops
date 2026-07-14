@@ -1,7 +1,7 @@
 import { generateObject, NoObjectGeneratedError } from 'ai';  // top-level 'ai' only — NOT subpaths
 import { FindingSchema, type FindingOutput } from './schema.js';
 import { createAnthropicForInstallation, CLAUDE_MODEL } from './client.js';
-import type { DetectorType } from '@ciintel/core';
+import type { DetectorType } from '@cyclops/core';
 
 const SYSTEM_PROMPT = `You are a CI/CD failure analyst. You receive CI log excerpts and classify failures.
 Always provide specific evidence from the log. Never invent violations not present in the log.

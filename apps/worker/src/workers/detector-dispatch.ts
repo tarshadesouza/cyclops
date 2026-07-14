@@ -5,11 +5,11 @@ import {
   dlqQueue,
   DetectorDispatchJobSchema,
   type DetectorDispatchJob,
-} from "@ciintel/queue";
-import { getTenantClient } from "@ciintel/db";
-import { getInstallationClient } from "@ciintel/github";
-import { runAllDetectors } from "@ciintel/detectors";
-import type { DetectorResult } from "@ciintel/detectors";
+} from "@cyclops/queue";
+import { getTenantClient } from "@cyclops/db";
+import { getInstallationClient } from "@cyclops/github";
+import { runAllDetectors } from "@cyclops/detectors";
+import type { DetectorResult } from "@cyclops/detectors";
 import { checkInstallationActive } from "../lib/installation.js";
 import {
   getRepoInfo,

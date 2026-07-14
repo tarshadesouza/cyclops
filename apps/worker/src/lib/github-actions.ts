@@ -1,5 +1,5 @@
-import type { getInstallationClient } from "@ciintel/github";
-import { stripLogFormatting } from "@ciintel/detectors";
+import type { getInstallationClient } from "@cyclops/github";
+import { stripLogFormatting } from "@cyclops/detectors";
 
 // Derive the Octokit type from the installation client factory without importing @octokit/core directly
 type Octokit = Awaited<ReturnType<typeof getInstallationClient>>;

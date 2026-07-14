@@ -7,8 +7,8 @@ import {
   WebhookIngestionJobSchema,
   DetectorDispatchJobSchema,
   type WebhookIngestionJob,
-} from "@ciintel/queue";
-import { getDb } from "@ciintel/db";
+} from "@cyclops/queue";
+import { getDb } from "@cyclops/db";
 import { checkInstallationActive } from "../lib/installation.js";
 import pino from "pino";
 import type { Job } from "bullmq";

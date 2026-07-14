@@ -1,5 +1,5 @@
 import { Worker } from "bullmq";
-import { getRedis } from "@ciintel/queue";
+import { getRedis } from "@cyclops/queue";
 import pino from "pino";
 
 const logger = pino({ level: process.env["LOG_LEVEL"] ?? "info" });

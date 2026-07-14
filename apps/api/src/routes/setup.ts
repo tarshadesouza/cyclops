@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { timingSafeEqual } from "node:crypto";
-import { encryptApiKey } from "@ciintel/core";
-import { getDb } from "@ciintel/db";
+import { encryptApiKey } from "@cyclops/core";
+import { getDb } from "@cyclops/db";
 
 export async function setupRoutes(app: FastifyInstance): Promise<void> {
   const setupSecret = process.env["CYCLOPS_SETUP_SECRET"];
