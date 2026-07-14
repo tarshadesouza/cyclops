@@ -125,8 +125,12 @@ Plans:
 
 ---
 
-**Plans**:
-- [ ] 04-01-PLAN.md — Package rename: `@ciintel/*` → `@cyclops/*` across all package.json names, internal workspace imports, tsconfig paths, and Prisma schema; update root turbo.json and pnpm-workspace.yaml; verify `pnpm install && pnpm build` clean
+**Plans**: 5 plans
+- [ ] 04-01-PLAN.md — Package rename `@ciintel/*` → `@cyclops/*` across all package.json names + workspace deps, TS source imports, and docs; verify `pnpm install && pnpm build` clean
+- [ ] 04-02-PLAN.md — Move crypto to new private `@cyclops/internal`; add `IDetector` + `DetectorContext` to `@cyclops/core`; alias `DetectorInput` in detectors
+- [ ] 04-03-PLAN.md — Replace tsc with tsup for dual ESM/CJS output; update exports map, main/types/files/publishConfig; `noEmit: true` in core tsconfig
+- [ ] 04-04-PLAN.md — Add publint + @arethetypeswrong/cli; wire validate-sdk gate into ci.yml
+- [ ] 04-05-PLAN.md — Initialize changesets; major changeset to 1.0.0; OIDC provenance publish.yml (checkpoint: verify @cyclops npm org exists)
 
 ---
 
