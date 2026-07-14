@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 
 ## Current Position
 
-Phase: 4 of 5 (Public SDK) — COMPLETE ✓
-Plan: 5/5 complete
-Status: Phase 4 verified 10/10 — @tdesouza/cyclops@0.0.0 live on npm, automated publish pipeline wired
-Last activity: 2026-07-14 — Completed 04-05 (changesets, npm publish, publish.yml, GitHub repo setup)
+Phase: 5 of 5 (Slack Integration & Marketplace) — In progress
+Plan: 1/? complete
+Status: Phase 5 started — billing+Slack schema foundation, billing-state.ts, billingQueue wired
+Last activity: 2026-07-14 — Completed 05-01 (Installation billing/Slack fields, migration 0005, billing state machine, billingQueue)
 
-Progress: [████████████████████░] 95% (28/~29 estimated plans)
+Progress: [█████████████████████░] 97% (29/~30 estimated plans)
 
 ## Performance Metrics
 
@@ -137,6 +137,11 @@ Recent decisions affecting current work:
 - [04-04]: engines.node >= 22 added to @cyclops/core — publint --strict elevates missing engines to error
 - [04-04]: repository.url git+ prefix required — publint --strict requires full git protocol prefix in repository.url
 - [04-04]: validate-sdk job has no continue-on-error — hard blocking gate; any publint/attw error fails CI
+- [05-01]: billingStatus defaults to 'trial' at DB level — all new installations start on trial; marketplace purchase upgrades to active
+- [05-01]: targetId @unique required for marketplace upsert-by-account (ON CONFLICT DO UPDATE via Prisma upsert where targetId)
+- [05-01]: deriveTransition placeholder for future-dated cancellations — billingStatus:'trial' returned; caller must issue partial update setting only billingCancelAt
+- [05-01]: Lazy billing expiry: status written to DB on first job arrival after expiry date, no cron required
+- [05-01]: @cyclops/core renamed to @tdesouza/cyclops in Phase 4; stale import in ai-analysis.ts fixed (Rule 3)
 
 ### Pending Todos
 
@@ -163,5 +168,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-07-14
-Stopped at: Completed 04-04-PLAN.md — publint + attw SDK validation gate, validate-sdk CI job, zero errors on @cyclops/core
+Stopped at: Completed 05-01-PLAN.md — billing+Slack schema fields, migration 0005, billing-state.ts, billingQueue, lazy expiry gate in checkInstallationActive
 Resume file: None
