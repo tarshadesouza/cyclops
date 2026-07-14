@@ -7,6 +7,7 @@
   "include": ["src/**/*"],
   "references": [
     { "path": "../../packages/ai" },
+    { "path": "../../packages/internal" },
     { "path": "../../packages/config" },
     { "path": "../../packages/core" },
     { "path": "../../packages/db" },

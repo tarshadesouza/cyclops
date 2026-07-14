@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@cyclops/core": "workspace:*",
+    "@cyclops/internal": "workspace:*",
     "@cyclops/db": "workspace:*",
     "@cyclops/github": "workspace:*",
     "@cyclops/queue": "workspace:*",

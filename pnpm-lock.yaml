@@ -20,16 +20,19 @@ importers:
 
   apps/api:
     dependencies:
-      '@ciintel/core':
+      '@cyclops/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@ciintel/db':
+      '@cyclops/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@ciintel/github':
+      '@cyclops/github':
         specifier: workspace:*
         version: link:../../packages/github
-      '@ciintel/queue':
+      '@cyclops/internal':
+        specifier: workspace:*
+        version: link:../../packages/internal
+      '@cyclops/queue':
         specifier: workspace:*
         version: link:../../packages/queue
       fastify:
@@ -63,25 +66,28 @@ importers:
 
   apps/worker:
     dependencies:
-      '@ciintel/ai':
+      '@cyclops/ai':
         specifier: workspace:*
         version: link:../../packages/ai
-      '@ciintel/config':
+      '@cyclops/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@ciintel/core':
+      '@cyclops/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@ciintel/db':
+      '@cyclops/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@ciintel/detectors':
+      '@cyclops/detectors':
         specifier: workspace:*
         version: link:../../packages/detectors
-      '@ciintel/github':
+      '@cyclops/github':
         specifier: workspace:*
         version: link:../../packages/github
-      '@ciintel/queue':
+      '@cyclops/internal':
+        specifier: workspace:*
+        version: link:../../packages/internal
+      '@cyclops/queue':
         specifier: workspace:*
         version: link:../../packages/queue
       bullmq:
@@ -112,7 +118,7 @@ importers:
       '@ai-sdk/anthropic':
         specifier: ^4.0.10
         version: 4.0.10(zod@3.25.76)
-      '@ciintel/core':
+      '@cyclops/core':
         specifier: workspace:*
         version: link:../core
       ai:
@@ -131,7 +137,7 @@ importers:
 
   packages/config:
     dependencies:
-      '@ciintel/github':
+      '@cyclops/github':
         specifier: workspace:*
         version: link:../github
       js-yaml:
@@ -162,7 +168,7 @@ importers:
 
   packages/db:
     dependencies:
-      '@ciintel/core':
+      '@cyclops/core':
         specifier: workspace:*
         version: link:../core
       '@prisma/adapter-pg':
@@ -187,7 +193,7 @@ importers:
 
   packages/detectors:
     dependencies:
-      '@ciintel/core':
+      '@cyclops/core':
         specifier: workspace:*
         version: link:../core
       js-yaml:
@@ -212,7 +218,7 @@ importers:
 
   packages/github:
     dependencies:
-      '@ciintel/core':
+      '@cyclops/core':
         specifier: workspace:*
         version: link:../core
       '@octokit/app':
@@ -235,9 +241,18 @@ importers:
         specifier: ^5.8.0
         version: 5.9.3
 
+  packages/internal:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      typescript:
+        specifier: ^5.8.0
+        version: 5.9.3
+
   packages/queue:
     dependencies:
-      '@ciintel/core':
+      '@cyclops/core':
         specifier: workspace:*
         version: link:../core
       bullmq:
