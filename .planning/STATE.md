@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 5 of 5 (Slack Integration & Marketplace) — In progress
-Plan: 4/? complete (05-01, 05-02, 05-03, 05-04 complete)
-Status: Slack OAuth workspace connection live; encrypted bot token stored per installation
-Last activity: 2026-07-14 — Completed 05-04 (GET /slack/install, GET /slack/oauth/callback, DELETE /slack/disconnect)
+Plan: 5/5 complete (05-01, 05-02, 05-03, 05-04, 05-05 complete)
+Status: Phase 5 complete — Slack bot-token alerting, SLK-02 repeat detection, marketplace billing all done
+Last activity: 2026-07-14 — Completed 05-05 (slack-client.ts, handleSlackAlert upgrade with SLK-01/SLK-02)
 
-Progress: [█████████████████████░] 97% (29/~30 estimated plans)
+Progress: [██████████████████████] 100% (~30/~30 estimated plans)
 
 ## Performance Metrics
 
@@ -151,6 +151,10 @@ Recent decisions affecting current work:
 - [05-04]: CSRF state deleted immediately after validation (one-time use) — prevents replay if attacker intercepts callback URL
 - [05-04]: xoxb- prefix validated before AES-256-GCM encryption — rejects app tokens (xoxa-) and user tokens (xoxp-) at the gate
 - [05-04]: No Slack SDK added — native fetch() sufficient for single oauth.v2.access call
+- [05-05]: Bot token primary path, webhook URL fallback — preserves backward compat for installations without Slack OAuth
+- [05-05]: channel_not_found returns skipped (not throw) — missing channel never crashes alert pipeline
+- [05-05]: resolveChannelId bypasses conversations.list for already-resolved IDs (C/D/G/W prefix check)
+- [05-05]: SLK-02 repeat bypass only skips the dedup check — recordActionDedup still called on success; getDb() used for installation lookup (tenant-scoped ctx.db cannot resolve global installation)
 
 ### Pending Todos
 
@@ -177,5 +181,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-07-14
-Stopped at: Completed 05-04-PLAN.md — GET /slack/install, GET /slack/oauth/callback, DELETE /slack/disconnect; encrypted bot token per installation
+Stopped at: Completed 05-05-PLAN.md — slack-client.ts (postSlackMessage, resolveChannelId), handleSlackAlert upgraded with SLK-01 bot-token path and SLK-02 repeat failure detection
 Resume file: None
