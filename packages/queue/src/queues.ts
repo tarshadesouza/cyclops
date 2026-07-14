@@ -5,6 +5,7 @@ import type {
   DetectorDispatchJob,
   AiAnalysisJob,
   ActionExecutionJob,
+  MarketplacePurchaseJob,
 } from "./jobs.js";
 
 const defaultJobOptions = {
@@ -37,4 +38,9 @@ export const actionExecutionQueue = new Queue<ActionExecutionJob>(
 export const dlqQueue = new Queue(
   "dlq",
   { connection: getRedis(), defaultJobOptions: { removeOnFail: false } }
+);
+
+export const billingQueue = new Queue<MarketplacePurchaseJob>(
+  "billing",
+  { connection: getRedis(), defaultJobOptions }
 );

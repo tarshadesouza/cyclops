@@ -5,6 +5,7 @@ export {
   aiAnalysisQueue,
   actionExecutionQueue,
   dlqQueue,
+  billingQueue,
 } from "./queues.js";
 export { getFlowProducer } from "./flow.js";
 export type {
@@ -13,6 +14,7 @@ export type {
   AiAnalysisJob,
   ActionExecutionJob,
   ActionType,
+  MarketplacePurchaseJob,
 } from "./jobs.js";
 export {
   WebhookIngestionJobSchema,
@@ -20,4 +22,5 @@ export {
   AiAnalysisJobSchema,
   ActionExecutionJobSchema,
   ACTION_TYPES,
+  MarketplacePurchaseJobSchema,
 } from "./jobs.js";

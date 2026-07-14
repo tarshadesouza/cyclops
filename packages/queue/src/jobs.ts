@@ -51,3 +51,20 @@ export const ActionExecutionJobSchema = z.object({
   ref:            z.string().optional(),
 });
 export type ActionExecutionJob = z.infer<typeof ActionExecutionJobSchema>;
+
+export const MarketplacePurchaseJobSchema = z.object({
+  eventType: z.enum([
+    "marketplace_purchase",
+    "marketplace_purchase_cancelled",
+    "marketplace_plan_changed",
+  ]),
+  accountId: z.number().int().positive(),
+  accountLogin: z.string(),
+  accountType: z.enum(["User", "Organization"]),
+  planId: z.number().int(),
+  planName: z.string(),
+  onFreeTrial: z.boolean(),
+  freeTrialEndsOn: z.string().nullable(), // ISO date string or null
+  effectiveDate: z.string(), // ISO date string
+});
+export type MarketplacePurchaseJob = z.infer<typeof MarketplacePurchaseJobSchema>;
