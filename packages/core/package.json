@@ -1,5 +1,5 @@
 {
-  "name": "@tdesouza/core",
+  "name": "@tdesouza/cyclops",
   "version": "0.0.0",
   "type": "module",
   "main": "./dist/index.cjs",

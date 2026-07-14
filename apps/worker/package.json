@@ -13,7 +13,7 @@
     "@cyclops/ai": "workspace:*",
     "@cyclops/internal": "workspace:*",
     "@cyclops/config": "workspace:*",
-    "@cyclops/core": "workspace:*",
+    "@tdesouza/cyclops": "workspace:*",
     "@cyclops/db": "workspace:*",
     "@cyclops/detectors": "workspace:*",
     "@cyclops/github": "workspace:*",

@@ -23,9 +23,6 @@ importers:
 
   apps/api:
     dependencies:
-      '@cyclops/core':
-        specifier: workspace:*
-        version: link:../../packages/core
       '@cyclops/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -38,6 +35,9 @@ importers:
       '@cyclops/queue':
         specifier: workspace:*
         version: link:../../packages/queue
+      '@tdesouza/cyclops':
+        specifier: workspace:*
+        version: link:../../packages/core
       fastify:
         specifier: ^5.10.0
         version: 5.10.0
@@ -75,9 +75,6 @@ importers:
       '@cyclops/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@cyclops/core':
-        specifier: workspace:*
-        version: link:../../packages/core
       '@cyclops/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -93,6 +90,9 @@ importers:
       '@cyclops/queue':
         specifier: workspace:*
         version: link:../../packages/queue
+      '@tdesouza/cyclops':
+        specifier: workspace:*
+        version: link:../../packages/core
       bullmq:
         specifier: ^5.79.3
         version: 5.79.3
@@ -121,7 +121,7 @@ importers:
       '@ai-sdk/anthropic':
         specifier: ^4.0.10
         version: 4.0.10(zod@3.25.76)
-      '@cyclops/core':
+      '@tdesouza/cyclops':
         specifier: workspace:*
         version: link:../core
       ai:
@@ -180,12 +180,12 @@ importers:
 
   packages/db:
     dependencies:
-      '@cyclops/core':
-        specifier: workspace:*
-        version: link:../core
       '@prisma/adapter-pg':
         specifier: ^7.8.0
         version: 7.8.0
+      '@tdesouza/cyclops':
+        specifier: workspace:*
+        version: link:../core
       pg:
         specifier: ^8.13.0
         version: 8.22.0
@@ -205,7 +205,7 @@ importers:
 
   packages/detectors:
     dependencies:
-      '@cyclops/core':
+      '@tdesouza/cyclops':
         specifier: workspace:*
         version: link:../core
       js-yaml:
@@ -230,9 +230,6 @@ importers:
 
   packages/github:
     dependencies:
-      '@cyclops/core':
-        specifier: workspace:*
-        version: link:../core
       '@octokit/app':
         specifier: ^16.1.2
         version: 16.1.2
@@ -245,6 +242,9 @@ importers:
       '@octokit/webhooks':
         specifier: ^14.2.0
         version: 14.2.0
+      '@tdesouza/cyclops':
+        specifier: workspace:*
+        version: link:../core
     devDependencies:
       '@types/node':
         specifier: ^22.0.0
@@ -264,7 +264,7 @@ importers:
 
   packages/queue:
     dependencies:
-      '@cyclops/core':
+      '@tdesouza/cyclops':
         specifier: workspace:*
         version: link:../core
       bullmq:

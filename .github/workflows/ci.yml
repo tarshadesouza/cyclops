@@ -48,8 +48,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build @cyclops/core
-        run: pnpm --filter @cyclops/core build
+      - name: Build @tdesouza/cyclops
+        run: pnpm --filter @tdesouza/cyclops build
 
       - name: Validate SDK (publint + attw)
-        run: pnpm --filter @cyclops/core run lint:publish
+        run: pnpm --filter @tdesouza/cyclops run lint:publish

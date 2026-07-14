@@ -13,7 +13,7 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "@cyclops/core": "workspace:*",
+    "@tdesouza/cyclops": "workspace:*",
     "js-yaml": "^4.1.0",
     "strip-ansi": "^7.1.0",
     "zod": "^3.24.0"

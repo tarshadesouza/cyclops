@@ -10,7 +10,7 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "@cyclops/core": "workspace:*",
+    "@tdesouza/cyclops": "workspace:*",
     "@cyclops/internal": "workspace:*",
     "@cyclops/db": "workspace:*",
     "@cyclops/github": "workspace:*",

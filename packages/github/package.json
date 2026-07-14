@@ -13,7 +13,7 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "@cyclops/core": "workspace:*",
+    "@tdesouza/cyclops": "workspace:*",
     "@octokit/app": "^16.1.2",
     "@octokit/core": "^7.0.6",
     "@octokit/auth-app": "^8.2.0",

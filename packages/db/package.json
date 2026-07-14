@@ -16,7 +16,7 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "@cyclops/core": "workspace:*",
+    "@tdesouza/cyclops": "workspace:*",
     "@prisma/adapter-pg": "^7.8.0",
     "pg": "^8.13.0",
     "prisma": "^7.8.0"
