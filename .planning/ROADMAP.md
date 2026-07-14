@@ -151,10 +151,15 @@ Plans:
 
 ---
 
-**Plans**: TBD
+**Plans**: 6 plans
 
 Plans:
-- [ ] 05-01: TBD
+- [ ] 05-01-PLAN.md — DB migration 0005: 8 new Installation fields + @unique targetId; MarketplacePurchaseJob in queue package; billing-state.ts state machine; checkInstallationActive lazy expiry
+- [ ] 05-02-PLAN.md — POST /marketplace/webhooks route (MARKETPLACE_WEBHOOK_SECRET); BillingWorker applying state transitions from billing-state.ts
+- [ ] 05-03-PLAN.md — GET /status: DB + Redis + queue depth health check; publicly accessible, no auth
+- [ ] 05-04-PLAN.md — GET /slack/install + GET /slack/oauth/callback; Redis CSRF state; encrypted bot token + slackTeamId stored on Installation
+- [ ] 05-05-PLAN.md — slack-client.ts postSlackMessage + resolveChannelId; handleSlackAlert upgraded to bot token primary + SLK-02 repeat failure detection (3+/7d)
+- [ ] 05-06-PLAN.md — E2E verification checkpoint: all 5 success criteria, migration deploy, Railway env vars, marketplace listing
 
 ---
 
@@ -169,7 +174,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Detector Pipeline & AI Analysis | 7/7 | Complete | 2026-07-13 |
 | 3. Action Engine & Output Channels | 7/7 | Complete | 2026-07-14 |
 | 4. Public SDK | 5/5 | Complete | 2026-07-14 |
-| 5. Slack Integration & Marketplace | 0/TBD | Not started | - |
+| 5. Slack Integration & Marketplace | 0/6 | Not started | - |
 
 ---
 
