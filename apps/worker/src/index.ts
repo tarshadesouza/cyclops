@@ -5,6 +5,7 @@ import { createDetectorDispatchWorker } from "./workers/detector-dispatch.js";
 import { createAiAnalysisWorker } from "./workers/ai-analysis.js";
 import { createActionExecutionWorker } from "./workers/action-execution.js";
 import { createDlqWorker } from "./workers/dlq.js";
+import { createBillingWorker } from "./workers/billing.js";
 
 const logger = pino({
   level: process.env["LOG_LEVEL"] ?? "info",
@@ -21,6 +22,7 @@ const detectorDispatchWorker = createDetectorDispatchWorker();
 const aiAnalysisWorker = createAiAnalysisWorker();
 const actionExecutionWorker = createActionExecutionWorker();
 const dlqWorker = createDlqWorker();
+const billingWorker = createBillingWorker();
 
 logger.info(
   {
@@ -30,6 +32,7 @@ logger.info(
       "ai-analysis (concurrency=5)",
       "action-execution (concurrency=10)",
       "dlq (concurrency=5)",
+      "billing (concurrency=5)",
     ],
   },
   "Workers started"
@@ -64,6 +67,7 @@ async function shutdown(): Promise<void> {
     aiAnalysisWorker.close(),
     actionExecutionWorker.close(),
     dlqWorker.close(),
+    billingWorker.close(),
   ]);
   logger.info("Workers stopped gracefully");
   process.exit(0);
