@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 5 of 5 (Slack Integration & Marketplace) — In progress
-Plan: 1/? complete
-Status: Phase 5 started — billing+Slack schema foundation, billing-state.ts, billingQueue wired
-Last activity: 2026-07-14 — Completed 05-01 (Installation billing/Slack fields, migration 0005, billing state machine, billingQueue)
+Plan: 3/? complete (05-01 and 05-03 complete; 05-02 in parallel wave)
+Status: GET /status public health endpoint live; billing schema + billingQueue wired
+Last activity: 2026-07-14 — Completed 05-03 (GET /status with DB + Redis + queue depth checks, MKT-03 satisfied)
 
 Progress: [█████████████████████░] 97% (29/~30 estimated plans)
 
@@ -141,6 +141,8 @@ Recent decisions affecting current work:
 - [05-01]: targetId @unique required for marketplace upsert-by-account (ON CONFLICT DO UPDATE via Prisma upsert where targetId)
 - [05-01]: deriveTransition placeholder for future-dated cancellations — billingStatus:'trial' returned; caller must issue partial update setting only billingCancelAt
 - [05-01]: Lazy billing expiry: status written to DB on first job arrival after expiry date, no cron required
+- [05-03]: GET /status uses app.redis (Fastify decorator) not getRedis() from @cyclops/queue — API has its own Redis singleton; two connections avoided
+- [05-03]: /status has no auth guard — publicly accessible per MKT-03; returns 503 when any component fails
 - [05-01]: @cyclops/core renamed to @tdesouza/cyclops in Phase 4; stale import in ai-analysis.ts fixed (Rule 3)
 
 ### Pending Todos
@@ -168,5 +170,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-07-14
-Stopped at: Completed 05-01-PLAN.md — billing+Slack schema fields, migration 0005, billing-state.ts, billingQueue, lazy expiry gate in checkInstallationActive
+Stopped at: Completed 05-03-PLAN.md — GET /status public health endpoint (DB + Redis + queue depth), statusRoutes registered in api/src/index.ts
 Resume file: None
