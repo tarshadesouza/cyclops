@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: GitHub App Foundation** - Reliable multi-tenant webhook ingestion pipeline; GitHub App installable and receiving events
 - [x] **Phase 2: Detector Pipeline & AI Analysis** - All 6 detectors running end-to-end with AI-enriched structured findings; no actions yet
 - [x] **Phase 3: Action Engine & Output Channels** - cyclops[bot] posts consolidated PR comments, creates Check Runs, and executes safe auto-actions with full deduplication and kill switches
-- [ ] **Phase 4: Public SDK** - @cyclops/core published on npm; self-hosters can install and extend CyclOps detectors
+- [x] **Phase 4: Public SDK** - @cyclops/core published on npm; self-hosters can install and extend CyclOps detectors
 - [ ] **Phase 5: Slack Integration & Marketplace** - CyclOps listed on GitHub Marketplace with paid tiers; Slack integration live
 
 ---
@@ -126,11 +126,11 @@ Plans:
 ---
 
 **Plans**: 5 plans
-- [ ] 04-01-PLAN.md — Package rename `@ciintel/*` → `@cyclops/*` across all package.json names + workspace deps, TS source imports, and docs; verify `pnpm install && pnpm build` clean
-- [ ] 04-02-PLAN.md — Move crypto to new private `@cyclops/internal`; add `IDetector` + `DetectorContext` to `@cyclops/core`; alias `DetectorInput` in detectors
-- [ ] 04-03-PLAN.md — Replace tsc with tsup for dual ESM/CJS output; update exports map, main/types/files/publishConfig; `noEmit: true` in core tsconfig
-- [ ] 04-04-PLAN.md — Add publint + @arethetypeswrong/cli; wire validate-sdk gate into ci.yml
-- [ ] 04-05-PLAN.md — Initialize changesets; major changeset to 1.0.0; OIDC provenance publish.yml (checkpoint: verify @cyclops npm org exists)
+- [x] 04-01-PLAN.md — Package rename `@ciintel/*` → `@cyclops/*` across all package.json names + workspace deps, TS source imports, and docs; verify `pnpm install && pnpm build` clean
+- [x] 04-02-PLAN.md — Move crypto to new private `@cyclops/internal`; add `IDetector` + `DetectorContext` to `@cyclops/core`; alias `DetectorInput` in detectors
+- [x] 04-03-PLAN.md — Replace tsc with tsup for dual ESM/CJS output; update exports map, main/types/files/publishConfig; `noEmit: true` in core tsconfig
+- [x] 04-04-PLAN.md — Add publint + @arethetypeswrong/cli; wire validate-sdk gate into ci.yml
+- [x] 04-05-PLAN.md — Initialize changesets; major changeset to 1.0.0; publish.yml with NPM_TOKEN; `@tdesouza/cyclops` published to npm
 
 ---
 
@@ -168,7 +168,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. GitHub App Foundation | 6/6 | Complete | 2026-07-13 |
 | 2. Detector Pipeline & AI Analysis | 7/7 | Complete | 2026-07-13 |
 | 3. Action Engine & Output Channels | 7/7 | Complete | 2026-07-14 |
-| 4. Public SDK | 0/TBD | Not started | - |
+| 4. Public SDK | 5/5 | Complete | 2026-07-14 |
 | 5. Slack Integration & Marketplace | 0/TBD | Not started | - |
 
 ---

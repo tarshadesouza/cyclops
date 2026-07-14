@@ -80,11 +80,11 @@
 
 ### Public SDK
 
-- [ ] **SDK-01**: `@cyclops/core` published to npm with dual ESM/CJS output (`.mjs`/`.cjs` extensions via tsup)
-- [ ] **SDK-02**: Public `IDetector` interface and `DetectorContext`/`DetectorResult` types exported
-- [ ] **SDK-03**: `packages/core` contains zero I/O dependencies (no Octokit, Redis, or Prisma)
-- [ ] **SDK-04**: `publint` and `@arethetypeswrong/cli` validation runs in CI before every npm publish
-- [ ] **SDK-05**: Strict semver policy: breaking changes in `IDetector` interface require major version bump
+- [x] **SDK-01**: `@cyclops/core` published to npm with dual ESM/CJS output (`.mjs`/`.cjs` extensions via tsup)
+- [x] **SDK-02**: Public `IDetector` interface and `DetectorContext`/`DetectorResult` types exported
+- [x] **SDK-03**: `packages/core` contains zero I/O dependencies (no Octokit, Redis, or Prisma)
+- [x] **SDK-04**: `publint` and `@arethetypeswrong/cli` validation runs in CI before every npm publish
+- [x] **SDK-05**: Strict semver policy: breaking changes in `IDetector` interface require major version bump
 
 ### Marketplace & Slack
 
@@ -197,11 +197,11 @@
 | CFG-02 | Phase 3 | Complete |
 | CFG-03 | Phase 3 | Complete |
 | CFG-04 | Phase 3 | Complete |
-| SDK-01 | Phase 4 | Pending |
-| SDK-02 | Phase 4 | Pending |
-| SDK-03 | Phase 4 | Pending |
-| SDK-04 | Phase 4 | Pending |
-| SDK-05 | Phase 4 | Pending |
+| SDK-01 | Phase 4 | Complete |
+| SDK-02 | Phase 4 | Complete |
+| SDK-03 | Phase 4 | Complete |
+| SDK-04 | Phase 4 | Complete |
+| SDK-05 | Phase 4 | Complete |
 | MKT-01 | Phase 5 | Pending |
 | MKT-02 | Phase 5 | Pending |
 | MKT-03 | Phase 5 | Pending |

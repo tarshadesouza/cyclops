@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-07-13)
 
 **Core value:** When a CI job fails, CyclOps tells you exactly why and either fixes it automatically or hands you a one-click remediation — eliminating the manual log-reading cycle that wastes engineering time across the organization.
-**Current focus:** Phase 4 — Public SDK
+**Current focus:** Phase 5 — Slack Integration & Marketplace
 
 ## Current Position
 
-Phase: 4 of 5 (Public SDK) — In progress
-Plan: 4 of ~6 in phase 4 — COMPLETE
-Status: Phase 4 plan 04 complete — publint + attw validation gate for @cyclops/core, validate-sdk CI job blocking on every push/PR
-Last activity: 2026-07-14 — Completed 04-04 (SDK validation: publint --strict + attw all-green, validate-sdk CI hard gate)
+Phase: 4 of 5 (Public SDK) — COMPLETE ✓
+Plan: 5/5 complete
+Status: Phase 4 verified 10/10 — @tdesouza/cyclops@0.0.0 live on npm, automated publish pipeline wired
+Last activity: 2026-07-14 — Completed 04-05 (changesets, npm publish, publish.yml, GitHub repo setup)
 
-Progress: [█████████████████░] 85% (23/27 estimated plans)
+Progress: [████████████████████░] 95% (28/~29 estimated plans)
 
 ## Performance Metrics
 
