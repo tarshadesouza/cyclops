@@ -1,13 +1,13 @@
-# @ciintel/db
+# @cyclops/db
 
 Prisma 7 database package for CyclOps. Provides tenant-scoped database clients with Row-Level Security enforcement.
 
 ## Setup sequence
 
 1. Set DATABASE_URL in .env
-2. `pnpm --filter @ciintel/db run db:migrate:dev`  (creates tables)
-3. `pnpm --filter @ciintel/db run db:generate`     (generates client to src/generated/)
-4. `pnpm --filter @ciintel/db run build`           (compiles TypeScript)
+2. `pnpm --filter @cyclops/db run db:migrate:dev`  (creates tables)
+3. `pnpm --filter @cyclops/db run db:generate`     (generates client to src/generated/)
+4. `pnpm --filter @cyclops/db run build`           (compiles TypeScript)
 
 **Note:** `prisma generate` does NOT auto-run after `migrate dev` in Prisma 7.
 Always run `db:generate` explicitly after schema changes.
@@ -17,7 +17,7 @@ After running `db:generate`, update `src/index.ts` to uncomment the type exports
 ## Usage
 
 ```typescript
-import { getDb, getTenantClient } from "@ciintel/db";
+import { getDb, getTenantClient } from "@cyclops/db";
 
 // Singleton client for service-level operations (bypasses RLS via postgres role)
 const db = getDb();

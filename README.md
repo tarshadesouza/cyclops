@@ -41,7 +41,7 @@ Shared packages under `packages/`: `core` (I/O-free logic), `db` (Prisma 7 + Pos
 4. Run migrations:
 
    ```bash
-   pnpm --filter @ciintel/db db:migrate
+   pnpm --filter @cyclops/db db:migrate
    ```
 
 5. Build all packages:
@@ -61,7 +61,7 @@ curl -X POST $API_URL/setup/$INSTALLATION_ID \
   -d '{"apiKey":"sk-ant-..."}'
 ```
 
-- `API_URL` — your deployed `apps/api` URL (e.g. `https://ciintel-api.railway.app`)
+- `API_URL` — your deployed `apps/api` URL (e.g. `https://cyclops-api.railway.app`)
 - `INSTALLATION_ID` — the GitHub App installation ID (visible in GitHub App install URL or webhook payload)
 - `CYCLOPS_SETUP_SECRET` — the secret you set in your `apps/api` environment
 
