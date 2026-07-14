@@ -6,6 +6,7 @@ import { healthRoutes } from "./routes/health.js";
 import { setupRoutes } from "./routes/setup.js";
 import { marketplaceRoutes } from "./routes/marketplace.js";
 import { statusRoutes } from "./routes/status.js";
+import { slackOAuthRoutes } from "./routes/slack-oauth.js";
 
 const app = Fastify({
   logger: {
@@ -32,6 +33,7 @@ await app.register(webhookRoutes);
 await app.register(setupRoutes);
 await app.register(marketplaceRoutes);
 await app.register(statusRoutes);
+await app.register(slackOAuthRoutes);
 
 const port = parseInt(process.env["PORT"] ?? "3000", 10);
 const host = process.env["HOST"] ?? "0.0.0.0";
