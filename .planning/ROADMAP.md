@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: GitHub App Foundation** - Reliable multi-tenant webhook ingestion pipeline; GitHub App installable and receiving events
 - [x] **Phase 2: Detector Pipeline & AI Analysis** - All 6 detectors running end-to-end with AI-enriched structured findings; no actions yet
-- [ ] **Phase 3: Action Engine & Output Channels** - cyclops[bot] posts consolidated PR comments, creates Check Runs, and executes safe auto-actions with full deduplication and kill switches
+- [x] **Phase 3: Action Engine & Output Channels** - cyclops[bot] posts consolidated PR comments, creates Check Runs, and executes safe auto-actions with full deduplication and kill switches
 - [ ] **Phase 4: Public SDK** - @cyclops/core published on npm; self-hosters can install and extend CyclOps detectors
 - [ ] **Phase 5: Slack Integration & Marketplace** - CyclOps listed on GitHub Marketplace with paid tiers; Slack integration live
 
@@ -69,13 +69,13 @@ Plans:
 **Plans**: 7 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Data foundation: Finding + TokenUsage models, encryptedApiKey, RLS migration, core types, AiAnalysisJob schema
-- [ ] 02-02-PLAN.md — packages/detectors: all 6 pure detectors + log-utils + runAllDetectors
-- [ ] 02-03-PLAN.md — packages/ai: FindingSchema, Anthropic client, analyzeFailure, checkTokenBudget
-- [ ] 02-04-PLAN.md — AES-256-GCM encryption in core + POST /setup/:installationId (BYOK)
-- [ ] 02-05-PLAN.md — DetectorDispatchWorker + GitHub Actions API lib + webhook-ingestion dispatch
-- [ ] 02-06-PLAN.md — AiAnalysisWorker: budget gate, decrypt, enrich, high-confidence routing
-- [ ] 02-07-PLAN.md — Env var docs + end-to-end verification checkpoint
+- [x] 02-01-PLAN.md — Data foundation: Finding + TokenUsage models, encryptedApiKey, RLS migration, core types, AiAnalysisJob schema
+- [x] 02-02-PLAN.md — packages/detectors: all 6 pure detectors + log-utils + runAllDetectors
+- [x] 02-03-PLAN.md — packages/ai: FindingSchema, Anthropic client, analyzeFailure, checkTokenBudget
+- [x] 02-04-PLAN.md — AES-256-GCM encryption in core + POST /setup/:installationId (BYOK)
+- [x] 02-05-PLAN.md — DetectorDispatchWorker + GitHub Actions API lib + webhook-ingestion dispatch
+- [x] 02-06-PLAN.md — AiAnalysisWorker: budget gate, decrypt, enrich, high-confidence routing
+- [x] 02-07-PLAN.md — Env var docs + end-to-end verification checkpoint
 
 ---
 
@@ -99,13 +99,13 @@ Plans:
 **Plans**: 7 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — DB schema additions: PrComment, ActionDedup, AutofixPr, TrackedIssue models + cyclopsCheckRunId on Finding; ActionExecutionJobSchema with findingId + typed actionType enum
-- [ ] 03-02-PLAN.md — packages/config: CyclopsConfigSchema (I/O-free Zod) + fetchConfig loader with 60s TTL cache; js-yaml added to worker
-- [ ] 03-03-PLAN.md — Action execution worker skeleton: handler map (8 stubs), config load + kill switches, finding DB load; ai-analysis.ts dispatches typed action types per detector
-- [ ] 03-04-PLAN.md — Core output channels: handleUpsertPrComment (DB-tracked, PATCH in-place) + handleUpdateCheckRun (50-annotation batching, cyclopsCheckRunId persisted)
-- [ ] 03-05-PLAN.md — Autofix PRs: handleAutofixLint + handleAutofixSnapshot via Git Data API 5-step chain; AutofixPr dedup + rate limiting
-- [ ] 03-06-PLAN.md — Secondary actions: handleRerunWorkflow, handleCancelWorkflow (409-safe), handleSlackAlert (native fetch), handleCreateGithubIssue; all with ActionDedup 24h window
-- [ ] 03-07-PLAN.md — ActionDedup cleanup + end-to-end verification checkpoint for all 5 phase success criteria
+- [x] 03-01-PLAN.md — DB schema additions: PrComment, ActionDedup, AutofixPr, TrackedIssue models + cyclopsCheckRunId on Finding; ActionExecutionJobSchema with findingId + typed actionType enum
+- [x] 03-02-PLAN.md — packages/config: CyclopsConfigSchema (I/O-free Zod) + fetchConfig loader with 60s TTL cache; js-yaml added to worker
+- [x] 03-03-PLAN.md — Action execution worker skeleton: handler map (8 stubs), config load + kill switches, finding DB load; ai-analysis.ts dispatches typed action types per detector
+- [x] 03-04-PLAN.md — Core output channels: handleUpsertPrComment (DB-tracked, PATCH in-place) + handleUpdateCheckRun (50-annotation batching, cyclopsCheckRunId persisted)
+- [x] 03-05-PLAN.md — Autofix PRs: handleAutofixLint + handleAutofixSnapshot via Git Data API 5-step chain; AutofixPr dedup + rate limiting
+- [x] 03-06-PLAN.md — Secondary actions: handleRerunWorkflow, handleCancelWorkflow (409-safe), handleSlackAlert (native fetch), handleCreateGithubIssue; all with ActionDedup 24h window
+- [x] 03-07-PLAN.md — ActionDedup cleanup + end-to-end verification checkpoint for all 5 phase success criteria
 
 ---
 
@@ -125,10 +125,8 @@ Plans:
 
 ---
 
-**Plans**: TBD
-
-Plans:
-- [ ] 04-01: TBD
+**Plans**:
+- [ ] 04-01-PLAN.md — Package rename: `@ciintel/*` → `@cyclops/*` across all package.json names, internal workspace imports, tsconfig paths, and Prisma schema; update root turbo.json and pnpm-workspace.yaml; verify `pnpm install && pnpm build` clean
 
 ---
 
@@ -165,7 +163,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. GitHub App Foundation | 6/6 | Complete | 2026-07-13 |
 | 2. Detector Pipeline & AI Analysis | 7/7 | Complete | 2026-07-13 |
-| 3. Action Engine & Output Channels | 0/7 | Not started | - |
+| 3. Action Engine & Output Channels | 7/7 | Complete | 2026-07-14 |
 | 4. Public SDK | 0/TBD | Not started | - |
 | 5. Slack Integration & Marketplace | 0/TBD | Not started | - |
 
