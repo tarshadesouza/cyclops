@@ -1,5 +1,5 @@
 {
-  "name": "@cyclops/core",
+  "name": "@tarshadesouza/core",
   "version": "0.0.0",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -25,7 +25,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tsouza/ciintel.git"
+    "url": "git+https://github.com/tdsouza/cyclops.git"
   },
   "scripts": {
     "build": "tsup",
