@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 
 ## Current Position
 
-Phase: 3 of 5 (Action Engine & Output Channels) — COMPLETE
-Plan: 7 of 7 in phase 3 — COMPLETE
-Status: Phase 3 execution complete — all 7 plans done; live e2e deferred to first deploy
-Last activity: 2026-07-14 — Completed 03-07 (ActionDedup cleanup, dedup audit, checkpoint approved)
+Phase: 4 of 5 (Public SDK) — In progress
+Plan: 1 of ~6 in phase 4 — COMPLETE
+Status: Phase 4 plan 01 complete — @ciintel → @cyclops scope rename done; pnpm build clean
+Last activity: 2026-07-14 — Completed 04-01 (full monorepo scope rename @ciintel/* → @cyclops/*)
 
-Progress: [████████████████░] 76% (20/26 estimated plans)
+Progress: [█████████████████░] 78% (21/27 estimated plans)
 
 ## Performance Metrics
 
@@ -30,6 +30,7 @@ Progress: [████████████████░] 76% (20/26 estim
 | 1. GitHub App Foundation | 6/6 | ~27m | 4m 27s |
 | 2. Detector Pipeline & AI Analysis | 7/7 | ~28m | 4m 0s |
 | 3. Action Engine & Output Channels | 7/7 | ~24m | 3m 25s |
+| 4. Public SDK | 1/~6 | ~3m | 3m 0s |
 
 **Recent Trend:**
 - Last 19 plans: 01-01 (3m 8s), 01-02 (2m 52s), 01-03 (9m), 01-04 (2m 52s), 01-05 (2m 46s), 01-06 (~3m), 02-01 (4m 21s), 02-02 (3m 1s), 02-03 (5m), 02-04 (1m 59s), 02-05 (4m 53s), 02-06 (2m 42s), 02-07 (6m 44s), 03-01 (3m 29s), 03-02 (4m 22s), 03-03 (3m), 03-04 (3m 11s), 03-06 (3m), 03-07 (5m)
@@ -123,10 +124,13 @@ Recent decisions affecting current work:
 - [03-07]: ActionDedup cleanup runs after handler success (not finally) — avoids DB write pressure on error/retry paths
 - [03-07]: 1% probability cleanup sufficient to bound table growth without measurable per-job latency
 - [03-07]: All 8 handler dedup strategies confirmed present — no gaps found in audit
+- [04-01]: tsconfig references are path-based — zero changes needed for scope rename
+- [04-01]: pnpm-workspace.yaml and turbo.json require no changes — globs and task names are name-agnostic
+- [04-01]: @cyclops/* is the stable npm scope for all workspace packages; root package is cyclops (no scope)
 
 ### Pending Todos
 
-- Pre-deploy: apply DATABASE_URL then run `pnpm --filter @ciintel/db db:migrate` (migrations 0003_phase2 and 0004_phase3_action_tables)
+- Pre-deploy: apply DATABASE_URL then run `pnpm --filter @cyclops/db db:migrate` (migrations 0003_phase2 and 0004_phase3_action_tables)
 - Pre-deploy: configure Railway Redis maxmemory-policy=noeviction and appendonly=yes
 - Pre-deploy: set DATABASE_URL to port 6543 (PgBouncer) in production Railway env
 - Pre-deploy: run ./scripts/test-webhook.sh to verify end-to-end delivery
@@ -149,5 +153,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-07-14
-Stopped at: Completed 03-07-PLAN.md — Phase 3 complete; checkpoint approved (Option A, live e2e deferred to first deploy); Phase 4 (API Endpoints) can begin.
+Stopped at: Completed 04-01-PLAN.md — monorepo scope rename @ciintel/* → @cyclops/* complete; pnpm install + build clean
 Resume file: None
