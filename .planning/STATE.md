@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-07-13)
 ## Current Position
 
 Phase: 5 of 5 (Slack Integration & Marketplace) — In progress
-Plan: 3/? complete (05-01 and 05-03 complete; 05-02 in parallel wave)
-Status: GET /status public health endpoint live; billing schema + billingQueue wired
-Last activity: 2026-07-14 — Completed 05-03 (GET /status with DB + Redis + queue depth checks, MKT-03 satisfied)
+Plan: 3/? complete (05-01, 05-02, 05-03 complete)
+Status: Marketplace webhook route + BillingWorker live; billing state machine wired end-to-end
+Last activity: 2026-07-14 — Completed 05-02 (POST /marketplace/webhooks, BillingWorker, future-dated cancellation guard)
 
 Progress: [█████████████████████░] 97% (29/~30 estimated plans)
 
@@ -144,6 +144,9 @@ Recent decisions affecting current work:
 - [05-03]: GET /status uses app.redis (Fastify decorator) not getRedis() from @cyclops/queue — API has its own Redis singleton; two connections avoided
 - [05-03]: /status has no auth guard — publicly accessible per MKT-03; returns 503 when any component fails
 - [05-01]: @cyclops/core renamed to @tdesouza/cyclops in Phase 4; stale import in ai-analysis.ts fixed (Rule 3)
+- [05-02]: MARKETPLACE_WEBHOOK_SECRET separate from GITHUB_WEBHOOK_SECRET — marketplace events lack installation.id; dedicated route and secret required
+- [05-02]: Future-dated cancellation guard in BillingWorker checks billingCancelAt > new Date() — partial update (billingCancelAt only) keeps billingStatus active until lazy expiry flip
+- [05-02]: accountType cast to "Organization"|"User" literal before jobData construction — TS strict mode requirement; safeParse validates at runtime
 
 ### Pending Todos
 
@@ -170,5 +173,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-07-14
-Stopped at: Completed 05-03-PLAN.md — GET /status public health endpoint (DB + Redis + queue depth), statusRoutes registered in api/src/index.ts
+Stopped at: Completed 05-02-PLAN.md — POST /marketplace/webhooks route, BillingWorker with deriveTransition(), future-dated cancellation guard
 Resume file: None
