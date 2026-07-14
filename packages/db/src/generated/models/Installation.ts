@@ -30,12 +30,14 @@ export type InstallationAvgAggregateOutputType = {
   id: number | null
   appId: number | null
   targetId: number | null
+  marketplacePlanId: number | null
 }
 
 export type InstallationSumAggregateOutputType = {
   id: number | null
   appId: number | null
   targetId: number | null
+  marketplacePlanId: number | null
 }
 
 export type InstallationMinAggregateOutputType = {
@@ -47,6 +49,14 @@ export type InstallationMinAggregateOutputType = {
   targetType: string | null
   suspended: boolean | null
   encryptedApiKey: string | null
+  billingStatus: string | null
+  trialEndsAt: Date | null
+  billingCancelAt: Date | null
+  marketplacePlanId: number | null
+  marketplacePlanName: string | null
+  encryptedSlackToken: string | null
+  slackTeamId: string | null
+  slackTeamName: string | null
   deletedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -61,6 +71,14 @@ export type InstallationMaxAggregateOutputType = {
   targetType: string | null
   suspended: boolean | null
   encryptedApiKey: string | null
+  billingStatus: string | null
+  trialEndsAt: Date | null
+  billingCancelAt: Date | null
+  marketplacePlanId: number | null
+  marketplacePlanName: string | null
+  encryptedSlackToken: string | null
+  slackTeamId: string | null
+  slackTeamName: string | null
   deletedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -75,6 +93,14 @@ export type InstallationCountAggregateOutputType = {
   targetType: number
   suspended: number
   encryptedApiKey: number
+  billingStatus: number
+  trialEndsAt: number
+  billingCancelAt: number
+  marketplacePlanId: number
+  marketplacePlanName: number
+  encryptedSlackToken: number
+  slackTeamId: number
+  slackTeamName: number
   deletedAt: number
   createdAt: number
   updatedAt: number
@@ -86,12 +112,14 @@ export type InstallationAvgAggregateInputType = {
   id?: true
   appId?: true
   targetId?: true
+  marketplacePlanId?: true
 }
 
 export type InstallationSumAggregateInputType = {
   id?: true
   appId?: true
   targetId?: true
+  marketplacePlanId?: true
 }
 
 export type InstallationMinAggregateInputType = {
@@ -103,6 +131,14 @@ export type InstallationMinAggregateInputType = {
   targetType?: true
   suspended?: true
   encryptedApiKey?: true
+  billingStatus?: true
+  trialEndsAt?: true
+  billingCancelAt?: true
+  marketplacePlanId?: true
+  marketplacePlanName?: true
+  encryptedSlackToken?: true
+  slackTeamId?: true
+  slackTeamName?: true
   deletedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -117,6 +153,14 @@ export type InstallationMaxAggregateInputType = {
   targetType?: true
   suspended?: true
   encryptedApiKey?: true
+  billingStatus?: true
+  trialEndsAt?: true
+  billingCancelAt?: true
+  marketplacePlanId?: true
+  marketplacePlanName?: true
+  encryptedSlackToken?: true
+  slackTeamId?: true
+  slackTeamName?: true
   deletedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -131,6 +175,14 @@ export type InstallationCountAggregateInputType = {
   targetType?: true
   suspended?: true
   encryptedApiKey?: true
+  billingStatus?: true
+  trialEndsAt?: true
+  billingCancelAt?: true
+  marketplacePlanId?: true
+  marketplacePlanName?: true
+  encryptedSlackToken?: true
+  slackTeamId?: true
+  slackTeamName?: true
   deletedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -232,6 +284,14 @@ export type InstallationGroupByOutputType = {
   targetType: string
   suspended: boolean
   encryptedApiKey: string | null
+  billingStatus: string
+  trialEndsAt: Date | null
+  billingCancelAt: Date | null
+  marketplacePlanId: number | null
+  marketplacePlanName: string | null
+  encryptedSlackToken: string | null
+  slackTeamId: string | null
+  slackTeamName: string | null
   deletedAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -269,6 +329,14 @@ export type InstallationWhereInput = {
   targetType?: Prisma.StringFilter<"Installation"> | string
   suspended?: Prisma.BoolFilter<"Installation"> | boolean
   encryptedApiKey?: Prisma.StringNullableFilter<"Installation"> | string | null
+  billingStatus?: Prisma.StringFilter<"Installation"> | string
+  trialEndsAt?: Prisma.DateTimeNullableFilter<"Installation"> | Date | string | null
+  billingCancelAt?: Prisma.DateTimeNullableFilter<"Installation"> | Date | string | null
+  marketplacePlanId?: Prisma.IntNullableFilter<"Installation"> | number | null
+  marketplacePlanName?: Prisma.StringNullableFilter<"Installation"> | string | null
+  encryptedSlackToken?: Prisma.StringNullableFilter<"Installation"> | string | null
+  slackTeamId?: Prisma.StringNullableFilter<"Installation"> | string | null
+  slackTeamName?: Prisma.StringNullableFilter<"Installation"> | string | null
   deletedAt?: Prisma.DateTimeNullableFilter<"Installation"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Installation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Installation"> | Date | string
@@ -286,6 +354,14 @@ export type InstallationOrderByWithRelationInput = {
   targetType?: Prisma.SortOrder
   suspended?: Prisma.SortOrder
   encryptedApiKey?: Prisma.SortOrderInput | Prisma.SortOrder
+  billingStatus?: Prisma.SortOrder
+  trialEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  billingCancelAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  marketplacePlanId?: Prisma.SortOrderInput | Prisma.SortOrder
+  marketplacePlanName?: Prisma.SortOrderInput | Prisma.SortOrder
+  encryptedSlackToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  slackTeamId?: Prisma.SortOrderInput | Prisma.SortOrder
+  slackTeamName?: Prisma.SortOrderInput | Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -296,23 +372,31 @@ export type InstallationOrderByWithRelationInput = {
 
 export type InstallationWhereUniqueInput = Prisma.AtLeast<{
   id?: number
+  targetId?: number
   AND?: Prisma.InstallationWhereInput | Prisma.InstallationWhereInput[]
   OR?: Prisma.InstallationWhereInput[]
   NOT?: Prisma.InstallationWhereInput | Prisma.InstallationWhereInput[]
   accountLogin?: Prisma.StringFilter<"Installation"> | string
   accountType?: Prisma.StringFilter<"Installation"> | string
   appId?: Prisma.IntFilter<"Installation"> | number
-  targetId?: Prisma.IntFilter<"Installation"> | number
   targetType?: Prisma.StringFilter<"Installation"> | string
   suspended?: Prisma.BoolFilter<"Installation"> | boolean
   encryptedApiKey?: Prisma.StringNullableFilter<"Installation"> | string | null
+  billingStatus?: Prisma.StringFilter<"Installation"> | string
+  trialEndsAt?: Prisma.DateTimeNullableFilter<"Installation"> | Date | string | null
+  billingCancelAt?: Prisma.DateTimeNullableFilter<"Installation"> | Date | string | null
+  marketplacePlanId?: Prisma.IntNullableFilter<"Installation"> | number | null
+  marketplacePlanName?: Prisma.StringNullableFilter<"Installation"> | string | null
+  encryptedSlackToken?: Prisma.StringNullableFilter<"Installation"> | string | null
+  slackTeamId?: Prisma.StringNullableFilter<"Installation"> | string | null
+  slackTeamName?: Prisma.StringNullableFilter<"Installation"> | string | null
   deletedAt?: Prisma.DateTimeNullableFilter<"Installation"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Installation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Installation"> | Date | string
   webhookDeliveries?: Prisma.WebhookDeliveryListRelationFilter
   findings?: Prisma.FindingListRelationFilter
   tokenUsages?: Prisma.TokenUsageListRelationFilter
-}, "id">
+}, "id" | "targetId">
 
 export type InstallationOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -323,6 +407,14 @@ export type InstallationOrderByWithAggregationInput = {
   targetType?: Prisma.SortOrder
   suspended?: Prisma.SortOrder
   encryptedApiKey?: Prisma.SortOrderInput | Prisma.SortOrder
+  billingStatus?: Prisma.SortOrder
+  trialEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  billingCancelAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  marketplacePlanId?: Prisma.SortOrderInput | Prisma.SortOrder
+  marketplacePlanName?: Prisma.SortOrderInput | Prisma.SortOrder
+  encryptedSlackToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  slackTeamId?: Prisma.SortOrderInput | Prisma.SortOrder
+  slackTeamName?: Prisma.SortOrderInput | Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -345,6 +437,14 @@ export type InstallationScalarWhereWithAggregatesInput = {
   targetType?: Prisma.StringWithAggregatesFilter<"Installation"> | string
   suspended?: Prisma.BoolWithAggregatesFilter<"Installation"> | boolean
   encryptedApiKey?: Prisma.StringNullableWithAggregatesFilter<"Installation"> | string | null
+  billingStatus?: Prisma.StringWithAggregatesFilter<"Installation"> | string
+  trialEndsAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Installation"> | Date | string | null
+  billingCancelAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Installation"> | Date | string | null
+  marketplacePlanId?: Prisma.IntNullableWithAggregatesFilter<"Installation"> | number | null
+  marketplacePlanName?: Prisma.StringNullableWithAggregatesFilter<"Installation"> | string | null
+  encryptedSlackToken?: Prisma.StringNullableWithAggregatesFilter<"Installation"> | string | null
+  slackTeamId?: Prisma.StringNullableWithAggregatesFilter<"Installation"> | string | null
+  slackTeamName?: Prisma.StringNullableWithAggregatesFilter<"Installation"> | string | null
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Installation"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Installation"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Installation"> | Date | string
@@ -359,6 +459,14 @@ export type InstallationCreateInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  billingStatus?: string
+  trialEndsAt?: Date | string | null
+  billingCancelAt?: Date | string | null
+  marketplacePlanId?: number | null
+  marketplacePlanName?: string | null
+  encryptedSlackToken?: string | null
+  slackTeamId?: string | null
+  slackTeamName?: string | null
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -376,6 +484,14 @@ export type InstallationUncheckedCreateInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  billingStatus?: string
+  trialEndsAt?: Date | string | null
+  billingCancelAt?: Date | string | null
+  marketplacePlanId?: number | null
+  marketplacePlanName?: string | null
+  encryptedSlackToken?: string | null
+  slackTeamId?: string | null
+  slackTeamName?: string | null
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -393,6 +509,14 @@ export type InstallationUpdateInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  marketplacePlanId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  marketplacePlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  encryptedSlackToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -410,6 +534,14 @@ export type InstallationUncheckedUpdateInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  marketplacePlanId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  marketplacePlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  encryptedSlackToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -427,6 +559,14 @@ export type InstallationCreateManyInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  billingStatus?: string
+  trialEndsAt?: Date | string | null
+  billingCancelAt?: Date | string | null
+  marketplacePlanId?: number | null
+  marketplacePlanName?: string | null
+  encryptedSlackToken?: string | null
+  slackTeamId?: string | null
+  slackTeamName?: string | null
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -441,6 +581,14 @@ export type InstallationUpdateManyMutationInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  marketplacePlanId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  marketplacePlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  encryptedSlackToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -455,6 +603,14 @@ export type InstallationUncheckedUpdateManyInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  marketplacePlanId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  marketplacePlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  encryptedSlackToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -469,6 +625,14 @@ export type InstallationCountOrderByAggregateInput = {
   targetType?: Prisma.SortOrder
   suspended?: Prisma.SortOrder
   encryptedApiKey?: Prisma.SortOrder
+  billingStatus?: Prisma.SortOrder
+  trialEndsAt?: Prisma.SortOrder
+  billingCancelAt?: Prisma.SortOrder
+  marketplacePlanId?: Prisma.SortOrder
+  marketplacePlanName?: Prisma.SortOrder
+  encryptedSlackToken?: Prisma.SortOrder
+  slackTeamId?: Prisma.SortOrder
+  slackTeamName?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -478,6 +642,7 @@ export type InstallationAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   appId?: Prisma.SortOrder
   targetId?: Prisma.SortOrder
+  marketplacePlanId?: Prisma.SortOrder
 }
 
 export type InstallationMaxOrderByAggregateInput = {
@@ -489,6 +654,14 @@ export type InstallationMaxOrderByAggregateInput = {
   targetType?: Prisma.SortOrder
   suspended?: Prisma.SortOrder
   encryptedApiKey?: Prisma.SortOrder
+  billingStatus?: Prisma.SortOrder
+  trialEndsAt?: Prisma.SortOrder
+  billingCancelAt?: Prisma.SortOrder
+  marketplacePlanId?: Prisma.SortOrder
+  marketplacePlanName?: Prisma.SortOrder
+  encryptedSlackToken?: Prisma.SortOrder
+  slackTeamId?: Prisma.SortOrder
+  slackTeamName?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -503,6 +676,14 @@ export type InstallationMinOrderByAggregateInput = {
   targetType?: Prisma.SortOrder
   suspended?: Prisma.SortOrder
   encryptedApiKey?: Prisma.SortOrder
+  billingStatus?: Prisma.SortOrder
+  trialEndsAt?: Prisma.SortOrder
+  billingCancelAt?: Prisma.SortOrder
+  marketplacePlanId?: Prisma.SortOrder
+  marketplacePlanName?: Prisma.SortOrder
+  encryptedSlackToken?: Prisma.SortOrder
+  slackTeamId?: Prisma.SortOrder
+  slackTeamName?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -512,6 +693,7 @@ export type InstallationSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   appId?: Prisma.SortOrder
   targetId?: Prisma.SortOrder
+  marketplacePlanId?: Prisma.SortOrder
 }
 
 export type InstallationScalarRelationFilter = {
@@ -541,6 +723,14 @@ export type NullableStringFieldUpdateOperationsInput = {
 
 export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -598,6 +788,14 @@ export type InstallationCreateWithoutFindingsInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  billingStatus?: string
+  trialEndsAt?: Date | string | null
+  billingCancelAt?: Date | string | null
+  marketplacePlanId?: number | null
+  marketplacePlanName?: string | null
+  encryptedSlackToken?: string | null
+  slackTeamId?: string | null
+  slackTeamName?: string | null
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -614,6 +812,14 @@ export type InstallationUncheckedCreateWithoutFindingsInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  billingStatus?: string
+  trialEndsAt?: Date | string | null
+  billingCancelAt?: Date | string | null
+  marketplacePlanId?: number | null
+  marketplacePlanName?: string | null
+  encryptedSlackToken?: string | null
+  slackTeamId?: string | null
+  slackTeamName?: string | null
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -646,6 +852,14 @@ export type InstallationUpdateWithoutFindingsInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  marketplacePlanId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  marketplacePlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  encryptedSlackToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -662,6 +876,14 @@ export type InstallationUncheckedUpdateWithoutFindingsInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  marketplacePlanId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  marketplacePlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  encryptedSlackToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -678,6 +900,14 @@ export type InstallationCreateWithoutTokenUsagesInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  billingStatus?: string
+  trialEndsAt?: Date | string | null
+  billingCancelAt?: Date | string | null
+  marketplacePlanId?: number | null
+  marketplacePlanName?: string | null
+  encryptedSlackToken?: string | null
+  slackTeamId?: string | null
+  slackTeamName?: string | null
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -694,6 +924,14 @@ export type InstallationUncheckedCreateWithoutTokenUsagesInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  billingStatus?: string
+  trialEndsAt?: Date | string | null
+  billingCancelAt?: Date | string | null
+  marketplacePlanId?: number | null
+  marketplacePlanName?: string | null
+  encryptedSlackToken?: string | null
+  slackTeamId?: string | null
+  slackTeamName?: string | null
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -726,6 +964,14 @@ export type InstallationUpdateWithoutTokenUsagesInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  marketplacePlanId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  marketplacePlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  encryptedSlackToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -742,6 +988,14 @@ export type InstallationUncheckedUpdateWithoutTokenUsagesInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  marketplacePlanId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  marketplacePlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  encryptedSlackToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -758,6 +1012,14 @@ export type InstallationCreateWithoutWebhookDeliveriesInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  billingStatus?: string
+  trialEndsAt?: Date | string | null
+  billingCancelAt?: Date | string | null
+  marketplacePlanId?: number | null
+  marketplacePlanName?: string | null
+  encryptedSlackToken?: string | null
+  slackTeamId?: string | null
+  slackTeamName?: string | null
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -774,6 +1036,14 @@ export type InstallationUncheckedCreateWithoutWebhookDeliveriesInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  billingStatus?: string
+  trialEndsAt?: Date | string | null
+  billingCancelAt?: Date | string | null
+  marketplacePlanId?: number | null
+  marketplacePlanName?: string | null
+  encryptedSlackToken?: string | null
+  slackTeamId?: string | null
+  slackTeamName?: string | null
   deletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -806,6 +1076,14 @@ export type InstallationUpdateWithoutWebhookDeliveriesInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  marketplacePlanId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  marketplacePlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  encryptedSlackToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -822,6 +1100,14 @@ export type InstallationUncheckedUpdateWithoutWebhookDeliveriesInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  marketplacePlanId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  marketplacePlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  encryptedSlackToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -887,6 +1173,14 @@ export type InstallationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   targetType?: boolean
   suspended?: boolean
   encryptedApiKey?: boolean
+  billingStatus?: boolean
+  trialEndsAt?: boolean
+  billingCancelAt?: boolean
+  marketplacePlanId?: boolean
+  marketplacePlanName?: boolean
+  encryptedSlackToken?: boolean
+  slackTeamId?: boolean
+  slackTeamName?: boolean
   deletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -905,6 +1199,14 @@ export type InstallationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   targetType?: boolean
   suspended?: boolean
   encryptedApiKey?: boolean
+  billingStatus?: boolean
+  trialEndsAt?: boolean
+  billingCancelAt?: boolean
+  marketplacePlanId?: boolean
+  marketplacePlanName?: boolean
+  encryptedSlackToken?: boolean
+  slackTeamId?: boolean
+  slackTeamName?: boolean
   deletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -919,6 +1221,14 @@ export type InstallationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   targetType?: boolean
   suspended?: boolean
   encryptedApiKey?: boolean
+  billingStatus?: boolean
+  trialEndsAt?: boolean
+  billingCancelAt?: boolean
+  marketplacePlanId?: boolean
+  marketplacePlanName?: boolean
+  encryptedSlackToken?: boolean
+  slackTeamId?: boolean
+  slackTeamName?: boolean
   deletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -933,12 +1243,20 @@ export type InstallationSelectScalar = {
   targetType?: boolean
   suspended?: boolean
   encryptedApiKey?: boolean
+  billingStatus?: boolean
+  trialEndsAt?: boolean
+  billingCancelAt?: boolean
+  marketplacePlanId?: boolean
+  marketplacePlanName?: boolean
+  encryptedSlackToken?: boolean
+  slackTeamId?: boolean
+  slackTeamName?: boolean
   deletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type InstallationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "accountLogin" | "accountType" | "appId" | "targetId" | "targetType" | "suspended" | "encryptedApiKey" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["installation"]>
+export type InstallationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "accountLogin" | "accountType" | "appId" | "targetId" | "targetType" | "suspended" | "encryptedApiKey" | "billingStatus" | "trialEndsAt" | "billingCancelAt" | "marketplacePlanId" | "marketplacePlanName" | "encryptedSlackToken" | "slackTeamId" | "slackTeamName" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["installation"]>
 export type InstallationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   webhookDeliveries?: boolean | Prisma.Installation$webhookDeliveriesArgs<ExtArgs>
   findings?: boolean | Prisma.Installation$findingsArgs<ExtArgs>
@@ -964,6 +1282,14 @@ export type $InstallationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     targetType: string
     suspended: boolean
     encryptedApiKey: string | null
+    billingStatus: string
+    trialEndsAt: Date | null
+    billingCancelAt: Date | null
+    marketplacePlanId: number | null
+    marketplacePlanName: string | null
+    encryptedSlackToken: string | null
+    slackTeamId: string | null
+    slackTeamName: string | null
     deletedAt: Date | null
     createdAt: Date
     updatedAt: Date
@@ -1401,6 +1727,14 @@ export interface InstallationFieldRefs {
   readonly targetType: Prisma.FieldRef<"Installation", 'String'>
   readonly suspended: Prisma.FieldRef<"Installation", 'Boolean'>
   readonly encryptedApiKey: Prisma.FieldRef<"Installation", 'String'>
+  readonly billingStatus: Prisma.FieldRef<"Installation", 'String'>
+  readonly trialEndsAt: Prisma.FieldRef<"Installation", 'DateTime'>
+  readonly billingCancelAt: Prisma.FieldRef<"Installation", 'DateTime'>
+  readonly marketplacePlanId: Prisma.FieldRef<"Installation", 'Int'>
+  readonly marketplacePlanName: Prisma.FieldRef<"Installation", 'String'>
+  readonly encryptedSlackToken: Prisma.FieldRef<"Installation", 'String'>
+  readonly slackTeamId: Prisma.FieldRef<"Installation", 'String'>
+  readonly slackTeamName: Prisma.FieldRef<"Installation", 'String'>
   readonly deletedAt: Prisma.FieldRef<"Installation", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Installation", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Installation", 'DateTime'>

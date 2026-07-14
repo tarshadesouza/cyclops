@@ -13,11 +13,19 @@ model Installation {
   accountLogin      String
   accountType       String
   appId             Int
-  targetId          Int
+  targetId          Int       @unique
   targetType        String
   suspended         Boolean   @default(false)
-  encryptedApiKey   String?
-  deletedAt         DateTime?
+  encryptedApiKey     String?
+  billingStatus       String    @default("trial")
+  trialEndsAt         DateTime?
+  billingCancelAt     DateTime?
+  marketplacePlanId   Int?
+  marketplacePlanName String?
+  encryptedSlackToken String?
+  slackTeamId         String?
+  slackTeamName       String?
+  deletedAt           DateTime?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
