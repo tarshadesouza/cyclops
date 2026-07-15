@@ -1,6 +1,6 @@
 [build]
 builder = "RAILPACK"
-buildCommand = "pnpm --filter @ciintel/db run db:generate && pnpm --filter @ciintel/worker run build"
+buildCommand = "pnpm --filter @cyclops/db run db:generate && pnpm --filter @cyclops/worker run build"
 
 [deploy]
 startCommand = "node apps/worker/dist/index.js"

@@ -1,6 +1,6 @@
 [build]
 builder = "RAILPACK"
-buildCommand = "pnpm --filter @ciintel/db run db:generate && pnpm --filter @ciintel/api run build"
+buildCommand = "pnpm --filter @cyclops/db run db:generate && pnpm --filter @cyclops/api run build"
 
 [deploy]
 startCommand = "node apps/api/dist/index.js"
@@ -10,4 +10,4 @@ restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
 [deploy.preDeployCommand]
-command = "pnpm --filter @ciintel/db run db:migrate"
+command = "pnpm --filter @cyclops/db run db:migrate"
