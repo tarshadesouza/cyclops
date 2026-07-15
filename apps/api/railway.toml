@@ -1,6 +1,6 @@
 [build]
 builder = "RAILPACK"
-buildCommand = "pnpm --filter @cyclops/db run db:generate && pnpm --filter @cyclops/api run build"
+buildCommand = "pnpm --filter @cyclops/db run db:generate && pnpm exec turbo build --filter=@cyclops/api..."
 
 [deploy]
 startCommand = "node apps/api/dist/index.js"
