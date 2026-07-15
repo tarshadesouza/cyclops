@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CyclOps — CI failures, explained and fixed</title>
+<meta name="description" content="CyclOps is a GitHub App that classifies CI failures, explains the root cause, and executes safe auto-remediations — so you stop reading logs by hand." />
+<style>
+  :root {
+    --bg: #0a0e14;
+    --bg-elev: #111722;
+    --bg-card: #141b28;
+    --border: #1e2836;
+    --text: #e6edf3;
+    --text-dim: #8b97a7;
+    --text-faint: #5c6a7a;
+    --accent: #4dd0e1;
+    --accent-2: #7c9cff;
+    --good: #56d364;
+    --warn: #e3b341;
+    --bad: #f47067;
+    --radius: 14px;
+    --maxw: 1100px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+  .mono { font-family: "SF Mono", "JetBrains Mono", "Fira Code", ui-monospace, Menlo, monospace; }
+
+  /* nav */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(10,14,20,0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; letter-spacing: -0.02em; }
+  .brand .eye {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, var(--accent) 0 28%, var(--bg) 30% 42%, var(--accent-2) 44% 100%);
+    box-shadow: 0 0 16px rgba(77,208,225,0.5);
+    flex: none;
+  }
+  .nav-links { display: flex; gap: 28px; align-items: center; font-size: 14.5px; color: var(--text-dim); }
+  .nav-links a:hover { color: var(--text); }
+  .btn {
+    display: inline-block; padding: 10px 18px; border-radius: 10px; font-weight: 600; font-size: 14.5px;
+    background: var(--accent); color: #06232a; transition: transform .15s ease, box-shadow .15s ease;
+    box-shadow: 0 0 0 rgba(77,208,225,0);
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(77,208,225,0.25); }
+  .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn.ghost:hover { border-color: var(--accent); box-shadow: none; }
+
+  /* hero */
+  .hero { position: relative; padding: 110px 0 90px; text-align: center; }
+  .hero::before {
+    content: ""; position: absolute; inset: 0; z-index: -1;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 0%, rgba(124,156,255,0.14), transparent 70%),
+      radial-gradient(ellipse 50% 40% at 50% 10%, rgba(77,208,225,0.10), transparent 70%);
+  }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-dim);
+    border: 1px solid var(--border); background: var(--bg-elev); padding: 6px 14px; border-radius: 999px; margin-bottom: 28px;
+  }
+  .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--good); box-shadow: 0 0 8px var(--good); }
+  h1 {
+    font-size: clamp(34px, 6vw, 62px); line-height: 1.05; letter-spacing: -0.03em; font-weight: 800;
+    max-width: 900px; margin: 0 auto 22px;
+  }
+  h1 .grad {
+    background: linear-gradient(100deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .sub { font-size: clamp(16px, 2.2vw, 20px); color: var(--text-dim); max-width: 620px; margin: 0 auto 38px; }
+  .cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn.lg { padding: 14px 26px; font-size: 15.5px; }
+
+  /* section */
+  section { padding: 84px 0; }
+  .eyebrow { color: var(--accent); font-weight: 600; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+  h2 { font-size: clamp(26px, 4vw, 38px); letter-spacing: -0.02em; font-weight: 750; margin-bottom: 16px; }
+  .lead { color: var(--text-dim); font-size: 17px; max-width: 640px; }
+  .center { text-align: center; }
+  .center .lead { margin: 0 auto; }
+
+  /* pipeline */
+  .pipe { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 48px; }
+  .step {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 22px 18px; position: relative;
+  }
+  .step .n { font-size: 12px; color: var(--text-faint); font-weight: 700; }
+  .step h3 { font-size: 15.5px; margin: 8px 0 6px; letter-spacing: -0.01em; }
+  .step p { font-size: 13.5px; color: var(--text-dim); }
+  .step .ico { font-size: 22px; margin-bottom: 4px; }
+  @media (max-width: 860px){ .pipe { grid-template-columns: 1fr 1fr; } }
+
+  /* detectors */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 44px; }
+  @media (max-width: 860px){ .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px;
+    transition: border-color .2s ease, transform .2s ease;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-3px); }
+  .card .tag { font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; }
+  .tag.auto { background: rgba(86,211,100,0.12); color: var(--good); }
+  .tag.alert { background: rgba(227,179,65,0.12); color: var(--warn); }
+  .card h3 { font-size: 17px; margin: 14px 0 8px; letter-spacing: -0.01em; }
+  .card p { color: var(--text-dim); font-size: 14px; }
+
+  /* features */
+  .feat { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 44px; }
+  @media (max-width: 760px){ .feat { grid-template-columns: 1fr; } }
+  .feat .card { display: flex; gap: 16px; }
+  .feat .fico { font-size: 22px; flex: none; }
+
+  /* code sample */
+  .terminal { background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-top: 40px; }
+  .terminal .bar { display: flex; gap: 7px; padding: 13px 16px; border-bottom: 1px solid var(--border); }
+  .terminal .bar span { width: 11px; height: 11px; border-radius: 50%; background: #2a3646; }
+  .terminal pre { padding: 20px 22px; overflow-x: auto; font-size: 13.5px; line-height: 1.7; }
+  .terminal .c-dim { color: var(--text-faint); }
+  .terminal .c-acc { color: var(--accent); }
+  .terminal .c-good { color: var(--good); }
+  .terminal .c-warn { color: var(--warn); }
+
+  /* cta band */
+  .band { text-align: center; background: linear-gradient(180deg, var(--bg-elev), var(--bg)); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+  footer { padding: 44px 0; color: var(--text-faint); font-size: 13.5px; }
+  footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+  footer a:hover { color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand"><span class="eye"></span> CyclOps</div>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#detectors">Detectors</a>
+      <a href="#features">Features</a>
+      <a class="btn" href="#install">Install</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="pill"><span class="dot"></span> A GitHub App for CI reliability</div>
+    <h1>Your CI failed. <span class="grad">CyclOps already knows why.</span></h1>
+    <p class="sub">CyclOps watches your GitHub Actions, classifies every failure, explains the root cause in plain language, and executes safe auto-fixes — so you stop reading logs by hand.</p>
+    <div class="cta-row">
+      <a class="btn lg" href="#install">Add to GitHub</a>
+      <a class="btn lg ghost" href="#how">See how it works</a>
+    </div>
+  </div>
+</header>
+
+<section id="how" class="center">
+  <div class="wrap">
+    <div class="eyebrow">How it works</div>
+    <h2>From red build to root cause — automatically</h2>
+    <p class="lead">Every workflow failure flows through a five-stage pipeline. No dashboards to check, no logs to scroll.</p>
+    <div class="pipe">
+      <div class="step"><div class="ico">📡</div><div class="n">01</div><h3>Ingest</h3><p>A workflow fails. GitHub webhook fires; the event is queued in milliseconds.</p></div>
+      <div class="step"><div class="ico">🔍</div><div class="n">02</div><h3>Detect</h3><p>Six detectors classify the failure — lint, tests, flaky, build, secrets, env.</p></div>
+      <div class="step"><div class="ico">🧠</div><div class="n">03</div><h3>Analyze</h3><p>AI enriches the finding with evidence, confidence, and a suggested fix.</p></div>
+      <div class="step"><div class="ico">⚡</div><div class="n">04</div><h3>Act</h3><p>High-confidence, low-risk issues get an auto-fix PR or one-click remediation.</p></div>
+      <div class="step"><div class="ico">💬</div><div class="n">05</div><h3>Report</h3><p>A single PR comment + Check Run tells you exactly what happened.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="detectors" class="band">
+  <div class="wrap center">
+    <div class="eyebrow">Detectors</div>
+    <h2>Six ways CyclOps reads a failure</h2>
+    <p class="lead">Each failure is classified before a single AI token is spent — so analysis is precise and cheap.</p>
+    <div class="grid" style="text-align:left">
+      <div class="card"><span class="tag auto">Auto-fix</span><h3>Lint violations</h3><p>Detects formatting and lint errors, then opens a PR with the fixes already applied.</p></div>
+      <div class="card"><span class="tag auto">Auto-fix</span><h3>Test failures</h3><p>Pinpoints the failing assertion and the change that most likely caused it.</p></div>
+      <div class="card"><span class="tag auto">Auto-action</span><h3>Flaky tests</h3><p>Recognizes intermittent failures from run history and re-runs instead of blocking you.</p></div>
+      <div class="card"><span class="tag alert">Alert</span><h3>Build failures</h3><p>Isolates compile and dependency errors with the exact offending line.</p></div>
+      <div class="card"><span class="tag alert">Alert</span><h3>Expired secrets</h3><p>Flags auth failures caused by rotated or expired credentials, and pings Slack.</p></div>
+      <div class="card"><span class="tag alert">Alert</span><h3>Missing env vars</h3><p>Catches configuration gaps before they cascade into confusing downstream errors.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <div class="center">
+      <div class="eyebrow">Built right</div>
+      <h2>Quiet, safe, and multi-tenant by design</h2>
+    </div>
+    <div class="feat">
+      <div class="card"><div class="fico">🔒</div><div><h3>Strict tenant isolation</h3><p>Per-installation data isolation enforced at both the query layer and Postgres RLS. Your data never crosses org lines.</p></div></div>
+      <div class="card"><div class="fico">🎯</div><div><h3>One comment, not ten</h3><p>Findings are deduplicated and consolidated into a single PR comment that updates in place — no notification spam.</p></div></div>
+      <div class="card"><div class="fico">🛡️</div><div><h3>Safe by default</h3><p>Only high-confidence, low-risk actions run automatically. Config kill-switches let you disable any behavior per repo.</p></div></div>
+      <div class="card"><div class="fico">🔑</div><div><h3>Bring your own key</h3><p>Use your own Anthropic key, or route through any Anthropic-compatible gateway. Keys are encrypted at rest.</p></div></div>
+      <div class="card"><div class="fico">⚙️</div><div><h3>Zero-config to start</h3><p>Install and go. Sensible defaults work out of the box; add an optional <span class="mono">.cyclops.yml</span> to customize.</p></div></div>
+      <div class="card"><div class="fico">📦</div><div><h3>Open, extensible SDK</h3><p>Ships as an npm package. Self-host it, or write your own detectors on top of the core.</p></div></div>
+    </div>
+
+    <div class="terminal mono">
+      <div class="bar"><span></span><span></span><span></span></div>
+<pre><span class="c-dim"># CI job fails on your PR…</span>
+<span class="c-acc">cyclops[bot]</span> commented on #142
+
+<span class="c-warn">⚠  Lint failure detected</span>  <span class="c-dim">(confidence 0.94)</span>
+  → 3 formatting errors in <span class="c-acc">src/api/routes.ts</span>
+  → Root cause: missing semicolons after refactor
+
+<span class="c-good">✓  Auto-fix PR opened → #143</span>
+<span class="c-good">✓  Check Run updated: 1 issue, 1 fix ready</span>
+</pre>
+    </div>
+  </div>
+</section>
+
+<section id="install" class="band center">
+  <div class="wrap">
+    <div class="eyebrow">Get started</div>
+    <h2>Install in under 30 seconds</h2>
+    <p class="lead">Add the GitHub App, pick your repos, and CyclOps starts watching immediately. No config required.</p>
+    <div class="cta-row" style="margin-top:32px">
+      <a class="btn lg" href="https://github.com/apps/cyclops-app" target="_blank" rel="noopener">Add to GitHub</a>
+      <a class="btn lg ghost" href="https://github.com/tarshadesouza/cyclops" target="_blank" rel="noopener">View source</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="brand" style="font-size:15px"><span class="eye"></span> CyclOps</div>
+    <div>
+      <a href="https://github.com/tarshadesouza/cyclops">GitHub</a> ·
+      <a href="#how">How it works</a> ·
+      <a href="#detectors">Detectors</a>
+    </div>
+    <div>An intelligent reliability layer for CI/CD.</div>
+  </div>
+</footer>
+
+</body>
+</html>
