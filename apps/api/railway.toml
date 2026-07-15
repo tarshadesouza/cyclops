@@ -9,5 +9,6 @@ healthcheckTimeout = 30
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
-[deploy.preDeployCommand]
-command = "pnpm --filter @cyclops/db run db:migrate"
+# preDeployCommand temporarily disabled — run migration manually before re-enabling
+# [deploy.preDeployCommand]
+# command = "pnpm --filter @cyclops/db run db:migrate"
