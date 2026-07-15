@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { webhookIngestionQueue } from "@cyclops/queue";
 import type { WebhookIngestionJob } from "@cyclops/queue";
@@ -28,12 +28,9 @@ export async function webhookRoutes(app: FastifyInstance): Promise<void> {
     throw new Error("GITHUB_WEBHOOK_SECRET environment variable is required");
   }
 
-  app.post(
-    "/webhooks",
-    {
-      config: { rawBody: true },
-    },
-    async (request, reply) => {
+  // Registered at both /webhooks and /webhooks/github so the GitHub App webhook
+  // URL works with or without the /github suffix.
+  const handler = async (request: FastifyRequest, reply: FastifyReply) => {
       const signature = request.headers["x-hub-signature-256"] as string | undefined;
       const deliveryId = request.headers["x-github-delivery"] as string | undefined;
       const eventName = request.headers["x-github-event"] as string | undefined;
@@ -84,6 +81,9 @@ export async function webhookRoutes(app: FastifyInstance): Promise<void> {
       app.log.info({ deliveryId, installationId, eventName }, "Webhook enqueued");
 
       return reply.status(202).send({ status: "accepted" });
-    }
-  );
+  };
+
+  const opts = { config: { rawBody: true } };
+  app.post("/webhooks", opts, handler);
+  app.post("/webhooks/github", opts, handler);
 }
