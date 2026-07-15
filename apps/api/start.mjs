@@ -2,18 +2,21 @@ import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
-const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "../..");
+// Resolve repo root: this file is at apps/api/start.mjs
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 console.log("[start] Running database migrations...");
 try {
-  execSync("node node_modules/prisma/build/index.js migrate deploy --config prisma.config.ts", {
-    cwd: path.join(root, "packages/db"),
+  execSync("pnpm --filter @cyclops/db run db:migrate", {
+    cwd: root,
     stdio: "inherit",
     env: { ...process.env },
   });
-  console.log("[start] Migrations complete, starting API server...");
+  console.log("[start] Migrations complete.");
 } catch (err) {
-  console.error("[start] Migration error (continuing):", err.message);
+  console.error("[start] Migration failed:", err.message);
+  process.exit(1);
 }
 
-await import("./apps/api/dist/index.js");
+console.log("[start] Starting API server...");
+await import("./dist/index.js");
