@@ -7,6 +7,7 @@ export default defineConfig({
   earlyAccess: true,
   schema: path.join(import.meta.dirname, "prisma/schema.prisma"),
   migrate: {
+    url: process.env["DATABASE_URL"]!,
     async adapter() {
       const pool = new pg.Pool({
         connectionString: process.env["DATABASE_URL"],
