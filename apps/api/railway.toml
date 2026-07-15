@@ -4,9 +4,10 @@ buildCommand = "pnpm --filter @cyclops/db run db:generate && pnpm exec turbo bui
 
 [deploy]
 startCommand = "node apps/api/dist/index.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 60
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
-# preDeployCommand temporarily disabled — run migration manually before re-enabling
-# [deploy.preDeployCommand]
-# command = "pnpm --filter @cyclops/db run db:migrate"
+[deploy.preDeployCommand]
+command = "pnpm --filter @cyclops/db run db:migrate"
