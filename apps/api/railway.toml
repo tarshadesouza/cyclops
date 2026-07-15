@@ -3,11 +3,10 @@ builder = "RAILPACK"
 buildCommand = "pnpm --filter @cyclops/db run db:generate && pnpm exec turbo build --filter=@cyclops/api..."
 
 [deploy]
-startCommand = "node apps/api/dist/index.js"
+startCommand = "node -e \"import('./packages/db/dist/migrate.js').then(() => import('./apps/api/dist/index.js')).catch(e => { console.error('Startup failed', e); process.exit(1); })\""
 healthcheckPath = "/health"
 healthcheckTimeout = 60
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
-[deploy.preDeployCommand]
-command = "pnpm --filter @cyclops/db run db:migrate 2>&1 || (echo 'MIGRATION FAILED' && exit 1)"
+# Migration runs at startup via startCommand wrapper
