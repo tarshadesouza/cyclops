@@ -1,7 +1,6 @@
-// Re-export shared types from @cyclops/core
-export type { DetectorType, DetectorResult, Violation } from '@cyclops/core';
+export type { DetectorType, DetectorResult, Violation } from '@tdesouza/cyclops';
 
-import type { DetectorType, DetectorResult, DetectorContext } from '@cyclops/core';
+import type { DetectorType, DetectorResult, DetectorContext } from '@tdesouza/cyclops';
 
 export type CheckRunHistoryEntry = { conclusion: string | null };
 
