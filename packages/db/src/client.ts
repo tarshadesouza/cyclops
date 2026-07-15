@@ -21,7 +21,7 @@ export function getDb(): any {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const _require = createRequire(import.meta.url);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { PrismaClient } = _require("./generated/index.js") as any;
+    const { PrismaClient } = _require("./generated/client.js") as any;
     client = new PrismaClient({ adapter });
   }
   return client;
