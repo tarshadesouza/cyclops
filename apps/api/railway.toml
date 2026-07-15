@@ -9,6 +9,5 @@ healthcheckTimeout = 60
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
-# Migration run manually on first deploy; re-enable for future schema changes
-# [deploy.preDeployCommand]
-# command = "pnpm --filter @cyclops/db run db:migrate"
+[deploy.preDeployCommand]
+command = "pnpm --filter @cyclops/db run db:migrate 2>&1 || (echo 'MIGRATION FAILED' && exit 1)"
