@@ -17,6 +17,11 @@ model Installation {
   targetType        String
   suspended         Boolean   @default(false)
   encryptedApiKey     String?
+  aiProvider          String    @default("direct")
+  aiBaseUrl           String?
+  aiHeaderName        String?
+  aiHeaderValue       String?
+  aiModel             String?
   billingStatus       String    @default("trial")
   trialEndsAt         DateTime?
   billingCancelAt     DateTime?

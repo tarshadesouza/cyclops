@@ -1,6 +1,6 @@
 import { generateObject, NoObjectGeneratedError } from 'ai';  // top-level 'ai' only — NOT subpaths
 import { FindingSchema, type FindingOutput } from './schema.js';
-import { createAnthropicForInstallation, CLAUDE_MODEL } from './client.js';
+import { createAnthropicForInstallation, type ProviderConfig } from './client.js';
 import type { DetectorType } from '@tdesouza/cyclops';
 
 const SYSTEM_PROMPT = `You are a CI/CD failure analyst. You receive CI log excerpts and classify failures.
@@ -23,20 +23,23 @@ Evidence must be direct quotes from the log, not paraphrases.`;
 export type AnalyzeInput = {
   logExcerpt: string;
   detectorType: DetectorType;
-  apiKey: string;
+  /** Provider config (direct Anthropic or a custom proxy). A bare string is treated as a direct-mode key. */
+  provider: ProviderConfig | string;
 };
 
 export type AnalyzeResult = {
   output: FindingOutput;
+  /** Model id actually used — recorded in token usage. */
+  model: string;
   usage: { promptTokens: number; completionTokens: number; totalTokens: number };
 };
 
 export async function analyzeFailure(input: AnalyzeInput): Promise<AnalyzeResult> {
-  const anthropic = createAnthropicForInstallation(input.apiKey);
+  const { anthropic, model } = createAnthropicForInstallation(input.provider);
 
   try {
     const { object, usage } = await generateObject({
-      model: anthropic(CLAUDE_MODEL),
+      model: anthropic(model),
       schema: FindingSchema,
       schemaName: 'CIFailureFinding',
       schemaDescription: 'Structured analysis of a CI failure',
@@ -48,6 +51,7 @@ export async function analyzeFailure(input: AnalyzeInput): Promise<AnalyzeResult
     // ai@7 renamed promptTokens → inputTokens, completionTokens → outputTokens
     return {
       output: object,
+      model,
       usage: {
         promptTokens:     usage.inputTokens     ?? 0,
         completionTokens: usage.outputTokens    ?? 0,

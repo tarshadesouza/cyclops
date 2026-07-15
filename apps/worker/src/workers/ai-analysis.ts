@@ -88,10 +88,17 @@ export function createAiAnalysisWorker(): Worker<AiAnalysisJob> {
         return { skipped: true, reason: "budget_exceeded" };
       }
 
-      // 6. LOAD KEY — decrypt per-job, never log
+      // 6. LOAD KEY + PROVIDER CONFIG — decrypt per-job, never log
       const inst = await db.installation.findUniqueOrThrow({
         where: { id: installationId },
-        select: { encryptedApiKey: true },
+        select: {
+          encryptedApiKey: true,
+          aiProvider: true,
+          aiBaseUrl: true,
+          aiHeaderName: true,
+          aiHeaderValue: true,
+          aiModel: true,
+        },
       });
       if (!inst.encryptedApiKey) {
         jobLog.warn({ installationId }, "No API key configured — skipping AI analysis");
@@ -106,7 +113,14 @@ export function createAiAnalysisWorker(): Worker<AiAnalysisJob> {
         result = await analyzeFailure({
           logExcerpt: finding.rawExcerpt ?? "",
           detectorType: finding.detectorType as DetectorType,
-          apiKey,
+          provider: {
+            apiKey,
+            provider: (inst.aiProvider as "direct" | "proxy") ?? "direct",
+            baseUrl: inst.aiBaseUrl ?? undefined,
+            headerName: inst.aiHeaderName ?? undefined,
+            headerValue: inst.aiHeaderValue ?? undefined,
+            model: inst.aiModel ?? undefined,
+          },
         });
       } catch (err) {
         jobLog.error({ err, findingId }, "AI analysis failed — will retry via BullMQ");
@@ -118,7 +132,7 @@ export function createAiAnalysisWorker(): Worker<AiAnalysisJob> {
         data: {
           installationId,
           detectorId: finding.detectorType,
-          model: "claude-sonnet-5",
+          model: result.model,
           inputTokens: result.usage.promptTokens,
           outputTokens: result.usage.completionTokens,
         },

@@ -40,22 +40,50 @@ export async function setupRoutes(app: FastifyInstance): Promise<void> {
       return reply.status(400).send({ error: "Invalid installationId" });
     }
 
-    // Validate API key format
+    // Parse body — provider defaults to "direct" for backward compatibility
     const body = request.body as Record<string, unknown>;
     const apiKey = typeof body["apiKey"] === "string" ? body["apiKey"] : undefined;
-    if (!apiKey || !apiKey.startsWith("sk-ant-")) {
-      return reply.status(400).send({ error: "Invalid Anthropic API key format" });
+    const provider = typeof body["provider"] === "string" ? body["provider"] : "direct";
+    const baseUrl = typeof body["baseUrl"] === "string" ? body["baseUrl"] : undefined;
+    const headerName = typeof body["headerName"] === "string" ? body["headerName"] : undefined;
+    const headerValue = typeof body["headerValue"] === "string" ? body["headerValue"] : undefined;
+    const model = typeof body["model"] === "string" ? body["model"] : undefined;
+
+    if (provider !== "direct" && provider !== "proxy") {
+      return reply.status(400).send({ error: "provider must be 'direct' or 'proxy'" });
+    }
+
+    if (!apiKey) {
+      return reply.status(400).send({ error: "apiKey is required" });
+    }
+    if (provider === "direct" && !apiKey.startsWith("sk-ant-")) {
+      return reply.status(400).send({ error: "Invalid Anthropic API key format (expected sk-ant-)" });
+    }
+    if (provider === "proxy") {
+      if (!baseUrl) {
+        return reply.status(400).send({ error: "baseUrl is required for provider 'proxy'" });
+      }
+      if (!model) {
+        return reply.status(400).send({ error: "model is required for provider 'proxy'" });
+      }
     }
 
     // Encrypt the key
     const encryptedApiKey = encryptApiKey(apiKey);
 
-    // Persist to DB
+    // Persist to DB — key encrypted; provider config stored as plain columns
     const db = getDb();
     try {
       await db.installation.update({
         where: { id: installationId },
-        data: { encryptedApiKey },
+        data: {
+          encryptedApiKey,
+          aiProvider: provider,
+          aiBaseUrl: baseUrl ?? null,
+          aiHeaderName: headerName ?? null,
+          aiHeaderValue: headerValue ?? null,
+          aiModel: model ?? null,
+        },
       });
     } catch (err: unknown) {
       // Prisma throws P2025 when the record is not found

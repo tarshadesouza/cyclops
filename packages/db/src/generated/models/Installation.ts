@@ -49,6 +49,11 @@ export type InstallationMinAggregateOutputType = {
   targetType: string | null
   suspended: boolean | null
   encryptedApiKey: string | null
+  aiProvider: string | null
+  aiBaseUrl: string | null
+  aiHeaderName: string | null
+  aiHeaderValue: string | null
+  aiModel: string | null
   billingStatus: string | null
   trialEndsAt: Date | null
   billingCancelAt: Date | null
@@ -71,6 +76,11 @@ export type InstallationMaxAggregateOutputType = {
   targetType: string | null
   suspended: boolean | null
   encryptedApiKey: string | null
+  aiProvider: string | null
+  aiBaseUrl: string | null
+  aiHeaderName: string | null
+  aiHeaderValue: string | null
+  aiModel: string | null
   billingStatus: string | null
   trialEndsAt: Date | null
   billingCancelAt: Date | null
@@ -93,6 +103,11 @@ export type InstallationCountAggregateOutputType = {
   targetType: number
   suspended: number
   encryptedApiKey: number
+  aiProvider: number
+  aiBaseUrl: number
+  aiHeaderName: number
+  aiHeaderValue: number
+  aiModel: number
   billingStatus: number
   trialEndsAt: number
   billingCancelAt: number
@@ -131,6 +146,11 @@ export type InstallationMinAggregateInputType = {
   targetType?: true
   suspended?: true
   encryptedApiKey?: true
+  aiProvider?: true
+  aiBaseUrl?: true
+  aiHeaderName?: true
+  aiHeaderValue?: true
+  aiModel?: true
   billingStatus?: true
   trialEndsAt?: true
   billingCancelAt?: true
@@ -153,6 +173,11 @@ export type InstallationMaxAggregateInputType = {
   targetType?: true
   suspended?: true
   encryptedApiKey?: true
+  aiProvider?: true
+  aiBaseUrl?: true
+  aiHeaderName?: true
+  aiHeaderValue?: true
+  aiModel?: true
   billingStatus?: true
   trialEndsAt?: true
   billingCancelAt?: true
@@ -175,6 +200,11 @@ export type InstallationCountAggregateInputType = {
   targetType?: true
   suspended?: true
   encryptedApiKey?: true
+  aiProvider?: true
+  aiBaseUrl?: true
+  aiHeaderName?: true
+  aiHeaderValue?: true
+  aiModel?: true
   billingStatus?: true
   trialEndsAt?: true
   billingCancelAt?: true
@@ -284,6 +314,11 @@ export type InstallationGroupByOutputType = {
   targetType: string
   suspended: boolean
   encryptedApiKey: string | null
+  aiProvider: string
+  aiBaseUrl: string | null
+  aiHeaderName: string | null
+  aiHeaderValue: string | null
+  aiModel: string | null
   billingStatus: string
   trialEndsAt: Date | null
   billingCancelAt: Date | null
@@ -329,6 +364,11 @@ export type InstallationWhereInput = {
   targetType?: Prisma.StringFilter<"Installation"> | string
   suspended?: Prisma.BoolFilter<"Installation"> | boolean
   encryptedApiKey?: Prisma.StringNullableFilter<"Installation"> | string | null
+  aiProvider?: Prisma.StringFilter<"Installation"> | string
+  aiBaseUrl?: Prisma.StringNullableFilter<"Installation"> | string | null
+  aiHeaderName?: Prisma.StringNullableFilter<"Installation"> | string | null
+  aiHeaderValue?: Prisma.StringNullableFilter<"Installation"> | string | null
+  aiModel?: Prisma.StringNullableFilter<"Installation"> | string | null
   billingStatus?: Prisma.StringFilter<"Installation"> | string
   trialEndsAt?: Prisma.DateTimeNullableFilter<"Installation"> | Date | string | null
   billingCancelAt?: Prisma.DateTimeNullableFilter<"Installation"> | Date | string | null
@@ -354,6 +394,11 @@ export type InstallationOrderByWithRelationInput = {
   targetType?: Prisma.SortOrder
   suspended?: Prisma.SortOrder
   encryptedApiKey?: Prisma.SortOrderInput | Prisma.SortOrder
+  aiProvider?: Prisma.SortOrder
+  aiBaseUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  aiHeaderName?: Prisma.SortOrderInput | Prisma.SortOrder
+  aiHeaderValue?: Prisma.SortOrderInput | Prisma.SortOrder
+  aiModel?: Prisma.SortOrderInput | Prisma.SortOrder
   billingStatus?: Prisma.SortOrder
   trialEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   billingCancelAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -382,6 +427,11 @@ export type InstallationWhereUniqueInput = Prisma.AtLeast<{
   targetType?: Prisma.StringFilter<"Installation"> | string
   suspended?: Prisma.BoolFilter<"Installation"> | boolean
   encryptedApiKey?: Prisma.StringNullableFilter<"Installation"> | string | null
+  aiProvider?: Prisma.StringFilter<"Installation"> | string
+  aiBaseUrl?: Prisma.StringNullableFilter<"Installation"> | string | null
+  aiHeaderName?: Prisma.StringNullableFilter<"Installation"> | string | null
+  aiHeaderValue?: Prisma.StringNullableFilter<"Installation"> | string | null
+  aiModel?: Prisma.StringNullableFilter<"Installation"> | string | null
   billingStatus?: Prisma.StringFilter<"Installation"> | string
   trialEndsAt?: Prisma.DateTimeNullableFilter<"Installation"> | Date | string | null
   billingCancelAt?: Prisma.DateTimeNullableFilter<"Installation"> | Date | string | null
@@ -407,6 +457,11 @@ export type InstallationOrderByWithAggregationInput = {
   targetType?: Prisma.SortOrder
   suspended?: Prisma.SortOrder
   encryptedApiKey?: Prisma.SortOrderInput | Prisma.SortOrder
+  aiProvider?: Prisma.SortOrder
+  aiBaseUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  aiHeaderName?: Prisma.SortOrderInput | Prisma.SortOrder
+  aiHeaderValue?: Prisma.SortOrderInput | Prisma.SortOrder
+  aiModel?: Prisma.SortOrderInput | Prisma.SortOrder
   billingStatus?: Prisma.SortOrder
   trialEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   billingCancelAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -437,6 +492,11 @@ export type InstallationScalarWhereWithAggregatesInput = {
   targetType?: Prisma.StringWithAggregatesFilter<"Installation"> | string
   suspended?: Prisma.BoolWithAggregatesFilter<"Installation"> | boolean
   encryptedApiKey?: Prisma.StringNullableWithAggregatesFilter<"Installation"> | string | null
+  aiProvider?: Prisma.StringWithAggregatesFilter<"Installation"> | string
+  aiBaseUrl?: Prisma.StringNullableWithAggregatesFilter<"Installation"> | string | null
+  aiHeaderName?: Prisma.StringNullableWithAggregatesFilter<"Installation"> | string | null
+  aiHeaderValue?: Prisma.StringNullableWithAggregatesFilter<"Installation"> | string | null
+  aiModel?: Prisma.StringNullableWithAggregatesFilter<"Installation"> | string | null
   billingStatus?: Prisma.StringWithAggregatesFilter<"Installation"> | string
   trialEndsAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Installation"> | Date | string | null
   billingCancelAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Installation"> | Date | string | null
@@ -459,6 +519,11 @@ export type InstallationCreateInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  aiProvider?: string
+  aiBaseUrl?: string | null
+  aiHeaderName?: string | null
+  aiHeaderValue?: string | null
+  aiModel?: string | null
   billingStatus?: string
   trialEndsAt?: Date | string | null
   billingCancelAt?: Date | string | null
@@ -484,6 +549,11 @@ export type InstallationUncheckedCreateInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  aiProvider?: string
+  aiBaseUrl?: string | null
+  aiHeaderName?: string | null
+  aiHeaderValue?: string | null
+  aiModel?: string | null
   billingStatus?: string
   trialEndsAt?: Date | string | null
   billingCancelAt?: Date | string | null
@@ -509,6 +579,11 @@ export type InstallationUpdateInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  aiBaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -534,6 +609,11 @@ export type InstallationUncheckedUpdateInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  aiBaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -559,6 +639,11 @@ export type InstallationCreateManyInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  aiProvider?: string
+  aiBaseUrl?: string | null
+  aiHeaderName?: string | null
+  aiHeaderValue?: string | null
+  aiModel?: string | null
   billingStatus?: string
   trialEndsAt?: Date | string | null
   billingCancelAt?: Date | string | null
@@ -581,6 +666,11 @@ export type InstallationUpdateManyMutationInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  aiBaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -603,6 +693,11 @@ export type InstallationUncheckedUpdateManyInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  aiBaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -625,6 +720,11 @@ export type InstallationCountOrderByAggregateInput = {
   targetType?: Prisma.SortOrder
   suspended?: Prisma.SortOrder
   encryptedApiKey?: Prisma.SortOrder
+  aiProvider?: Prisma.SortOrder
+  aiBaseUrl?: Prisma.SortOrder
+  aiHeaderName?: Prisma.SortOrder
+  aiHeaderValue?: Prisma.SortOrder
+  aiModel?: Prisma.SortOrder
   billingStatus?: Prisma.SortOrder
   trialEndsAt?: Prisma.SortOrder
   billingCancelAt?: Prisma.SortOrder
@@ -654,6 +754,11 @@ export type InstallationMaxOrderByAggregateInput = {
   targetType?: Prisma.SortOrder
   suspended?: Prisma.SortOrder
   encryptedApiKey?: Prisma.SortOrder
+  aiProvider?: Prisma.SortOrder
+  aiBaseUrl?: Prisma.SortOrder
+  aiHeaderName?: Prisma.SortOrder
+  aiHeaderValue?: Prisma.SortOrder
+  aiModel?: Prisma.SortOrder
   billingStatus?: Prisma.SortOrder
   trialEndsAt?: Prisma.SortOrder
   billingCancelAt?: Prisma.SortOrder
@@ -676,6 +781,11 @@ export type InstallationMinOrderByAggregateInput = {
   targetType?: Prisma.SortOrder
   suspended?: Prisma.SortOrder
   encryptedApiKey?: Prisma.SortOrder
+  aiProvider?: Prisma.SortOrder
+  aiBaseUrl?: Prisma.SortOrder
+  aiHeaderName?: Prisma.SortOrder
+  aiHeaderValue?: Prisma.SortOrder
+  aiModel?: Prisma.SortOrder
   billingStatus?: Prisma.SortOrder
   trialEndsAt?: Prisma.SortOrder
   billingCancelAt?: Prisma.SortOrder
@@ -788,6 +898,11 @@ export type InstallationCreateWithoutFindingsInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  aiProvider?: string
+  aiBaseUrl?: string | null
+  aiHeaderName?: string | null
+  aiHeaderValue?: string | null
+  aiModel?: string | null
   billingStatus?: string
   trialEndsAt?: Date | string | null
   billingCancelAt?: Date | string | null
@@ -812,6 +927,11 @@ export type InstallationUncheckedCreateWithoutFindingsInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  aiProvider?: string
+  aiBaseUrl?: string | null
+  aiHeaderName?: string | null
+  aiHeaderValue?: string | null
+  aiModel?: string | null
   billingStatus?: string
   trialEndsAt?: Date | string | null
   billingCancelAt?: Date | string | null
@@ -852,6 +972,11 @@ export type InstallationUpdateWithoutFindingsInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  aiBaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -876,6 +1001,11 @@ export type InstallationUncheckedUpdateWithoutFindingsInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  aiBaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -900,6 +1030,11 @@ export type InstallationCreateWithoutTokenUsagesInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  aiProvider?: string
+  aiBaseUrl?: string | null
+  aiHeaderName?: string | null
+  aiHeaderValue?: string | null
+  aiModel?: string | null
   billingStatus?: string
   trialEndsAt?: Date | string | null
   billingCancelAt?: Date | string | null
@@ -924,6 +1059,11 @@ export type InstallationUncheckedCreateWithoutTokenUsagesInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  aiProvider?: string
+  aiBaseUrl?: string | null
+  aiHeaderName?: string | null
+  aiHeaderValue?: string | null
+  aiModel?: string | null
   billingStatus?: string
   trialEndsAt?: Date | string | null
   billingCancelAt?: Date | string | null
@@ -964,6 +1104,11 @@ export type InstallationUpdateWithoutTokenUsagesInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  aiBaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -988,6 +1133,11 @@ export type InstallationUncheckedUpdateWithoutTokenUsagesInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  aiBaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1012,6 +1162,11 @@ export type InstallationCreateWithoutWebhookDeliveriesInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  aiProvider?: string
+  aiBaseUrl?: string | null
+  aiHeaderName?: string | null
+  aiHeaderValue?: string | null
+  aiModel?: string | null
   billingStatus?: string
   trialEndsAt?: Date | string | null
   billingCancelAt?: Date | string | null
@@ -1036,6 +1191,11 @@ export type InstallationUncheckedCreateWithoutWebhookDeliveriesInput = {
   targetType: string
   suspended?: boolean
   encryptedApiKey?: string | null
+  aiProvider?: string
+  aiBaseUrl?: string | null
+  aiHeaderName?: string | null
+  aiHeaderValue?: string | null
+  aiModel?: string | null
   billingStatus?: string
   trialEndsAt?: Date | string | null
   billingCancelAt?: Date | string | null
@@ -1076,6 +1236,11 @@ export type InstallationUpdateWithoutWebhookDeliveriesInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  aiBaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1100,6 +1265,11 @@ export type InstallationUncheckedUpdateWithoutWebhookDeliveriesInput = {
   targetType?: Prisma.StringFieldUpdateOperationsInput | string
   suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  aiBaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1173,6 +1343,11 @@ export type InstallationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   targetType?: boolean
   suspended?: boolean
   encryptedApiKey?: boolean
+  aiProvider?: boolean
+  aiBaseUrl?: boolean
+  aiHeaderName?: boolean
+  aiHeaderValue?: boolean
+  aiModel?: boolean
   billingStatus?: boolean
   trialEndsAt?: boolean
   billingCancelAt?: boolean
@@ -1199,6 +1374,11 @@ export type InstallationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   targetType?: boolean
   suspended?: boolean
   encryptedApiKey?: boolean
+  aiProvider?: boolean
+  aiBaseUrl?: boolean
+  aiHeaderName?: boolean
+  aiHeaderValue?: boolean
+  aiModel?: boolean
   billingStatus?: boolean
   trialEndsAt?: boolean
   billingCancelAt?: boolean
@@ -1221,6 +1401,11 @@ export type InstallationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   targetType?: boolean
   suspended?: boolean
   encryptedApiKey?: boolean
+  aiProvider?: boolean
+  aiBaseUrl?: boolean
+  aiHeaderName?: boolean
+  aiHeaderValue?: boolean
+  aiModel?: boolean
   billingStatus?: boolean
   trialEndsAt?: boolean
   billingCancelAt?: boolean
@@ -1243,6 +1428,11 @@ export type InstallationSelectScalar = {
   targetType?: boolean
   suspended?: boolean
   encryptedApiKey?: boolean
+  aiProvider?: boolean
+  aiBaseUrl?: boolean
+  aiHeaderName?: boolean
+  aiHeaderValue?: boolean
+  aiModel?: boolean
   billingStatus?: boolean
   trialEndsAt?: boolean
   billingCancelAt?: boolean
@@ -1256,7 +1446,7 @@ export type InstallationSelectScalar = {
   updatedAt?: boolean
 }
 
-export type InstallationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "accountLogin" | "accountType" | "appId" | "targetId" | "targetType" | "suspended" | "encryptedApiKey" | "billingStatus" | "trialEndsAt" | "billingCancelAt" | "marketplacePlanId" | "marketplacePlanName" | "encryptedSlackToken" | "slackTeamId" | "slackTeamName" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["installation"]>
+export type InstallationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "accountLogin" | "accountType" | "appId" | "targetId" | "targetType" | "suspended" | "encryptedApiKey" | "aiProvider" | "aiBaseUrl" | "aiHeaderName" | "aiHeaderValue" | "aiModel" | "billingStatus" | "trialEndsAt" | "billingCancelAt" | "marketplacePlanId" | "marketplacePlanName" | "encryptedSlackToken" | "slackTeamId" | "slackTeamName" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["installation"]>
 export type InstallationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   webhookDeliveries?: boolean | Prisma.Installation$webhookDeliveriesArgs<ExtArgs>
   findings?: boolean | Prisma.Installation$findingsArgs<ExtArgs>
@@ -1282,6 +1472,11 @@ export type $InstallationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     targetType: string
     suspended: boolean
     encryptedApiKey: string | null
+    aiProvider: string
+    aiBaseUrl: string | null
+    aiHeaderName: string | null
+    aiHeaderValue: string | null
+    aiModel: string | null
     billingStatus: string
     trialEndsAt: Date | null
     billingCancelAt: Date | null
@@ -1727,6 +1922,11 @@ export interface InstallationFieldRefs {
   readonly targetType: Prisma.FieldRef<"Installation", 'String'>
   readonly suspended: Prisma.FieldRef<"Installation", 'Boolean'>
   readonly encryptedApiKey: Prisma.FieldRef<"Installation", 'String'>
+  readonly aiProvider: Prisma.FieldRef<"Installation", 'String'>
+  readonly aiBaseUrl: Prisma.FieldRef<"Installation", 'String'>
+  readonly aiHeaderName: Prisma.FieldRef<"Installation", 'String'>
+  readonly aiHeaderValue: Prisma.FieldRef<"Installation", 'String'>
+  readonly aiModel: Prisma.FieldRef<"Installation", 'String'>
   readonly billingStatus: Prisma.FieldRef<"Installation", 'String'>
   readonly trialEndsAt: Prisma.FieldRef<"Installation", 'DateTime'>
   readonly billingCancelAt: Prisma.FieldRef<"Installation", 'DateTime'>
