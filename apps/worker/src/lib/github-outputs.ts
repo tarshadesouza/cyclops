@@ -24,38 +24,83 @@ export async function getPrNumber(
 // ---------------------------------------------------------------------------
 // renderPrCommentBody — markdown table of all findings for a workflow run
 // ---------------------------------------------------------------------------
-function truncate(str: string | null | undefined, max: number): string {
-  if (!str) return "—";
-  return str.length > max ? str.slice(0, max - 1) + "…" : str;
+const SEVERITY_ICON: Record<string, string> = {
+  critical: "🔴",
+  high: "🟠",
+  medium: "🟡",
+  low: "🔵",
+};
+
+function renderFinding(f: {
+  detectorType: string;
+  confidence: number | null;
+  severity: string | null;
+  rootCause: string | null;
+  suggestedFix: string | null;
+  evidence: string[];
+  affectedFiles: string[];
+  autofixPrNumber?: number | null;
+}): string {
+  const confidence = f.confidence != null ? `${Math.round(f.confidence * 100)}%` : "—";
+  const sev = (f.severity ?? "").toLowerCase();
+  const sevBadge = sev ? `${SEVERITY_ICON[sev] ?? "⚪️"} ${sev}` : "";
+  const parts: string[] = [];
+
+  parts.push(`### ${f.detectorType}  ·  ${confidence} confidence${sevBadge ? `  ·  ${sevBadge}` : ""}`);
+  parts.push("");
+  if (f.rootCause) {
+    parts.push(`**Root cause**`);
+    parts.push(f.rootCause);
+    parts.push("");
+  }
+  if (f.affectedFiles.length) {
+    parts.push(`**Affected files:** ${f.affectedFiles.map((x) => `\`${x}\``).join(", ")}`);
+    parts.push("");
+  }
+  if (f.evidence.length) {
+    parts.push(`<details><summary><b>Evidence</b> (${f.evidence.length})</summary>`);
+    parts.push("");
+    parts.push("```");
+    parts.push(f.evidence.slice(0, 20).join("\n"));
+    parts.push("```");
+    parts.push("</details>");
+    parts.push("");
+  }
+  if (f.suggestedFix) {
+    parts.push(`**Suggested fix**`);
+    parts.push("");
+    parts.push("```diff");
+    parts.push(f.suggestedFix);
+    parts.push("```");
+    parts.push("");
+  }
+  if (f.autofixPrNumber) {
+    parts.push(`✅ **Auto-fix opened:** #${f.autofixPrNumber}`);
+    parts.push("");
+  }
+  return parts.join("\n");
 }
 
 function renderPrCommentBody(findings: Array<{
   detectorType: string;
   confidence: number | null;
+  severity: string | null;
   rootCause: string | null;
-  violations: unknown;
+  suggestedFix: string | null;
+  evidence: string[];
+  affectedFiles: string[];
+  autofixPrNumber?: number | null;
 }>): string {
-  const rows = findings
-    .map((f) => {
-      const confidence = f.confidence != null ? `${Math.round(f.confidence * 100)}%` : "—";
-      const rootCause = truncate(f.rootCause, 120);
-      const violations = Array.isArray(f.violations) ? f.violations.length : 0;
-      return `| ${f.detectorType} | ${confidence} | ${rootCause} | ${violations} |`;
-    })
-    .join("\n");
-
-  const header = [
-    "## Cyclops CI Analysis",
+  const sections = findings.map(renderFinding).join("\n---\n\n");
+  return [
+    "## 🔍 Cyclops CI Analysis",
     "",
-    "| Detector | Confidence | Root Cause | Files |",
-    "|----------|------------|------------|-------|",
-    rows,
+    `Found **${findings.length}** issue${findings.length === 1 ? "" : "s"} in this run.`,
     "",
+    sections,
     "---",
-    "*Analysis by [cyclops[bot]](https://github.com/apps/cyclops) · [View Check Run](#)*",
+    "*Analysis by [cyclops[bot]](https://github.com/apps/cyclops-app). Confidence reflects how clearly the logs demonstrate the failure.*",
   ].join("\n");
-
-  return header;
 }
 
 // ---------------------------------------------------------------------------
