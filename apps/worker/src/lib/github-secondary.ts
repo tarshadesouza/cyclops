@@ -60,7 +60,9 @@ export async function handleRerunWorkflow(
   ctx: ActionContext
 ): Promise<{ skipped: true; reason?: string } | { ok: true }> {
   const { octokit, db, finding, owner, repo } = ctx;
-  const { installationId, repositoryId, detectorType, ref, workflowRunId } = finding;
+  const { installationId, repositoryId, detectorType, ref } = finding;
+  // workflowRunId is a BigInt column — octokit run_id wants a number
+  const workflowRunId = Number(finding.workflowRunId);
   const dedupeRef = ref || "unknown";
 
   if (
@@ -103,7 +105,9 @@ export async function handleCancelWorkflow(
   ctx: ActionContext
 ): Promise<{ skipped: true; reason?: string } | { ok: true }> {
   const { octokit, db, finding, owner, repo } = ctx;
-  const { installationId, repositoryId, detectorType, ref, workflowRunId } = finding;
+  const { installationId, repositoryId, detectorType, ref } = finding;
+  // workflowRunId is a BigInt column — octokit run_id wants a number
+  const workflowRunId = Number(finding.workflowRunId);
   const dedupeRef = ref || "unknown";
 
   if (

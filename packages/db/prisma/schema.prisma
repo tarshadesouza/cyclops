@@ -45,8 +45,8 @@ model Finding {
   id               String    @id @default(uuid())
   installationId   Int
   repositoryId     Int
-  workflowRunId    Int
-  checkRunId       Int
+  workflowRunId    BigInt
+  checkRunId       BigInt
   detectorType     String
   sha              String
   ref              String

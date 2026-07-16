@@ -38,8 +38,8 @@ export type FindingAvgAggregateOutputType = {
 export type FindingSumAggregateOutputType = {
   installationId: number | null
   repositoryId: number | null
-  workflowRunId: number | null
-  checkRunId: number | null
+  workflowRunId: bigint | null
+  checkRunId: bigint | null
   confidence: number | null
   cyclopsCheckRunId: bigint | null
 }
@@ -48,8 +48,8 @@ export type FindingMinAggregateOutputType = {
   id: string | null
   installationId: number | null
   repositoryId: number | null
-  workflowRunId: number | null
-  checkRunId: number | null
+  workflowRunId: bigint | null
+  checkRunId: bigint | null
   detectorType: string | null
   sha: string | null
   ref: string | null
@@ -72,8 +72,8 @@ export type FindingMaxAggregateOutputType = {
   id: string | null
   installationId: number | null
   repositoryId: number | null
-  workflowRunId: number | null
-  checkRunId: number | null
+  workflowRunId: bigint | null
+  checkRunId: bigint | null
   detectorType: string | null
   sha: string | null
   ref: string | null
@@ -305,8 +305,8 @@ export type FindingGroupByOutputType = {
   id: string
   installationId: number
   repositoryId: number
-  workflowRunId: number
-  checkRunId: number
+  workflowRunId: bigint
+  checkRunId: bigint
   detectorType: string
   sha: string
   ref: string
@@ -355,8 +355,8 @@ export type FindingWhereInput = {
   id?: Prisma.StringFilter<"Finding"> | string
   installationId?: Prisma.IntFilter<"Finding"> | number
   repositoryId?: Prisma.IntFilter<"Finding"> | number
-  workflowRunId?: Prisma.IntFilter<"Finding"> | number
-  checkRunId?: Prisma.IntFilter<"Finding"> | number
+  workflowRunId?: Prisma.BigIntFilter<"Finding"> | bigint | number
+  checkRunId?: Prisma.BigIntFilter<"Finding"> | bigint | number
   detectorType?: Prisma.StringFilter<"Finding"> | string
   sha?: Prisma.StringFilter<"Finding"> | string
   ref?: Prisma.StringFilter<"Finding"> | string
@@ -414,8 +414,8 @@ export type FindingWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.FindingWhereInput | Prisma.FindingWhereInput[]
   installationId?: Prisma.IntFilter<"Finding"> | number
   repositoryId?: Prisma.IntFilter<"Finding"> | number
-  workflowRunId?: Prisma.IntFilter<"Finding"> | number
-  checkRunId?: Prisma.IntFilter<"Finding"> | number
+  workflowRunId?: Prisma.BigIntFilter<"Finding"> | bigint | number
+  checkRunId?: Prisma.BigIntFilter<"Finding"> | bigint | number
   detectorType?: Prisma.StringFilter<"Finding"> | string
   sha?: Prisma.StringFilter<"Finding"> | string
   ref?: Prisma.StringFilter<"Finding"> | string
@@ -477,8 +477,8 @@ export type FindingScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Finding"> | string
   installationId?: Prisma.IntWithAggregatesFilter<"Finding"> | number
   repositoryId?: Prisma.IntWithAggregatesFilter<"Finding"> | number
-  workflowRunId?: Prisma.IntWithAggregatesFilter<"Finding"> | number
-  checkRunId?: Prisma.IntWithAggregatesFilter<"Finding"> | number
+  workflowRunId?: Prisma.BigIntWithAggregatesFilter<"Finding"> | bigint | number
+  checkRunId?: Prisma.BigIntWithAggregatesFilter<"Finding"> | bigint | number
   detectorType?: Prisma.StringWithAggregatesFilter<"Finding"> | string
   sha?: Prisma.StringWithAggregatesFilter<"Finding"> | string
   ref?: Prisma.StringWithAggregatesFilter<"Finding"> | string
@@ -503,8 +503,8 @@ export type FindingScalarWhereWithAggregatesInput = {
 export type FindingCreateInput = {
   id?: string
   repositoryId: number
-  workflowRunId: number
-  checkRunId: number
+  workflowRunId: bigint | number
+  checkRunId: bigint | number
   detectorType: string
   sha: string
   ref: string
@@ -531,8 +531,8 @@ export type FindingUncheckedCreateInput = {
   id?: string
   installationId: number
   repositoryId: number
-  workflowRunId: number
-  checkRunId: number
+  workflowRunId: bigint | number
+  checkRunId: bigint | number
   detectorType: string
   sha: string
   ref: string
@@ -557,8 +557,8 @@ export type FindingUncheckedCreateInput = {
 export type FindingUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   repositoryId?: Prisma.IntFieldUpdateOperationsInput | number
-  workflowRunId?: Prisma.IntFieldUpdateOperationsInput | number
-  checkRunId?: Prisma.IntFieldUpdateOperationsInput | number
+  workflowRunId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  checkRunId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   detectorType?: Prisma.StringFieldUpdateOperationsInput | string
   sha?: Prisma.StringFieldUpdateOperationsInput | string
   ref?: Prisma.StringFieldUpdateOperationsInput | string
@@ -585,8 +585,8 @@ export type FindingUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   installationId?: Prisma.IntFieldUpdateOperationsInput | number
   repositoryId?: Prisma.IntFieldUpdateOperationsInput | number
-  workflowRunId?: Prisma.IntFieldUpdateOperationsInput | number
-  checkRunId?: Prisma.IntFieldUpdateOperationsInput | number
+  workflowRunId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  checkRunId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   detectorType?: Prisma.StringFieldUpdateOperationsInput | string
   sha?: Prisma.StringFieldUpdateOperationsInput | string
   ref?: Prisma.StringFieldUpdateOperationsInput | string
@@ -612,8 +612,8 @@ export type FindingCreateManyInput = {
   id?: string
   installationId: number
   repositoryId: number
-  workflowRunId: number
-  checkRunId: number
+  workflowRunId: bigint | number
+  checkRunId: bigint | number
   detectorType: string
   sha: string
   ref: string
@@ -638,8 +638,8 @@ export type FindingCreateManyInput = {
 export type FindingUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   repositoryId?: Prisma.IntFieldUpdateOperationsInput | number
-  workflowRunId?: Prisma.IntFieldUpdateOperationsInput | number
-  checkRunId?: Prisma.IntFieldUpdateOperationsInput | number
+  workflowRunId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  checkRunId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   detectorType?: Prisma.StringFieldUpdateOperationsInput | string
   sha?: Prisma.StringFieldUpdateOperationsInput | string
   ref?: Prisma.StringFieldUpdateOperationsInput | string
@@ -665,8 +665,8 @@ export type FindingUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   installationId?: Prisma.IntFieldUpdateOperationsInput | number
   repositoryId?: Prisma.IntFieldUpdateOperationsInput | number
-  workflowRunId?: Prisma.IntFieldUpdateOperationsInput | number
-  checkRunId?: Prisma.IntFieldUpdateOperationsInput | number
+  workflowRunId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  checkRunId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   detectorType?: Prisma.StringFieldUpdateOperationsInput | string
   sha?: Prisma.StringFieldUpdateOperationsInput | string
   ref?: Prisma.StringFieldUpdateOperationsInput | string
@@ -849,6 +849,14 @@ export type FindingCreateaffectedFilesInput = {
   set: string[]
 }
 
+export type BigIntFieldUpdateOperationsInput = {
+  set?: bigint | number
+  increment?: bigint | number
+  decrement?: bigint | number
+  multiply?: bigint | number
+  divide?: bigint | number
+}
+
 export type NullableFloatFieldUpdateOperationsInput = {
   set?: number | null
   increment?: number
@@ -878,8 +886,8 @@ export type NullableBigIntFieldUpdateOperationsInput = {
 export type FindingCreateWithoutInstallationInput = {
   id?: string
   repositoryId: number
-  workflowRunId: number
-  checkRunId: number
+  workflowRunId: bigint | number
+  checkRunId: bigint | number
   detectorType: string
   sha: string
   ref: string
@@ -904,8 +912,8 @@ export type FindingCreateWithoutInstallationInput = {
 export type FindingUncheckedCreateWithoutInstallationInput = {
   id?: string
   repositoryId: number
-  workflowRunId: number
-  checkRunId: number
+  workflowRunId: bigint | number
+  checkRunId: bigint | number
   detectorType: string
   sha: string
   ref: string
@@ -960,8 +968,8 @@ export type FindingScalarWhereInput = {
   id?: Prisma.StringFilter<"Finding"> | string
   installationId?: Prisma.IntFilter<"Finding"> | number
   repositoryId?: Prisma.IntFilter<"Finding"> | number
-  workflowRunId?: Prisma.IntFilter<"Finding"> | number
-  checkRunId?: Prisma.IntFilter<"Finding"> | number
+  workflowRunId?: Prisma.BigIntFilter<"Finding"> | bigint | number
+  checkRunId?: Prisma.BigIntFilter<"Finding"> | bigint | number
   detectorType?: Prisma.StringFilter<"Finding"> | string
   sha?: Prisma.StringFilter<"Finding"> | string
   ref?: Prisma.StringFilter<"Finding"> | string
@@ -986,8 +994,8 @@ export type FindingScalarWhereInput = {
 export type FindingCreateManyInstallationInput = {
   id?: string
   repositoryId: number
-  workflowRunId: number
-  checkRunId: number
+  workflowRunId: bigint | number
+  checkRunId: bigint | number
   detectorType: string
   sha: string
   ref: string
@@ -1012,8 +1020,8 @@ export type FindingCreateManyInstallationInput = {
 export type FindingUpdateWithoutInstallationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   repositoryId?: Prisma.IntFieldUpdateOperationsInput | number
-  workflowRunId?: Prisma.IntFieldUpdateOperationsInput | number
-  checkRunId?: Prisma.IntFieldUpdateOperationsInput | number
+  workflowRunId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  checkRunId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   detectorType?: Prisma.StringFieldUpdateOperationsInput | string
   sha?: Prisma.StringFieldUpdateOperationsInput | string
   ref?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1038,8 +1046,8 @@ export type FindingUpdateWithoutInstallationInput = {
 export type FindingUncheckedUpdateWithoutInstallationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   repositoryId?: Prisma.IntFieldUpdateOperationsInput | number
-  workflowRunId?: Prisma.IntFieldUpdateOperationsInput | number
-  checkRunId?: Prisma.IntFieldUpdateOperationsInput | number
+  workflowRunId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  checkRunId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   detectorType?: Prisma.StringFieldUpdateOperationsInput | string
   sha?: Prisma.StringFieldUpdateOperationsInput | string
   ref?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1064,8 +1072,8 @@ export type FindingUncheckedUpdateWithoutInstallationInput = {
 export type FindingUncheckedUpdateManyWithoutInstallationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   repositoryId?: Prisma.IntFieldUpdateOperationsInput | number
-  workflowRunId?: Prisma.IntFieldUpdateOperationsInput | number
-  checkRunId?: Prisma.IntFieldUpdateOperationsInput | number
+  workflowRunId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  checkRunId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   detectorType?: Prisma.StringFieldUpdateOperationsInput | string
   sha?: Prisma.StringFieldUpdateOperationsInput | string
   ref?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1220,8 +1228,8 @@ export type $FindingPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     id: string
     installationId: number
     repositoryId: number
-    workflowRunId: number
-    checkRunId: number
+    workflowRunId: bigint
+    checkRunId: bigint
     detectorType: string
     sha: string
     ref: string
@@ -1668,8 +1676,8 @@ export interface FindingFieldRefs {
   readonly id: Prisma.FieldRef<"Finding", 'String'>
   readonly installationId: Prisma.FieldRef<"Finding", 'Int'>
   readonly repositoryId: Prisma.FieldRef<"Finding", 'Int'>
-  readonly workflowRunId: Prisma.FieldRef<"Finding", 'Int'>
-  readonly checkRunId: Prisma.FieldRef<"Finding", 'Int'>
+  readonly workflowRunId: Prisma.FieldRef<"Finding", 'BigInt'>
+  readonly checkRunId: Prisma.FieldRef<"Finding", 'BigInt'>
   readonly detectorType: Prisma.FieldRef<"Finding", 'String'>
   readonly sha: Prisma.FieldRef<"Finding", 'String'>
   readonly ref: Prisma.FieldRef<"Finding", 'String'>

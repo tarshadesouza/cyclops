@@ -114,8 +114,9 @@ export function createDetectorDispatchWorker(): Worker<DetectorDispatchJob> {
         data: {
           installationId,
           repositoryId,
-          workflowRunId,
-          checkRunId,
+          // GitHub run/check IDs exceed 32-bit range — stored as BigInt columns
+          workflowRunId: BigInt(workflowRunId),
+          checkRunId: BigInt(checkRunId),
           detectorType: primary.detectorType,
           sha,
           ref,
