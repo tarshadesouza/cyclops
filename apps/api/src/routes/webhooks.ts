@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { webhookIngestionQueue } from "@cyclops/queue";
 import type { WebhookIngestionJob } from "@cyclops/queue";
+import { getDb } from "@cyclops/db";
 
 function verifyWebhookSignature(
   secret: string,
@@ -67,11 +68,45 @@ export async function webhookRoutes(app: FastifyInstance): Promise<void> {
       const body = request.body as Record<string, unknown>;
       const action = typeof body["action"] === "string" ? body["action"] : undefined;
 
+      // For CI events, persist the full payload so the ingestion worker can load it
+      // (it enqueues identifier-only jobs). The WebhookDelivery FK requires the
+      // Installation row to exist, which it does for CI events (installed earlier).
+      if (eventName === "workflow_run" || eventName === "check_run") {
+        try {
+          await getDb().webhookDelivery.create({
+            data: { deliveryId, installationId, eventName, action: action ?? null, payload: body },
+          });
+        } catch (err) {
+          app.log.warn(
+            { deliveryId, err: (err as Error).message },
+            "Could not persist webhook delivery payload"
+          );
+        }
+      }
+
+      // For installation events, forward account details so the worker can create
+      // the tenant row with real values (targetId = account id, for billing lookup).
+      let account: WebhookIngestionJob["account"];
+      if (eventName === "installation") {
+        const inst = (request.body as any).installation ?? {};
+        const acct = inst.account ?? {};
+        if (typeof acct.id === "number" && typeof acct.login === "string") {
+          account = {
+            id: acct.id,
+            login: acct.login,
+            type: typeof acct.type === "string" ? acct.type : "Organization",
+            appId: typeof inst.app_id === "number" ? inst.app_id : installationId,
+            targetType: typeof inst.target_type === "string" ? inst.target_type : "Organization",
+          };
+        }
+      }
+
       const jobData: WebhookIngestionJob = {
         installationId,
         deliveryId,
         eventName,
         action,
+        ...(account ? { account } : {}),
       };
 
       await webhookIngestionQueue.add("webhook", jobData, {

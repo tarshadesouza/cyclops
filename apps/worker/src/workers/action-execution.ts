@@ -150,7 +150,7 @@ export function createActionExecutionWorker(): Worker<ActionExecutionJob> {
       const repo: string = repoResp.data.name;
 
       // 7. Load config (kill switch source) — requires owner/repo/ref
-      const config = await fetchConfig(octokit as any, owner, repo, ref ?? "HEAD", repositoryId);
+      const config = await fetchConfig(octokit as any, owner, repo, ref || "HEAD", repositoryId);
 
       // 8. Enforce kill switches (ACT-14, CFG-01)
       if (isActionKillSwitched(actionType, config, finding.detectorType)) {

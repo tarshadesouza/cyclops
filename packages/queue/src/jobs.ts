@@ -5,6 +5,17 @@ export const WebhookIngestionJobSchema = z.object({
   deliveryId: z.string().uuid(),
   eventName: z.string(),
   action: z.string().optional(),
+  // Account details from the installation payload — used to create the tenant row
+  // with real values (targetId must equal the marketplace account id for billing).
+  account: z
+    .object({
+      id: z.number().int().positive(),
+      login: z.string(),
+      type: z.string(),
+      appId: z.number().int(),
+      targetType: z.string(),
+    })
+    .optional(),
 });
 export type WebhookIngestionJob = z.infer<typeof WebhookIngestionJobSchema>;
 

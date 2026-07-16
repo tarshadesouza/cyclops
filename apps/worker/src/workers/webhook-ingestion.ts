@@ -15,22 +15,42 @@ import type { Job } from "bullmq";
 
 const logger = pino({ level: process.env["LOG_LEVEL"] ?? "info" });
 
-async function handleInstallationCreated(installationId: number): Promise<void> {
+type InstallationAccount = {
+  id: number;
+  login: string;
+  type: string;
+  appId: number;
+  targetType: string;
+};
+
+async function handleInstallationCreated(
+  installationId: number,
+  account?: InstallationAccount
+): Promise<void> {
   const db = getDb();
   await db.installation.upsert({
     where: { id: installationId },
     create: {
       id: installationId,
-      accountLogin: "unknown",
-      accountType: "Organization",
-      appId: parseInt(process.env["GITHUB_APP_ID"] ?? "0", 10),
-      targetId: installationId,
-      targetType: "Organization",
+      accountLogin: account?.login ?? "unknown",
+      accountType: account?.type ?? "Organization",
+      appId: account?.appId ?? parseInt(process.env["GITHUB_APP_ID"] ?? "0", 10),
+      // targetId must equal the marketplace account id so billing events resolve.
+      targetId: account?.id ?? installationId,
+      targetType: account?.targetType ?? "Organization",
       suspended: false,
     },
     update: {
       suspended: false,
       deletedAt: null,
+      ...(account
+        ? {
+            accountLogin: account.login,
+            accountType: account.type,
+            targetId: account.id,
+            targetType: account.targetType,
+          }
+        : {}),
     },
   });
   logger.info({ installationId }, "Installation created/upserted");
@@ -100,20 +120,17 @@ export function createWebhookIngestionWorker(): Worker<WebhookIngestionJob> {
         return { skipped: true, reason: "invalid_data" };
       }
 
-      const { installationId, deliveryId, eventName, action } = parsed.data;
+      const { installationId, deliveryId, eventName, action, account } = parsed.data;
 
-      // TEN-04: Check installation is active before any processing
-      const check = await checkInstallationActive(installationId, jobLog as pino.Logger);
-      if (!check.active) {
-        return { skipped: true, reason: check.reason };
-      }
-
-      jobLog.info({ installationId, eventName, action }, "Processing webhook delivery");
-
+      // Installation lifecycle events MANAGE the tenant row, so they must run
+      // BEFORE the active-check gate — otherwise installation.created is dropped
+      // as "not_found" (the row it would create doesn't exist yet) and the tenant
+      // is never provisioned.
       if (eventName === "installation") {
+        jobLog.info({ installationId, action }, "Processing installation lifecycle event");
         switch (action) {
           case "created":
-            await handleInstallationCreated(installationId);
+            await handleInstallationCreated(installationId, account);
             break;
           case "deleted":
             await handleInstallationDeleted(installationId);
@@ -129,6 +146,14 @@ export function createWebhookIngestionWorker(): Worker<WebhookIngestionJob> {
         }
         return { processed: true, eventName, action };
       }
+
+      // TEN-04: all other events require an active installation
+      const check = await checkInstallationActive(installationId, jobLog as pino.Logger);
+      if (!check.active) {
+        return { skipped: true, reason: check.reason };
+      }
+
+      jobLog.info({ installationId, eventName, action }, "Processing webhook delivery");
 
       if (eventName === "installation_repositories") {
         jobLog.info({ action, installationId }, "Repository access changed — tracking in Phase 2");
