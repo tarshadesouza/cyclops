@@ -9,12 +9,17 @@ import {
   DetectorDispatchJobSchema,
   type WebhookIngestionJob,
 } from "@cyclops/queue";
-import { getDb, getTenantClient } from "@cyclops/db";
+import { getDb, getTenantClient, type FixSession } from "@cyclops/db";
+import { getInstallationClient } from "@cyclops/github";
 import { checkInstallationActive } from "../lib/installation.js";
 import {
   IMPLEMENT_FIX_ACTION_ID,
   autofixActionTypeFor,
 } from "../lib/github-autofix.js";
+import {
+  findActiveSessionByBranch,
+  finalizeFixSession,
+} from "../lib/fix-loop.js";
 import pino from "pino";
 import type { Job } from "bullmq";
 
@@ -181,6 +186,86 @@ async function handleRequestedAction(
   );
 }
 
+// handleLoopWorkflowRun — a completed workflow_run landed on a branch an active
+// fix-loop session is watching. Green → finalize succeeded. Red → re-dispatch
+// the NEW failure through the normal pipeline for another fix (the eventual
+// autofix action re-attaches by branch match), unless the iteration cap is hit.
+// Returns true if the event was consumed by the loop (skip normal dispatch).
+async function handleLoopWorkflowRun(
+  installationId: number,
+  repositoryId: number,
+  session: FixSession,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload: any,
+  jobLog: pino.Logger
+): Promise<void> {
+  const conclusion: string | undefined = payload.workflow_run?.conclusion;
+  const headSha: string | undefined = payload.workflow_run?.head_sha;
+  const owner: string = payload.repository?.owner?.login;
+  const repo: string = payload.repository?.name;
+
+  // React only to the run for the commit WE pushed. A run for a different sha
+  // (e.g. the developer pushing to the same branch mid-loop) is left alone.
+  if (session.lastSha && headSha && session.lastSha !== headSha) {
+    jobLog.info(
+      { sessionId: session.id, headSha, lastSha: session.lastSha },
+      "Fix loop: run for a different sha — ignoring"
+    );
+    return;
+  }
+
+  const octokit = await getInstallationClient(installationId);
+  const target = { octokit, db: getTenantClient(installationId), owner, repo };
+
+  if (conclusion === "success") {
+    jobLog.info({ sessionId: session.id }, "Fix loop: CI green — finalizing succeeded");
+    await finalizeFixSession(target, session, "succeeded");
+    return;
+  }
+
+  if (conclusion === "failure") {
+    if (session.iteration >= session.maxIterations) {
+      jobLog.warn(
+        { sessionId: session.id, iteration: session.iteration },
+        "Fix loop: max iterations reached — finalizing"
+      );
+      await finalizeFixSession(target, session, "failed_max_iterations");
+      return;
+    }
+
+    // Re-fix: feed the fresh failure back through the normal pipeline.
+    const dispatchData = {
+      installationId,
+      repositoryId,
+      checkRunId: payload.workflow_run.id,
+      workflowRunId: payload.workflow_run.id,
+      ref: payload.workflow_run.head_branch,
+      sha: headSha,
+    };
+    const validation = DetectorDispatchJobSchema.safeParse(dispatchData);
+    if (!validation.success) {
+      jobLog.warn(
+        { sessionId: session.id, errors: validation.error.errors },
+        "Fix loop: invalid re-dispatch payload — finalizing error"
+      );
+      await finalizeFixSession(target, session, "error");
+      return;
+    }
+    await detectorDispatchQueue.add("detect", validation.data);
+    jobLog.info(
+      { sessionId: session.id, iteration: session.iteration },
+      "Fix loop: CI red — re-dispatched for another fix attempt"
+    );
+    return;
+  }
+
+  // cancelled / timed_out / neutral / etc. — leave the session running.
+  jobLog.info(
+    { sessionId: session.id, conclusion },
+    "Fix loop: non-terminal run conclusion — waiting"
+  );
+}
+
 export function createWebhookIngestionWorker(): Worker<WebhookIngestionJob> {
   const worker = new Worker<WebhookIngestionJob>(
     "webhook-ingestion",
@@ -258,6 +343,31 @@ export function createWebhookIngestionWorker(): Worker<WebhookIngestionJob> {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const payload = delivery.payload as any;
+
+        // Fix-loop watcher (Phase 6 step 2): if this workflow_run is on a branch
+        // an active session is driving, the loop owns the event — finalize on
+        // green or re-dispatch on red, and do NOT fall through to normal dispatch.
+        if (eventName === "workflow_run") {
+          const headBranch: string | undefined = payload.workflow_run?.head_branch;
+          if (headBranch) {
+            const session = await findActiveSessionByBranch(
+              getTenantClient(installationId),
+              installationId,
+              payload.repository.id,
+              headBranch
+            );
+            if (session) {
+              await handleLoopWorkflowRun(
+                installationId,
+                payload.repository.id,
+                session,
+                payload,
+                jobLog as pino.Logger
+              );
+              return { processed: true, eventName, action, loop: true };
+            }
+          }
+        }
 
         let dispatchData: unknown;
 

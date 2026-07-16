@@ -383,6 +383,7 @@ export type InstallationWhereInput = {
   webhookDeliveries?: Prisma.WebhookDeliveryListRelationFilter
   findings?: Prisma.FindingListRelationFilter
   tokenUsages?: Prisma.TokenUsageListRelationFilter
+  fixSessions?: Prisma.FixSessionListRelationFilter
 }
 
 export type InstallationOrderByWithRelationInput = {
@@ -413,6 +414,7 @@ export type InstallationOrderByWithRelationInput = {
   webhookDeliveries?: Prisma.WebhookDeliveryOrderByRelationAggregateInput
   findings?: Prisma.FindingOrderByRelationAggregateInput
   tokenUsages?: Prisma.TokenUsageOrderByRelationAggregateInput
+  fixSessions?: Prisma.FixSessionOrderByRelationAggregateInput
 }
 
 export type InstallationWhereUniqueInput = Prisma.AtLeast<{
@@ -446,6 +448,7 @@ export type InstallationWhereUniqueInput = Prisma.AtLeast<{
   webhookDeliveries?: Prisma.WebhookDeliveryListRelationFilter
   findings?: Prisma.FindingListRelationFilter
   tokenUsages?: Prisma.TokenUsageListRelationFilter
+  fixSessions?: Prisma.FixSessionListRelationFilter
 }, "id" | "targetId">
 
 export type InstallationOrderByWithAggregationInput = {
@@ -538,6 +541,7 @@ export type InstallationCreateInput = {
   webhookDeliveries?: Prisma.WebhookDeliveryCreateNestedManyWithoutInstallationInput
   findings?: Prisma.FindingCreateNestedManyWithoutInstallationInput
   tokenUsages?: Prisma.TokenUsageCreateNestedManyWithoutInstallationInput
+  fixSessions?: Prisma.FixSessionCreateNestedManyWithoutInstallationInput
 }
 
 export type InstallationUncheckedCreateInput = {
@@ -568,6 +572,7 @@ export type InstallationUncheckedCreateInput = {
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedCreateNestedManyWithoutInstallationInput
   findings?: Prisma.FindingUncheckedCreateNestedManyWithoutInstallationInput
   tokenUsages?: Prisma.TokenUsageUncheckedCreateNestedManyWithoutInstallationInput
+  fixSessions?: Prisma.FixSessionUncheckedCreateNestedManyWithoutInstallationInput
 }
 
 export type InstallationUpdateInput = {
@@ -598,6 +603,7 @@ export type InstallationUpdateInput = {
   webhookDeliveries?: Prisma.WebhookDeliveryUpdateManyWithoutInstallationNestedInput
   findings?: Prisma.FindingUpdateManyWithoutInstallationNestedInput
   tokenUsages?: Prisma.TokenUsageUpdateManyWithoutInstallationNestedInput
+  fixSessions?: Prisma.FixSessionUpdateManyWithoutInstallationNestedInput
 }
 
 export type InstallationUncheckedUpdateInput = {
@@ -628,6 +634,7 @@ export type InstallationUncheckedUpdateInput = {
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedUpdateManyWithoutInstallationNestedInput
   findings?: Prisma.FindingUncheckedUpdateManyWithoutInstallationNestedInput
   tokenUsages?: Prisma.TokenUsageUncheckedUpdateManyWithoutInstallationNestedInput
+  fixSessions?: Prisma.FixSessionUncheckedUpdateManyWithoutInstallationNestedInput
 }
 
 export type InstallationCreateManyInput = {
@@ -889,6 +896,20 @@ export type InstallationUpdateOneRequiredWithoutWebhookDeliveriesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.InstallationUpdateToOneWithWhereWithoutWebhookDeliveriesInput, Prisma.InstallationUpdateWithoutWebhookDeliveriesInput>, Prisma.InstallationUncheckedUpdateWithoutWebhookDeliveriesInput>
 }
 
+export type InstallationCreateNestedOneWithoutFixSessionsInput = {
+  create?: Prisma.XOR<Prisma.InstallationCreateWithoutFixSessionsInput, Prisma.InstallationUncheckedCreateWithoutFixSessionsInput>
+  connectOrCreate?: Prisma.InstallationCreateOrConnectWithoutFixSessionsInput
+  connect?: Prisma.InstallationWhereUniqueInput
+}
+
+export type InstallationUpdateOneRequiredWithoutFixSessionsNestedInput = {
+  create?: Prisma.XOR<Prisma.InstallationCreateWithoutFixSessionsInput, Prisma.InstallationUncheckedCreateWithoutFixSessionsInput>
+  connectOrCreate?: Prisma.InstallationCreateOrConnectWithoutFixSessionsInput
+  upsert?: Prisma.InstallationUpsertWithoutFixSessionsInput
+  connect?: Prisma.InstallationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InstallationUpdateToOneWithWhereWithoutFixSessionsInput, Prisma.InstallationUpdateWithoutFixSessionsInput>, Prisma.InstallationUncheckedUpdateWithoutFixSessionsInput>
+}
+
 export type InstallationCreateWithoutFindingsInput = {
   id: number
   accountLogin: string
@@ -916,6 +937,7 @@ export type InstallationCreateWithoutFindingsInput = {
   updatedAt?: Date | string
   webhookDeliveries?: Prisma.WebhookDeliveryCreateNestedManyWithoutInstallationInput
   tokenUsages?: Prisma.TokenUsageCreateNestedManyWithoutInstallationInput
+  fixSessions?: Prisma.FixSessionCreateNestedManyWithoutInstallationInput
 }
 
 export type InstallationUncheckedCreateWithoutFindingsInput = {
@@ -945,6 +967,7 @@ export type InstallationUncheckedCreateWithoutFindingsInput = {
   updatedAt?: Date | string
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedCreateNestedManyWithoutInstallationInput
   tokenUsages?: Prisma.TokenUsageUncheckedCreateNestedManyWithoutInstallationInput
+  fixSessions?: Prisma.FixSessionUncheckedCreateNestedManyWithoutInstallationInput
 }
 
 export type InstallationCreateOrConnectWithoutFindingsInput = {
@@ -990,6 +1013,7 @@ export type InstallationUpdateWithoutFindingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   webhookDeliveries?: Prisma.WebhookDeliveryUpdateManyWithoutInstallationNestedInput
   tokenUsages?: Prisma.TokenUsageUpdateManyWithoutInstallationNestedInput
+  fixSessions?: Prisma.FixSessionUpdateManyWithoutInstallationNestedInput
 }
 
 export type InstallationUncheckedUpdateWithoutFindingsInput = {
@@ -1019,6 +1043,7 @@ export type InstallationUncheckedUpdateWithoutFindingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedUpdateManyWithoutInstallationNestedInput
   tokenUsages?: Prisma.TokenUsageUncheckedUpdateManyWithoutInstallationNestedInput
+  fixSessions?: Prisma.FixSessionUncheckedUpdateManyWithoutInstallationNestedInput
 }
 
 export type InstallationCreateWithoutTokenUsagesInput = {
@@ -1048,6 +1073,7 @@ export type InstallationCreateWithoutTokenUsagesInput = {
   updatedAt?: Date | string
   webhookDeliveries?: Prisma.WebhookDeliveryCreateNestedManyWithoutInstallationInput
   findings?: Prisma.FindingCreateNestedManyWithoutInstallationInput
+  fixSessions?: Prisma.FixSessionCreateNestedManyWithoutInstallationInput
 }
 
 export type InstallationUncheckedCreateWithoutTokenUsagesInput = {
@@ -1077,6 +1103,7 @@ export type InstallationUncheckedCreateWithoutTokenUsagesInput = {
   updatedAt?: Date | string
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedCreateNestedManyWithoutInstallationInput
   findings?: Prisma.FindingUncheckedCreateNestedManyWithoutInstallationInput
+  fixSessions?: Prisma.FixSessionUncheckedCreateNestedManyWithoutInstallationInput
 }
 
 export type InstallationCreateOrConnectWithoutTokenUsagesInput = {
@@ -1122,6 +1149,7 @@ export type InstallationUpdateWithoutTokenUsagesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   webhookDeliveries?: Prisma.WebhookDeliveryUpdateManyWithoutInstallationNestedInput
   findings?: Prisma.FindingUpdateManyWithoutInstallationNestedInput
+  fixSessions?: Prisma.FixSessionUpdateManyWithoutInstallationNestedInput
 }
 
 export type InstallationUncheckedUpdateWithoutTokenUsagesInput = {
@@ -1151,6 +1179,7 @@ export type InstallationUncheckedUpdateWithoutTokenUsagesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedUpdateManyWithoutInstallationNestedInput
   findings?: Prisma.FindingUncheckedUpdateManyWithoutInstallationNestedInput
+  fixSessions?: Prisma.FixSessionUncheckedUpdateManyWithoutInstallationNestedInput
 }
 
 export type InstallationCreateWithoutWebhookDeliveriesInput = {
@@ -1180,6 +1209,7 @@ export type InstallationCreateWithoutWebhookDeliveriesInput = {
   updatedAt?: Date | string
   findings?: Prisma.FindingCreateNestedManyWithoutInstallationInput
   tokenUsages?: Prisma.TokenUsageCreateNestedManyWithoutInstallationInput
+  fixSessions?: Prisma.FixSessionCreateNestedManyWithoutInstallationInput
 }
 
 export type InstallationUncheckedCreateWithoutWebhookDeliveriesInput = {
@@ -1209,6 +1239,7 @@ export type InstallationUncheckedCreateWithoutWebhookDeliveriesInput = {
   updatedAt?: Date | string
   findings?: Prisma.FindingUncheckedCreateNestedManyWithoutInstallationInput
   tokenUsages?: Prisma.TokenUsageUncheckedCreateNestedManyWithoutInstallationInput
+  fixSessions?: Prisma.FixSessionUncheckedCreateNestedManyWithoutInstallationInput
 }
 
 export type InstallationCreateOrConnectWithoutWebhookDeliveriesInput = {
@@ -1254,6 +1285,7 @@ export type InstallationUpdateWithoutWebhookDeliveriesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   findings?: Prisma.FindingUpdateManyWithoutInstallationNestedInput
   tokenUsages?: Prisma.TokenUsageUpdateManyWithoutInstallationNestedInput
+  fixSessions?: Prisma.FixSessionUpdateManyWithoutInstallationNestedInput
 }
 
 export type InstallationUncheckedUpdateWithoutWebhookDeliveriesInput = {
@@ -1283,6 +1315,143 @@ export type InstallationUncheckedUpdateWithoutWebhookDeliveriesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   findings?: Prisma.FindingUncheckedUpdateManyWithoutInstallationNestedInput
   tokenUsages?: Prisma.TokenUsageUncheckedUpdateManyWithoutInstallationNestedInput
+  fixSessions?: Prisma.FixSessionUncheckedUpdateManyWithoutInstallationNestedInput
+}
+
+export type InstallationCreateWithoutFixSessionsInput = {
+  id: number
+  accountLogin: string
+  accountType: string
+  appId: number
+  targetId: number
+  targetType: string
+  suspended?: boolean
+  encryptedApiKey?: string | null
+  aiProvider?: string
+  aiBaseUrl?: string | null
+  aiHeaderName?: string | null
+  aiHeaderValue?: string | null
+  aiModel?: string | null
+  billingStatus?: string
+  trialEndsAt?: Date | string | null
+  billingCancelAt?: Date | string | null
+  marketplacePlanId?: number | null
+  marketplacePlanName?: string | null
+  encryptedSlackToken?: string | null
+  slackTeamId?: string | null
+  slackTeamName?: string | null
+  deletedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  webhookDeliveries?: Prisma.WebhookDeliveryCreateNestedManyWithoutInstallationInput
+  findings?: Prisma.FindingCreateNestedManyWithoutInstallationInput
+  tokenUsages?: Prisma.TokenUsageCreateNestedManyWithoutInstallationInput
+}
+
+export type InstallationUncheckedCreateWithoutFixSessionsInput = {
+  id: number
+  accountLogin: string
+  accountType: string
+  appId: number
+  targetId: number
+  targetType: string
+  suspended?: boolean
+  encryptedApiKey?: string | null
+  aiProvider?: string
+  aiBaseUrl?: string | null
+  aiHeaderName?: string | null
+  aiHeaderValue?: string | null
+  aiModel?: string | null
+  billingStatus?: string
+  trialEndsAt?: Date | string | null
+  billingCancelAt?: Date | string | null
+  marketplacePlanId?: number | null
+  marketplacePlanName?: string | null
+  encryptedSlackToken?: string | null
+  slackTeamId?: string | null
+  slackTeamName?: string | null
+  deletedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  webhookDeliveries?: Prisma.WebhookDeliveryUncheckedCreateNestedManyWithoutInstallationInput
+  findings?: Prisma.FindingUncheckedCreateNestedManyWithoutInstallationInput
+  tokenUsages?: Prisma.TokenUsageUncheckedCreateNestedManyWithoutInstallationInput
+}
+
+export type InstallationCreateOrConnectWithoutFixSessionsInput = {
+  where: Prisma.InstallationWhereUniqueInput
+  create: Prisma.XOR<Prisma.InstallationCreateWithoutFixSessionsInput, Prisma.InstallationUncheckedCreateWithoutFixSessionsInput>
+}
+
+export type InstallationUpsertWithoutFixSessionsInput = {
+  update: Prisma.XOR<Prisma.InstallationUpdateWithoutFixSessionsInput, Prisma.InstallationUncheckedUpdateWithoutFixSessionsInput>
+  create: Prisma.XOR<Prisma.InstallationCreateWithoutFixSessionsInput, Prisma.InstallationUncheckedCreateWithoutFixSessionsInput>
+  where?: Prisma.InstallationWhereInput
+}
+
+export type InstallationUpdateToOneWithWhereWithoutFixSessionsInput = {
+  where?: Prisma.InstallationWhereInput
+  data: Prisma.XOR<Prisma.InstallationUpdateWithoutFixSessionsInput, Prisma.InstallationUncheckedUpdateWithoutFixSessionsInput>
+}
+
+export type InstallationUpdateWithoutFixSessionsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  accountLogin?: Prisma.StringFieldUpdateOperationsInput | string
+  accountType?: Prisma.StringFieldUpdateOperationsInput | string
+  appId?: Prisma.IntFieldUpdateOperationsInput | number
+  targetId?: Prisma.IntFieldUpdateOperationsInput | number
+  targetType?: Prisma.StringFieldUpdateOperationsInput | string
+  suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  aiBaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  marketplacePlanId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  marketplacePlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  encryptedSlackToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  webhookDeliveries?: Prisma.WebhookDeliveryUpdateManyWithoutInstallationNestedInput
+  findings?: Prisma.FindingUpdateManyWithoutInstallationNestedInput
+  tokenUsages?: Prisma.TokenUsageUpdateManyWithoutInstallationNestedInput
+}
+
+export type InstallationUncheckedUpdateWithoutFixSessionsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  accountLogin?: Prisma.StringFieldUpdateOperationsInput | string
+  accountType?: Prisma.StringFieldUpdateOperationsInput | string
+  appId?: Prisma.IntFieldUpdateOperationsInput | number
+  targetId?: Prisma.IntFieldUpdateOperationsInput | number
+  targetType?: Prisma.StringFieldUpdateOperationsInput | string
+  suspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  encryptedApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  aiBaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiHeaderValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  billingCancelAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  marketplacePlanId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  marketplacePlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  encryptedSlackToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slackTeamName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  webhookDeliveries?: Prisma.WebhookDeliveryUncheckedUpdateManyWithoutInstallationNestedInput
+  findings?: Prisma.FindingUncheckedUpdateManyWithoutInstallationNestedInput
+  tokenUsages?: Prisma.TokenUsageUncheckedUpdateManyWithoutInstallationNestedInput
 }
 
 
@@ -1294,12 +1463,14 @@ export type InstallationCountOutputType = {
   webhookDeliveries: number
   findings: number
   tokenUsages: number
+  fixSessions: number
 }
 
 export type InstallationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   webhookDeliveries?: boolean | InstallationCountOutputTypeCountWebhookDeliveriesArgs
   findings?: boolean | InstallationCountOutputTypeCountFindingsArgs
   tokenUsages?: boolean | InstallationCountOutputTypeCountTokenUsagesArgs
+  fixSessions?: boolean | InstallationCountOutputTypeCountFixSessionsArgs
 }
 
 /**
@@ -1333,6 +1504,13 @@ export type InstallationCountOutputTypeCountTokenUsagesArgs<ExtArgs extends runt
   where?: Prisma.TokenUsageWhereInput
 }
 
+/**
+ * InstallationCountOutputType without action
+ */
+export type InstallationCountOutputTypeCountFixSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FixSessionWhereInput
+}
+
 
 export type InstallationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1362,6 +1540,7 @@ export type InstallationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   webhookDeliveries?: boolean | Prisma.Installation$webhookDeliveriesArgs<ExtArgs>
   findings?: boolean | Prisma.Installation$findingsArgs<ExtArgs>
   tokenUsages?: boolean | Prisma.Installation$tokenUsagesArgs<ExtArgs>
+  fixSessions?: boolean | Prisma.Installation$fixSessionsArgs<ExtArgs>
   _count?: boolean | Prisma.InstallationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["installation"]>
 
@@ -1451,6 +1630,7 @@ export type InstallationInclude<ExtArgs extends runtime.Types.Extensions.Interna
   webhookDeliveries?: boolean | Prisma.Installation$webhookDeliveriesArgs<ExtArgs>
   findings?: boolean | Prisma.Installation$findingsArgs<ExtArgs>
   tokenUsages?: boolean | Prisma.Installation$tokenUsagesArgs<ExtArgs>
+  fixSessions?: boolean | Prisma.Installation$fixSessionsArgs<ExtArgs>
   _count?: boolean | Prisma.InstallationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type InstallationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1462,6 +1642,7 @@ export type $InstallationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     webhookDeliveries: Prisma.$WebhookDeliveryPayload<ExtArgs>[]
     findings: Prisma.$FindingPayload<ExtArgs>[]
     tokenUsages: Prisma.$TokenUsagePayload<ExtArgs>[]
+    fixSessions: Prisma.$FixSessionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1885,6 +2066,7 @@ export interface Prisma__InstallationClient<T, Null = never, ExtArgs extends run
   webhookDeliveries<T extends Prisma.Installation$webhookDeliveriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Installation$webhookDeliveriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WebhookDeliveryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   findings<T extends Prisma.Installation$findingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Installation$findingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FindingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   tokenUsages<T extends Prisma.Installation$tokenUsagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Installation$tokenUsagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TokenUsagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  fixSessions<T extends Prisma.Installation$fixSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Installation$fixSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FixSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2400,6 +2582,30 @@ export type Installation$tokenUsagesArgs<ExtArgs extends runtime.Types.Extension
   take?: number
   skip?: number
   distinct?: Prisma.TokenUsageScalarFieldEnum | Prisma.TokenUsageScalarFieldEnum[]
+}
+
+/**
+ * Installation.fixSessions
+ */
+export type Installation$fixSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FixSession
+   */
+  select?: Prisma.FixSessionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FixSession
+   */
+  omit?: Prisma.FixSessionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FixSessionInclude<ExtArgs> | null
+  where?: Prisma.FixSessionWhereInput
+  orderBy?: Prisma.FixSessionOrderByWithRelationInput | Prisma.FixSessionOrderByWithRelationInput[]
+  cursor?: Prisma.FixSessionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FixSessionScalarFieldEnum | Prisma.FixSessionScalarFieldEnum[]
 }
 
 /**

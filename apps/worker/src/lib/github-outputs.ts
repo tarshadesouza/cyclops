@@ -1,5 +1,6 @@
 import type { ActionContext } from "../workers/action-execution.js";
 import { IMPLEMENT_FIX_ACTION_ID, isAutofixEligible } from "./github-autofix.js";
+import { findActiveSessionByBranch } from "./fix-loop.js";
 
 // ---------------------------------------------------------------------------
 // getPrNumber — resolve the open PR number for a given commit SHA
@@ -267,15 +268,26 @@ export async function handleUpdateCheckRun(
   // webhook-ingestion turns into a manual autofix action. GitHub caps the
   // actions array at 3 and each field's length (label ≤ 20, description ≤ 40,
   // identifier ≤ 20) — keep the strings short.
-  const actions = isAutofixEligible(finding, config)
-    ? [
-        {
-          label: "Implement fix",
-          description: "Apply cyclops's suggested fix",
-          identifier: IMPLEMENT_FIX_ACTION_ID,
-        },
-      ]
-    : [];
+  // Suppress the button while a fix loop is already running on this branch —
+  // the per-iteration check runs would otherwise each offer a duplicate
+  // loop-start button (Phase 6 step 2).
+  const loopActive =
+    (await findActiveSessionByBranch(
+      db,
+      finding.installationId,
+      finding.repositoryId,
+      finding.ref
+    )) !== null;
+  const actions =
+    isAutofixEligible(finding, config) && !loopActive
+      ? [
+          {
+            label: "Implement fix",
+            description: "Apply cyclops's suggested fix",
+            identifier: IMPLEMENT_FIX_ACTION_ID,
+          },
+        ]
+      : [];
 
   if (annotations.length === 0) {
     // Complete with no annotations

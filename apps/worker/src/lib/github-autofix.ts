@@ -1,7 +1,14 @@
 import type { ActionType } from "@cyclops/queue";
 import type { CyclopsConfig } from "@cyclops/config";
-import type { Finding } from "@cyclops/db";
+import type { Finding, FixSession } from "@cyclops/db";
 import type { ActionContext } from "../workers/action-execution.js";
+import {
+  failureSignature,
+  finalizeFixSession,
+  upsertLoopComment,
+  progressBody,
+  resolveOpenPrForBranch,
+} from "./fix-loop.js";
 
 // ---------------------------------------------------------------------------
 // "Implement fix" button — check-run action identifier. Pressing the button
@@ -114,6 +121,74 @@ function isValidFileContent(
 //               and record the AutofixPr row (dedup source).
 // Shared by the lint and snapshot handlers so the mode logic lives in one place.
 // ---------------------------------------------------------------------------
+// buildFixCommit — the Git Data API commit-build (tree + commit), parented on
+// the failing sha (= current branch head). Returns the new commit sha. Placing
+// it (branch/PR vs direct) is the caller's job. The file path travels in the
+// tree body, so it's never URL-encoded.
+async function buildFixCommit(
+  ctx: ActionContext,
+  filePath: string,
+  content: string,
+  commitMessage: string
+): Promise<string> {
+  const { octokit, finding, owner, repo } = ctx;
+  const { sha } = finding;
+
+  const commitResp = await (octokit as any).request(
+    "GET /repos/{owner}/{repo}/git/commits/{commit_sha}",
+    { owner, repo, commit_sha: sha }
+  );
+  const treeResp = await (octokit as any).request(
+    "POST /repos/{owner}/{repo}/git/trees",
+    {
+      owner,
+      repo,
+      base_tree: commitResp.data.tree.sha,
+      tree: [{ path: filePath, mode: "100644", type: "blob", content }],
+    }
+  );
+  const newCommitResp = await (octokit as any).request(
+    "POST /repos/{owner}/{repo}/git/commits",
+    { owner, repo, message: commitMessage, tree: treeResp.data.sha, parents: [sha] }
+  );
+  return newCommitResp.data.sha as string;
+}
+
+// createBranchRef / updateBranchRef — `{+ref}` keeps the slash in heads/<branch>
+// unencoded; force:false so a non-fast-forward errors rather than clobbering.
+async function createBranchRef(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  octokit: any,
+  owner: string,
+  repo: string,
+  branch: string,
+  sha: string
+): Promise<void> {
+  await octokit.request("POST /repos/{owner}/{repo}/git/refs", {
+    owner,
+    repo,
+    ref: `refs/heads/${branch}`,
+    sha,
+  });
+}
+
+async function updateBranchRef(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  octokit: any,
+  owner: string,
+  repo: string,
+  branch: string,
+  sha: string
+): Promise<void> {
+  await octokit.request("PATCH /repos/{owner}/{repo}/git/refs/{+ref}", {
+    owner,
+    repo,
+    ref: `heads/${branch}`,
+    sha,
+    force: false,
+  });
+}
+
 async function commitFix(
   ctx: ActionContext,
   opts: {
@@ -128,47 +203,12 @@ async function commitFix(
   const { octokit, db, finding, owner, repo, config, log } = ctx;
   const { installationId, repositoryId, detectorType, sha, ref } = finding;
 
-  // Step 1: current commit → base tree SHA
-  const commitResp = await (octokit as any).request(
-    "GET /repos/{owner}/{repo}/git/commits/{commit_sha}",
-    { owner, repo, commit_sha: sha }
-  );
-  const baseTreeSha: string = commitResp.data.tree.sha;
-
-  // Step 2: new tree with the fixed file content (path in body — never URL-encoded)
-  const treeResp = await (octokit as any).request(
-    "POST /repos/{owner}/{repo}/git/trees",
-    {
-      owner,
-      repo,
-      base_tree: baseTreeSha,
-      tree: [{ path: opts.filePath, mode: "100644", type: "blob", content: opts.content }],
-    }
-  );
-
-  // Step 3: commit (parent = the failing sha = current branch head)
-  const newCommitResp = await (octokit as any).request(
-    "POST /repos/{owner}/{repo}/git/commits",
-    {
-      owner,
-      repo,
-      message: opts.commitMessage,
-      tree: treeResp.data.sha,
-      parents: [sha],
-    }
-  );
-  const newCommitSha: string = newCommitResp.data.sha;
-
+  const newCommitSha = await buildFixCommit(ctx, opts.filePath, opts.content, opts.commitMessage);
   const headBranch = (ref ?? "main").replace(/^refs\/heads\//, "");
 
   if (config.autofixMode === "autofix") {
-    // Commit DIRECTLY to the PR's own head branch. `{+ref}` keeps the slash in
-    // heads/<branch> unencoded; force:false so a non-fast-forward errors out
-    // rather than overwriting commits pushed after the failing sha.
-    await (octokit as any).request(
-      "PATCH /repos/{owner}/{repo}/git/refs/{+ref}",
-      { owner, repo, ref: `heads/${headBranch}`, sha: newCommitSha, force: false }
-    );
+    // Commit DIRECTLY to the PR's own head branch.
+    await updateBranchRef(octokit, owner, repo, headBranch, newCommitSha);
     log.info(
       { headBranch, newCommitSha, findingId: finding.id },
       "Autofix committed directly to head branch (autofix mode)"
@@ -178,12 +218,7 @@ async function commitFix(
 
   // locked mode: new branch + review PR
   const branchName = `cyclops/autofix/${opts.branchPrefix}/${sha.slice(0, 7)}-${Date.now()}`;
-  await (octokit as any).request("POST /repos/{owner}/{repo}/git/refs", {
-    owner,
-    repo,
-    ref: `refs/heads/${branchName}`,
-    sha: newCommitSha,
-  });
+  await createBranchRef(octokit, owner, repo, branchName, newCommitSha);
   const prResp = await (octokit as any).request(
     "POST /repos/{owner}/{repo}/pulls",
     {
@@ -209,6 +244,99 @@ async function commitFix(
   log.info(
     { branchName, prNumber: prResp.data.number },
     "Autofix PR created (locked mode)"
+  );
+  return { ok: true as const };
+}
+
+// ---------------------------------------------------------------------------
+// applyFixForSession — one iteration of the fix LOOP (Phase 6 step 2). Enforces
+// the no-progress and max-iteration stop conditions, commits the fix onto the
+// session's stable branch (creating the branch + review PR on the first locked
+// iteration), then advances the session and updates its progress comment.
+// ---------------------------------------------------------------------------
+async function applyFixForSession(
+  ctx: ActionContext,
+  session: FixSession,
+  opts: {
+    filePath: string;
+    content: string;
+    commitMessage: string;
+    prTitle: string;
+    prBody: string;
+  }
+): Promise<{ skipped: true; reason?: string } | { ok: true }> {
+  const { octokit, db, finding, owner, repo, log } = ctx;
+  const target = { octokit, db, owner, repo };
+
+  // no-progress: this failure is identical to the previous iteration's failure
+  const sig = failureSignature(finding);
+  if (session.lastFailureSig && session.lastFailureSig === sig) {
+    log.warn(
+      { sessionId: session.id },
+      "Fix loop: no progress (identical failure signature) — stopping"
+    );
+    await finalizeFixSession(target, session, "failed_no_progress");
+    return { skipped: true as const, reason: "no_progress" };
+  }
+
+  // max-iteration cap (webhook-ingestion also gates re-dispatch; belt-and-suspenders)
+  if (session.iteration >= session.maxIterations) {
+    log.warn({ sessionId: session.id }, "Fix loop: max iterations reached — stopping");
+    await finalizeFixSession(target, session, "failed_max_iterations");
+    return { skipped: true as const, reason: "max_iterations" };
+  }
+
+  const newCommitSha = await buildFixCommit(ctx, opts.filePath, opts.content, opts.commitMessage);
+
+  let prNumber = session.prNumber ?? undefined;
+  if (session.mode === "autofix") {
+    // commit directly onto the PR's own head branch (== session.branchName)
+    await updateBranchRef(octokit, owner, repo, session.branchName, newCommitSha);
+    // resolve the PR so the loop can post its progress/terminal comment
+    if (!prNumber) {
+      prNumber = await resolveOpenPrForBranch(octokit, owner, repo, session.branchName);
+    }
+  } else if (session.iteration === 0 && !prNumber) {
+    // first locked iteration — create the fix branch and open the review PR
+    await createBranchRef(octokit, owner, repo, session.branchName, newCommitSha);
+    const prResp = await (octokit as any).request(
+      "POST /repos/{owner}/{repo}/pulls",
+      {
+        owner,
+        repo,
+        title: opts.prTitle,
+        body: opts.prBody,
+        head: session.branchName,
+        base: session.baseBranch,
+        draft: false,
+      }
+    );
+    prNumber = prResp.data.number;
+  } else {
+    // subsequent locked iteration — fast-forward the existing fix branch
+    await updateBranchRef(octokit, owner, repo, session.branchName, newCommitSha);
+  }
+
+  const iteration = session.iteration + 1;
+  const updated: FixSession = await db.fixSession.update({
+    where: { id: session.id },
+    data: {
+      iteration,
+      lastSha: newCommitSha,
+      lastFailureSig: sig,
+      ...(prNumber ? { prNumber } : {}),
+    },
+  });
+
+  try {
+    await upsertLoopComment(target, updated, progressBody(iteration, updated.maxIterations));
+  } catch {
+    // best-effort — progress comment is cosmetic
+  }
+
+  log.info(
+    { sessionId: session.id, iteration, newCommitSha, branch: session.branchName },
+    "Fix loop: pushed fix iteration"
   );
   return { ok: true as const };
 }
@@ -266,11 +394,11 @@ export async function handleAutofixLint(
     return { skipped: true as const, reason: "no_affected_files" };
   }
 
-  return commitFix(ctx, {
+  const fixOpts = {
     filePath,
     content: suggestedFix,
     commitMessage: `fix(lint): auto-fix ESLint violations [cyclops]\n\nFinding: ${finding.id}`,
-    branchPrefix: "lint",
+    branchPrefix: "lint" as const,
     prTitle: `fix(lint): auto-fix ESLint violations on ${sha.slice(0, 7)} [cyclops]`,
     prBody: [
       "Automated lint fix by cyclops[bot].",
@@ -281,7 +409,13 @@ export async function handleAutofixLint(
       "",
       "> No auto-merge — please review before merging.",
     ].join("\n"),
-  });
+  };
+
+  // Loop iteration (Phase 6 step 2) vs one-shot (step 1 / auto pipeline)
+  if (ctx.loopSession) {
+    return applyFixForSession(ctx, ctx.loopSession, fixOpts);
+  }
+  return commitFix(ctx, fixOpts);
 }
 
 // ---------------------------------------------------------------------------
@@ -337,11 +471,11 @@ export async function handleAutofixSnapshot(
     return { skipped: true as const, reason: "no_affected_files" };
   }
 
-  return commitFix(ctx, {
+  const fixOpts = {
     filePath,
     content: suggestedFix,
     commitMessage: `test(snapshot): regenerate snapshots [cyclops]\n\nFinding: ${finding.id}`,
-    branchPrefix: "snapshot",
+    branchPrefix: "snapshot" as const,
     prTitle: `test(snapshot): regenerate snapshots on ${sha.slice(0, 7)} [cyclops]`,
     prBody: [
       "Automated snapshot update by cyclops[bot].",
@@ -351,5 +485,10 @@ export async function handleAutofixSnapshot(
       "",
       "> Review snapshot changes carefully before merging.",
     ].join("\n"),
-  });
+  };
+
+  if (ctx.loopSession) {
+    return applyFixForSession(ctx, ctx.loopSession, fixOpts);
+  }
+  return commitFix(ctx, fixOpts);
 }

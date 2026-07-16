@@ -391,6 +391,7 @@ export const ModelName = {
   PrComment: 'PrComment',
   ActionDedup: 'ActionDedup',
   AutofixPr: 'AutofixPr',
+  FixSession: 'FixSession',
   TrackedIssue: 'TrackedIssue'
 } as const
 
@@ -407,7 +408,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "installation" | "finding" | "tokenUsage" | "webhookDelivery" | "prComment" | "actionDedup" | "autofixPr" | "trackedIssue"
+    modelProps: "installation" | "finding" | "tokenUsage" | "webhookDelivery" | "prComment" | "actionDedup" | "autofixPr" | "fixSession" | "trackedIssue"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -929,6 +930,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    FixSession: {
+      payload: Prisma.$FixSessionPayload<ExtArgs>
+      fields: Prisma.FixSessionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FixSessionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FixSessionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FixSessionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FixSessionPayload>
+        }
+        findFirst: {
+          args: Prisma.FixSessionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FixSessionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FixSessionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FixSessionPayload>
+        }
+        findMany: {
+          args: Prisma.FixSessionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FixSessionPayload>[]
+        }
+        create: {
+          args: Prisma.FixSessionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FixSessionPayload>
+        }
+        createMany: {
+          args: Prisma.FixSessionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FixSessionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FixSessionPayload>[]
+        }
+        delete: {
+          args: Prisma.FixSessionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FixSessionPayload>
+        }
+        update: {
+          args: Prisma.FixSessionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FixSessionPayload>
+        }
+        deleteMany: {
+          args: Prisma.FixSessionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FixSessionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FixSessionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FixSessionPayload>[]
+        }
+        upsert: {
+          args: Prisma.FixSessionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FixSessionPayload>
+        }
+        aggregate: {
+          args: Prisma.FixSessionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFixSession>
+        }
+        groupBy: {
+          args: Prisma.FixSessionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FixSessionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FixSessionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FixSessionCountAggregateOutputType> | number
+        }
+      }
+    }
     TrackedIssue: {
       payload: Prisma.$TrackedIssuePayload<ExtArgs>
       fields: Prisma.TrackedIssueFieldRefs
@@ -1168,6 +1243,29 @@ export const AutofixPrScalarFieldEnum = {
 } as const
 
 export type AutofixPrScalarFieldEnum = (typeof AutofixPrScalarFieldEnum)[keyof typeof AutofixPrScalarFieldEnum]
+
+
+export const FixSessionScalarFieldEnum = {
+  id: 'id',
+  installationId: 'installationId',
+  repositoryId: 'repositoryId',
+  findingId: 'findingId',
+  detectorType: 'detectorType',
+  mode: 'mode',
+  branchName: 'branchName',
+  baseBranch: 'baseBranch',
+  prNumber: 'prNumber',
+  commentId: 'commentId',
+  status: 'status',
+  iteration: 'iteration',
+  maxIterations: 'maxIterations',
+  lastSha: 'lastSha',
+  lastFailureSig: 'lastFailureSig',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FixSessionScalarFieldEnum = (typeof FixSessionScalarFieldEnum)[keyof typeof FixSessionScalarFieldEnum]
 
 
 export const TrackedIssueScalarFieldEnum = {
@@ -1436,6 +1534,7 @@ export type GlobalOmitConfig = {
   prComment?: Prisma.PrCommentOmit
   actionDedup?: Prisma.ActionDedupOmit
   autofixPr?: Prisma.AutofixPrOmit
+  fixSession?: Prisma.FixSessionOmit
   trackedIssue?: Prisma.TrackedIssueOmit
 }
 
