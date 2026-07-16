@@ -278,12 +278,19 @@ export async function handleUpdateCheckRun(
       finding.repositoryId,
       finding.ref
     )) !== null;
+  // Mode-aware description is a setup disclaimer AT THE POINT OF CONSENT: in
+  // autofix mode, pressing the button commits straight to the PR branch, so say
+  // so (GitHub caps the description at 40 chars).
+  const buttonDescription =
+    config.autofixMode === "autofix"
+      ? "⚠ Commits fix directly to this branch"
+      : "Open a PR with cyclops's fix";
   const actions =
     isAutofixEligible(finding, config) && !loopActive
       ? [
           {
             label: "Implement fix",
-            description: "Apply cyclops's suggested fix",
+            description: buttonDescription,
             identifier: IMPLEMENT_FIX_ACTION_ID,
           },
         ]

@@ -177,14 +177,31 @@ export async function upsertLoopComment(
 // ---------------------------------------------------------------------------
 // Comment bodies — a small consistent vocabulary for the loop's lifecycle.
 // ---------------------------------------------------------------------------
-export function progressBody(iteration: number, maxIterations: number): string {
-  return [
+// A runtime disclaimer shown while cyclops is committing straight to the user's
+// branch (autofixMode: autofix). Reinforces the setup-time warning at the exact
+// moment the "wild" behavior happens.
+const AUTOFIX_MODE_BANNER =
+  "> ⚠️ **Autofix mode** — cyclops is committing these fixes **directly to this " +
+  "branch** (`autofixMode: autofix`). Switch to `locked` in `.cyclops.yml` to " +
+  "get fixes on a separate review branch instead.";
+
+function withModeBanner(mode: string, lines: string[]): string {
+  const body = lines.join("\n");
+  return mode === "autofix" ? `${AUTOFIX_MODE_BANNER}\n\n${body}` : body;
+}
+
+export function progressBody(
+  mode: string,
+  iteration: number,
+  maxIterations: number
+): string {
+  return withModeBanner(mode, [
     "### 🔁 Cyclops automated fix in progress",
     "",
     `Attempt **${iteration} / ${maxIterations}** — pushed a fix and I'm watching CI.`,
     "",
     "_I'll update this comment when CI settles._",
-  ].join("\n");
+  ]);
 }
 
 const TERMINAL_HEADLINE: Record<Exclude<FixSessionStatus, "running">, string> = {
@@ -208,7 +225,11 @@ export function terminalBody(
   if (extra) {
     lines.push("", extra);
   }
-  return lines.join("\n");
+  // Keep the autofix disclaimer visible on the final comment too — except on a
+  // clean success, where the outcome speaks for itself.
+  return status === "succeeded"
+    ? lines.join("\n")
+    : withModeBanner(session.mode, lines);
 }
 
 // ---------------------------------------------------------------------------

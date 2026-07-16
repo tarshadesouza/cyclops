@@ -329,7 +329,11 @@ async function applyFixForSession(
   });
 
   try {
-    await upsertLoopComment(target, updated, progressBody(iteration, updated.maxIterations));
+    await upsertLoopComment(
+      target,
+      updated,
+      progressBody(updated.mode, iteration, updated.maxIterations)
+    );
   } catch {
     // best-effort — progress comment is cosmetic
   }
