@@ -119,7 +119,10 @@ export async function fetchJobLogExcerpt(
   }
 
   const stripped = stripLogFormatting(raw ?? "");
-  return stripped.split("\n").slice(0, 150).join("\n");
+  // Failures appear at the END of a job log (setup/install noise dominates the
+  // top), so keep the LAST 150 lines — that's where errors, assertions, and
+  // lint output actually are.
+  return stripped.split("\n").slice(-150).join("\n");
 }
 
 /**
