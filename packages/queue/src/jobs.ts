@@ -60,6 +60,10 @@ export const ActionExecutionJobSchema = z.object({
   actionType:     z.enum(ACTION_TYPES),
   sha:            z.string().length(40),
   ref:            z.string().optional(),
+  // manual = the user pressed the "Implement fix" check-run button. Manual
+  // fixes bypass the autofix kill-switch, dedup, and rate-limit gates (the
+  // user explicitly asked for this fix) and honor autofixMode for branch target.
+  manual:         z.boolean().optional(),
 });
 export type ActionExecutionJob = z.infer<typeof ActionExecutionJobSchema>;
 

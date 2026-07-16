@@ -3,13 +3,18 @@ import {
   getRedis,
   webhookIngestionQueue,
   detectorDispatchQueue,
+  actionExecutionQueue,
   dlqQueue,
   WebhookIngestionJobSchema,
   DetectorDispatchJobSchema,
   type WebhookIngestionJob,
 } from "@cyclops/queue";
-import { getDb } from "@cyclops/db";
+import { getDb, getTenantClient } from "@cyclops/db";
 import { checkInstallationActive } from "../lib/installation.js";
+import {
+  IMPLEMENT_FIX_ACTION_ID,
+  autofixActionTypeFor,
+} from "../lib/github-autofix.js";
 import pino from "pino";
 import type { Job } from "bullmq";
 
@@ -108,6 +113,74 @@ async function handleInstallationUnsuspended(installationId: number): Promise<vo
   logger.info({ installationId }, "Installation unsuspended");
 }
 
+// requested_action → find the analyzed finding behind the pressed check run and
+// enqueue a manual autofix action. No-ops (with a log) on any mismatch rather
+// than throwing, so a stray button press never poisons the queue.
+async function handleRequestedAction(
+  installationId: number,
+  deliveryId: string,
+  jobLog: pino.Logger
+): Promise<void> {
+  const delivery = await getDb().webhookDelivery.findUnique({
+    where: { deliveryId },
+  });
+  if (!delivery) {
+    jobLog.warn({ deliveryId }, "requested_action: delivery payload not found — skipping");
+    return;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const payload = delivery.payload as any;
+
+  const identifier: string | undefined = payload.requested_action?.identifier;
+  if (identifier !== IMPLEMENT_FIX_ACTION_ID) {
+    jobLog.info({ identifier }, "requested_action: unrecognized identifier — skipping");
+    return;
+  }
+
+  const checkRunId = payload.check_run?.id;
+  if (typeof checkRunId !== "number") {
+    jobLog.warn("requested_action: no check_run.id in payload — skipping");
+    return;
+  }
+
+  // Locate the finding this check run belongs to (tenant-scoped).
+  const db = getTenantClient(installationId);
+  const finding = await db.finding.findFirst({
+    where: { installationId, cyclopsCheckRunId: BigInt(checkRunId) },
+    orderBy: { createdAt: "desc" },
+  });
+  if (!finding) {
+    jobLog.warn({ checkRunId }, "requested_action: no finding for check run — skipping");
+    return;
+  }
+
+  const actionType = autofixActionTypeFor(finding.detectorType);
+  if (!actionType) {
+    jobLog.info(
+      { detectorType: finding.detectorType },
+      "requested_action: detector has no autofix action — skipping"
+    );
+    return;
+  }
+
+  await actionExecutionQueue.add("execute", {
+    installationId,
+    repositoryId: finding.repositoryId,
+    checkRunId: Number(finding.checkRunId),
+    findingId: finding.id,
+    actionType,
+    sha: finding.sha,
+    ref: finding.ref,
+    manual: true,
+  });
+
+  jobLog.info(
+    { findingId: finding.id, actionType, checkRunId },
+    "requested_action: manual autofix action enqueued"
+  );
+}
+
 export function createWebhookIngestionWorker(): Worker<WebhookIngestionJob> {
   const worker = new Worker<WebhookIngestionJob>(
     "webhook-ingestion",
@@ -154,6 +227,14 @@ export function createWebhookIngestionWorker(): Worker<WebhookIngestionJob> {
       }
 
       jobLog.info({ installationId, eventName, action }, "Processing webhook delivery");
+
+      // "Implement fix" button pressed → enqueue a MANUAL autofix action for the
+      // finding behind this check run. Skips detection + AI (the finding already
+      // exists and was analyzed) and dispatches straight to action-execution.
+      if (eventName === "check_run" && action === "requested_action") {
+        await handleRequestedAction(installationId, deliveryId, jobLog as pino.Logger);
+        return { processed: true, eventName, action };
+      }
 
       if (eventName === "installation_repositories") {
         jobLog.info({ action, installationId }, "Repository access changed — tracking in Phase 2");

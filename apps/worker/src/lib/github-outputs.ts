@@ -1,4 +1,5 @@
 import type { ActionContext } from "../workers/action-execution.js";
+import { IMPLEMENT_FIX_ACTION_ID, isAutofixEligible } from "./github-autofix.js";
 
 // ---------------------------------------------------------------------------
 // getPrNumber — resolve the open PR number for a given commit SHA
@@ -260,6 +261,22 @@ export async function handleUpdateCheckRun(
       ? "failure"
       : "neutral";
 
+  // "Implement fix" button — rendered on the completed check run when the
+  // finding carries a usable fix. Pressing it fires a `check_run`
+  // `requested_action` webhook (identifier = IMPLEMENT_FIX_ACTION_ID), which
+  // webhook-ingestion turns into a manual autofix action. GitHub caps the
+  // actions array at 3 and each field's length (label ≤ 20, description ≤ 40,
+  // identifier ≤ 20) — keep the strings short.
+  const actions = isAutofixEligible(finding, config)
+    ? [
+        {
+          label: "Implement fix",
+          description: "Apply cyclops's suggested fix",
+          identifier: IMPLEMENT_FIX_ACTION_ID,
+        },
+      ]
+    : [];
+
   if (annotations.length === 0) {
     // Complete with no annotations
     await (octokit as any).request(
@@ -272,6 +289,7 @@ export async function handleUpdateCheckRun(
         conclusion,
         completed_at: new Date().toISOString(),
         output: { title: "Cyclops Analysis", summary, annotations: [] },
+        ...(actions.length ? { actions } : {}),
       }
     );
   } else {
@@ -291,6 +309,7 @@ export async function handleUpdateCheckRun(
                 status: "completed",
                 conclusion,
                 completed_at: new Date().toISOString(),
+                ...(actions.length ? { actions } : {}),
               }
             : {}),
         }

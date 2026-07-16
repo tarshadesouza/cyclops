@@ -42,6 +42,9 @@ export interface ActionContext {
   config: CyclopsConfig;
   owner: string;
   repo: string;
+  // manual = triggered by the "Implement fix" check-run button. Autofix handlers
+  // use this to bypass dedup/rate-limit and honor autofixMode for branch target.
+  manual: boolean;
 }
 
 type HandlerResult = { skipped: true; reason?: string } | { ok: true };
@@ -123,6 +126,7 @@ export function createActionExecutionWorker(): Worker<ActionExecutionJob> {
         actionType,
         sha,
         ref,
+        manual,
       } = parsed.data;
 
       // 2. TEN-04: Installation active gate
@@ -152,8 +156,10 @@ export function createActionExecutionWorker(): Worker<ActionExecutionJob> {
       // 7. Load config (kill switch source) — requires owner/repo/ref
       const config = await fetchConfig(octokit as any, owner, repo, ref || "HEAD", repositoryId);
 
-      // 8. Enforce kill switches (ACT-14, CFG-01)
-      if (isActionKillSwitched(actionType, config, finding.detectorType)) {
+      // 8. Enforce kill switches (ACT-14, CFG-01). A MANUAL action (the user
+      //    pressed "Implement fix") bypasses the kill switch — the button is
+      //    explicit consent, and it must work even when autofix is OFF.
+      if (!manual && isActionKillSwitched(actionType, config, finding.detectorType)) {
         jobLog.info(
           { actionType, detectorType: finding.detectorType },
           "Action kill-switched by config — skipping"
@@ -184,6 +190,7 @@ export function createActionExecutionWorker(): Worker<ActionExecutionJob> {
         config,
         owner,
         repo,
+        manual: manual ?? false,
       };
 
       const result = await handler(ctx);
