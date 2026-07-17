@@ -298,7 +298,7 @@ export async function handleUpdateCheckRun(
           ? [
               {
                 label: "Agent fix (all-in)",
-                description: "⚠ Commits on this branch until green",
+                description: "Loops on this branch until CI is green",
                 identifier: AGENT_FIX_ALLIN_ACTION_ID,
               },
             ]
