@@ -5,6 +5,7 @@ import type {
   DetectorDispatchJob,
   AiAnalysisJob,
   ActionExecutionJob,
+  AgentFixJob,
   MarketplacePurchaseJob,
 } from "./jobs.js";
 
@@ -43,4 +44,19 @@ export const dlqQueue = new Queue(
 export const billingQueue = new Queue<MarketplacePurchaseJob>(
   "billing",
   { connection: getRedis(), defaultJobOptions }
+);
+
+// The agent fix loop is a LONG-RUNNING job (polls CI for many minutes). Never
+// auto-retry it — a retry would re-run the whole expensive loop from scratch;
+// the FixSession row is the source of truth for what already happened.
+export const agentFixQueue = new Queue<AgentFixJob>(
+  "agent-fix",
+  {
+    connection: getRedis(),
+    defaultJobOptions: {
+      ...defaultJobOptions,
+      attempts: 1,
+      backoff: undefined,
+    },
+  }
 );

@@ -4,6 +4,7 @@ import { createWebhookIngestionWorker } from "./workers/webhook-ingestion.js";
 import { createDetectorDispatchWorker } from "./workers/detector-dispatch.js";
 import { createAiAnalysisWorker } from "./workers/ai-analysis.js";
 import { createActionExecutionWorker } from "./workers/action-execution.js";
+import { createAgentFixWorker } from "./workers/agent-fix.js";
 import { createDlqWorker } from "./workers/dlq.js";
 import { createBillingWorker } from "./workers/billing.js";
 
@@ -21,6 +22,7 @@ const webhookIngestionWorker = createWebhookIngestionWorker();
 const detectorDispatchWorker = createDetectorDispatchWorker();
 const aiAnalysisWorker = createAiAnalysisWorker();
 const actionExecutionWorker = createActionExecutionWorker();
+const agentFixWorker = createAgentFixWorker();
 const dlqWorker = createDlqWorker();
 const billingWorker = createBillingWorker();
 
@@ -31,6 +33,7 @@ logger.info(
       "detector-dispatch (concurrency=10)",
       "ai-analysis (concurrency=5)",
       "action-execution (concurrency=10)",
+      "agent-fix (concurrency=3)",
       "dlq (concurrency=5)",
       "billing (concurrency=5)",
     ],
@@ -66,6 +69,7 @@ async function shutdown(): Promise<void> {
     detectorDispatchWorker.close(),
     aiAnalysisWorker.close(),
     actionExecutionWorker.close(),
+    agentFixWorker.close(),
     dlqWorker.close(),
     billingWorker.close(),
   ]);

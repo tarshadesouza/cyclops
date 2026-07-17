@@ -18,6 +18,12 @@ import {
 // ---------------------------------------------------------------------------
 export const IMPLEMENT_FIX_ACTION_ID = "cyclops-fix";
 
+// Phase 7 agent-loop button identifiers (GitHub caps identifiers at 20 chars).
+// These trigger the autonomous coding-agent loop instead of the one-shot
+// suggestedFix path behind IMPLEMENT_FIX_ACTION_ID.
+export const AGENT_FIX_SAFE_ACTION_ID = "cyclops-agent-safe"; // 18 chars
+export const AGENT_FIX_ALLIN_ACTION_ID = "cyclops-agent-allin"; // 19 chars
+
 // ---------------------------------------------------------------------------
 // autofixActionTypeFor — the autofix action a detector's fix should run as.
 // Only Lint and Snapshot produce full-file suggested fixes today.
@@ -49,6 +55,28 @@ export function isAutofixEligible(
     return false;
   }
   return true;
+}
+
+// ---------------------------------------------------------------------------
+// isAgentFixEligible — whether to render an "Agent fix" button (Phase 7). The
+// coding agent generates its own fix, so — unlike isAutofixEligible — it does
+// NOT require a precomputed suggestedFix. Gate on a code-fixable detector plus
+// the confidence threshold. Non-code failures (missing env / expired secret)
+// are excluded: a coding agent can't fix those.
+// ---------------------------------------------------------------------------
+const AGENT_FIXABLE_DETECTORS = new Set([
+  "lint",
+  "testfailure",
+  "build",
+  "snapshot",
+  "flakytest",
+]);
+
+export function isAgentFixEligible(finding: Finding, config: CyclopsConfig): boolean {
+  if (finding.confidence == null || finding.confidence < config.confidenceThreshold) {
+    return false;
+  }
+  return AGENT_FIXABLE_DETECTORS.has(finding.detectorType.toLowerCase());
 }
 
 // ---------------------------------------------------------------------------

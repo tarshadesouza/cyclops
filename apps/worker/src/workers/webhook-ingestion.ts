@@ -4,6 +4,7 @@ import {
   webhookIngestionQueue,
   detectorDispatchQueue,
   actionExecutionQueue,
+  agentFixQueue,
   dlqQueue,
   WebhookIngestionJobSchema,
   DetectorDispatchJobSchema,
@@ -11,14 +12,19 @@ import {
 } from "@cyclops/queue";
 import { getDb, getTenantClient, type FixSession } from "@cyclops/db";
 import { getInstallationClient } from "@cyclops/github";
+import { fetchConfig } from "@cyclops/config";
 import { checkInstallationActive } from "../lib/installation.js";
 import {
   IMPLEMENT_FIX_ACTION_ID,
+  AGENT_FIX_SAFE_ACTION_ID,
+  AGENT_FIX_ALLIN_ACTION_ID,
   autofixActionTypeFor,
 } from "../lib/github-autofix.js";
 import {
   findActiveSessionByBranch,
+  findActiveSessionByFinding,
   finalizeFixSession,
+  startAgentSession,
 } from "../lib/fix-loop.js";
 import pino from "pino";
 import type { Job } from "bullmq";
@@ -138,7 +144,10 @@ async function handleRequestedAction(
   const payload = delivery.payload as any;
 
   const identifier: string | undefined = payload.requested_action?.identifier;
-  if (identifier !== IMPLEMENT_FIX_ACTION_ID) {
+  const isAgentSafe = identifier === AGENT_FIX_SAFE_ACTION_ID;
+  const isAgentAllIn = identifier === AGENT_FIX_ALLIN_ACTION_ID;
+  const isSuggest = identifier === IMPLEMENT_FIX_ACTION_ID;
+  if (!isAgentSafe && !isAgentAllIn && !isSuggest) {
     jobLog.info({ identifier }, "requested_action: unrecognized identifier — skipping");
     return;
   }
@@ -160,6 +169,49 @@ async function handleRequestedAction(
     return;
   }
 
+  // Phase 7 agent loop: "Agent fix (safe|all-in)". Start one long-running fix
+  // session and hand it to the agent-fix worker, which owns the whole
+  // dispatch → poll → promote → re-dispatch loop. The pressed button (not
+  // config) decides the permission; config supplies the iteration cap.
+  if (isAgentSafe || isAgentAllIn) {
+    const existing = await findActiveSessionByFinding(db, installationId, finding.id);
+    if (existing) {
+      jobLog.info({ findingId: finding.id }, "requested_action: agent session already running — skipping");
+      return;
+    }
+    const octokit = await getInstallationClient(installationId);
+    const repoResp = await (octokit as any).request("GET /repositories/{repository_id}", {
+      repository_id: finding.repositoryId,
+    });
+    const owner: string = repoResp.data.owner.login;
+    const repo: string = repoResp.data.name;
+    const config = await fetchConfig(
+      octokit as any,
+      owner,
+      repo,
+      finding.ref ?? "HEAD",
+      finding.repositoryId
+    );
+    const session = await startAgentSession(db, {
+      installationId,
+      repositoryId: finding.repositoryId,
+      finding,
+      permission: isAgentAllIn ? "all-in" : "safe",
+      maxIterations: config.autofix.agent.maxIterations,
+    });
+    await agentFixQueue.add("run", {
+      sessionId: session.id,
+      installationId,
+      repositoryId: finding.repositoryId,
+    });
+    jobLog.info(
+      { sessionId: session.id, findingId: finding.id, mode: session.mode },
+      "requested_action: agent fix session started"
+    );
+    return;
+  }
+
+  // Suggest mode (legacy one-shot suggestedFix path).
   const actionType = autofixActionTypeFor(finding.detectorType);
   if (!actionType) {
     jobLog.info(
@@ -356,7 +408,10 @@ export function createWebhookIngestionWorker(): Worker<WebhookIngestionJob> {
               payload.repository.id,
               headBranch
             );
-            if (session) {
+            // Phase 7 agent sessions (mode "agent-*") are driven by the
+            // agent-fix worker's own polling loop, NOT this webhook watcher —
+            // let their branch's runs fall through to normal processing.
+            if (session && !session.mode.startsWith("agent")) {
               await handleLoopWorkflowRun(
                 installationId,
                 payload.repository.id,

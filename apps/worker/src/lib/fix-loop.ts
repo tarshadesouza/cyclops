@@ -112,6 +112,43 @@ export async function startFixSession(
   });
 }
 
+// ---------------------------------------------------------------------------
+// startAgentSession — Phase 7. One row per "Agent fix" button press. Mode
+// encodes the level:
+//   "agent-safe"   → fix lands on a fresh cyclops/fix/* branch + review PR.
+//   "agent-all-in" → fix lands on the PR's own head branch.
+// baseBranch is always the PR head (where the FAILING code lives — the agent
+// checks that out); branchName is where the fix is promoted.
+// ---------------------------------------------------------------------------
+export async function startAgentSession(
+  db: Db,
+  params: {
+    installationId: number;
+    repositoryId: number;
+    finding: Finding;
+    permission: "safe" | "all-in";
+    maxIterations: number;
+  }
+): Promise<FixSession> {
+  const { installationId, repositoryId, finding, permission, maxIterations } = params;
+  const headBranch = (finding.ref ?? "main").replace(/^refs\/heads\//, "");
+  const mode = permission === "all-in" ? "agent-all-in" : "agent-safe";
+  const branchName =
+    permission === "all-in" ? headBranch : `cyclops/fix/${finding.id.slice(0, 8)}`;
+  return db.fixSession.create({
+    data: {
+      installationId,
+      repositoryId,
+      findingId: finding.id,
+      detectorType: finding.detectorType,
+      mode,
+      branchName,
+      baseBranch: headBranch,
+      maxIterations,
+    },
+  });
+}
+
 // setFixSessionStatus — flip status without touching GitHub. For callers with
 // no octokit handy (e.g. the AI budget gate) that just need to close the loop.
 export async function setFixSessionStatus(

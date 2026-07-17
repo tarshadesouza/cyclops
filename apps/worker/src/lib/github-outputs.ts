@@ -1,5 +1,11 @@
 import type { ActionContext } from "../workers/action-execution.js";
-import { IMPLEMENT_FIX_ACTION_ID, isAutofixEligible } from "./github-autofix.js";
+import {
+  IMPLEMENT_FIX_ACTION_ID,
+  AGENT_FIX_SAFE_ACTION_ID,
+  AGENT_FIX_ALLIN_ACTION_ID,
+  isAutofixEligible,
+  isAgentFixEligible,
+} from "./github-autofix.js";
 import { findActiveSessionByBranch } from "./fix-loop.js";
 
 // ---------------------------------------------------------------------------
@@ -278,23 +284,41 @@ export async function handleUpdateCheckRun(
       finding.repositoryId,
       finding.ref
     )) !== null;
-  // Mode-aware description is a setup disclaimer AT THE POINT OF CONSENT: in
-  // autofix mode, pressing the button commits straight to the PR branch, so say
-  // so (GitHub caps the description at 40 chars).
-  const buttonDescription =
-    config.autofixMode === "autofix"
-      ? "⚠ Commits fix directly to this branch"
-      : "Open a PR with cyclops's fix";
-  const actions =
-    isAutofixEligible(finding, config) && !loopActive
-      ? [
-          {
-            label: "Implement fix",
-            description: buttonDescription,
-            identifier: IMPLEMENT_FIX_ACTION_ID,
-          },
-        ]
-      : [];
+  // Which button to render is gated by autofix.mode (Phase 7):
+  //   agent + all-in → "Agent fix (all-in)" — autonomous loop on THIS branch
+  //   agent + safe   → "Agent fix (safe)"   — autonomous loop on a fix branch + PR
+  //   suggest        → "Implement fix"      — one-shot suggestedFix (Phase 6 path)
+  //   off            → no button
+  // GitHub caps: label ≤ 20, description ≤ 40, identifier ≤ 20.
+  let actions: { label: string; description: string; identifier: string }[] = [];
+  if (!loopActive) {
+    if (config.autofix.mode === "agent" && isAgentFixEligible(finding, config)) {
+      actions =
+        config.autofix.agent.permission === "all-in"
+          ? [
+              {
+                label: "Agent fix (all-in)",
+                description: "⚠ Commits on this branch until green",
+                identifier: AGENT_FIX_ALLIN_ACTION_ID,
+              },
+            ]
+          : [
+              {
+                label: "Agent fix (safe)",
+                description: "Loop on a fix branch until CI is green",
+                identifier: AGENT_FIX_SAFE_ACTION_ID,
+              },
+            ];
+    } else if (config.autofix.mode === "suggest" && isAutofixEligible(finding, config)) {
+      actions = [
+        {
+          label: "Implement fix",
+          description: "Open a PR with cyclops's fix",
+          identifier: IMPLEMENT_FIX_ACTION_ID,
+        },
+      ];
+    }
+  }
 
   if (annotations.length === 0) {
     // Complete with no annotations

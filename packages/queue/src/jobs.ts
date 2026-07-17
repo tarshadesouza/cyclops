@@ -67,6 +67,16 @@ export const ActionExecutionJobSchema = z.object({
 });
 export type ActionExecutionJob = z.infer<typeof ActionExecutionJobSchema>;
 
+// Phase 7 agent fix loop. A single job drives one whole fix SESSION: the
+// durable state lives on the FixSession row (id == sessionId), so the job only
+// needs to name the session + tenant. The worker loads everything else fresh.
+export const AgentFixJobSchema = z.object({
+  sessionId:      z.string().uuid(),
+  installationId: z.number().int().positive(),
+  repositoryId:   z.number().int().positive(),
+});
+export type AgentFixJob = z.infer<typeof AgentFixJobSchema>;
+
 export const MarketplacePurchaseJobSchema = z.object({
   eventType: z.enum([
     "marketplace_purchase",
