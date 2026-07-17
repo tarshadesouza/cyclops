@@ -81,7 +81,7 @@ export function isActionKillSwitched(
       return !config.checkRuns;
     case "create-autofix-pr-lint":
     case "create-autofix-pr-snapshot":
-      return !config.autofix;
+      return !config.autofixEnabled;
     default:
       return false;
   }
