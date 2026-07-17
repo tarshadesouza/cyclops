@@ -320,6 +320,22 @@ export async function handleUpdateCheckRun(
     }
   }
 
+  log.info(
+    {
+      findingId: finding.id,
+      detectorType: finding.detectorType,
+      confidence: finding.confidence,
+      threshold: config.confidenceThreshold,
+      autofixMode: (config as { autofix?: { mode?: string } }).autofix?.mode,
+      permission: (config as { autofix?: { agent?: { permission?: string } } }).autofix?.agent
+        ?.permission,
+      loopActive,
+      agentEligible: isAgentFixEligible(finding, config),
+      actions: actions.map((a) => a.identifier),
+    },
+    "check-run button decision"
+  );
+
   if (annotations.length === 0) {
     // Complete with no annotations
     await (octokit as any).request(
