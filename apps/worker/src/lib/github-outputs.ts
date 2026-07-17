@@ -320,18 +320,24 @@ export async function handleUpdateCheckRun(
     }
   }
 
+  // GitHub reliably surfaces the action buttons when the check's conclusion is
+  // "action_required" (the conclusion designed for "the user must do something").
+  // On a plain "failure" conclusion the buttons can be silently dropped. So when
+  // we're offering a button, mark the run action_required.
+  const effectiveConclusion = actions.length > 0 ? "action_required" : conclusion;
+
   log.info(
     {
       findingId: finding.id,
       detectorType: finding.detectorType,
       confidence: finding.confidence,
-      threshold: config.confidenceThreshold,
       autofixMode: (config as { autofix?: { mode?: string } }).autofix?.mode,
       permission: (config as { autofix?: { agent?: { permission?: string } } }).autofix?.agent
         ?.permission,
       loopActive,
       agentEligible: isAgentFixEligible(finding, config),
-      actions: actions.map((a) => a.identifier),
+      effectiveConclusion,
+      actions: JSON.stringify(actions),
     },
     "check-run button decision"
   );
@@ -345,7 +351,7 @@ export async function handleUpdateCheckRun(
         repo,
         check_run_id: checkRunId,
         status: "completed",
-        conclusion,
+        conclusion: effectiveConclusion,
         completed_at: new Date().toISOString(),
         output: { title: "Cyclops Analysis", summary, annotations: [] },
         ...(actions.length ? { actions } : {}),
@@ -366,7 +372,7 @@ export async function handleUpdateCheckRun(
           ...(isLast
             ? {
                 status: "completed",
-                conclusion,
+                conclusion: effectiveConclusion,
                 completed_at: new Date().toISOString(),
                 ...(actions.length ? { actions } : {}),
               }
