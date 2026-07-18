@@ -229,28 +229,17 @@
 
     <p class="lead" style="margin-top:40px">Every fix is explicit and permission-gated, posts a live status comment, and stops safely — on success, on a dry run, at the iteration cap, or on error.</p>
 
-    <!-- ============================================================= -->
-    <!-- SCREENSHOTS: drop real PNGs into docs/img/ and replace each    -->
-    <!-- placeholder <div class="shot"> with:                          -->
-    <!--   <img src="img/<name>.png" alt="..." style="width:100%">     -->
-    <!-- ============================================================= -->
     <div class="grid" style="margin-top:28px">
       <figure style="margin:0">
-        <div class="shot" style="border:1.5px dashed var(--border); border-radius:var(--radius); background:var(--bg-card); min-height:180px; display:flex; align-items:center; justify-content:center; color:var(--text-faint); font-size:14px; padding:16px; text-align:center">
-          screenshot → <span class="mono">img/flow-1-trigger.png</span><br/>the PR comment + check with the fix button / checkbox
-        </div>
+        <img src="img/flow-1-trigger.png" alt="Cyclops CI Analysis comment with root cause and a 'Let Cyclops fix this' checkbox on a failing PR" loading="lazy" style="width:100%; border-radius:var(--radius); border:1px solid var(--border); display:block" />
         <figcaption style="color:var(--text-dim); font-size:13.5px; margin-top:10px">1 · CyclOps analyzes the failure and offers a fix</figcaption>
       </figure>
       <figure style="margin:0">
-        <div class="shot" style="border:1.5px dashed var(--border); border-radius:var(--radius); background:var(--bg-card); min-height:180px; display:flex; align-items:center; justify-content:center; color:var(--text-faint); font-size:14px; padding:16px; text-align:center">
-          screenshot → <span class="mono">img/flow-2-onit.png</span><br/>the “🔧 Cyclops is on it” status comment / suggested diff
-        </div>
+        <img src="img/flow-2-onit.png" alt="The fix checkbox ticked, and Cyclops's '🔧 Cyclops is on it' status comment" loading="lazy" style="width:100%; border-radius:var(--radius); border:1px solid var(--border); display:block" />
         <figcaption style="color:var(--text-dim); font-size:13.5px; margin-top:10px">2 · The agent fixes it and verifies against real CI</figcaption>
       </figure>
       <figure style="margin:0">
-        <div class="shot" style="border:1.5px dashed var(--border); border-radius:var(--radius); background:var(--bg-card); min-height:180px; display:flex; align-items:center; justify-content:center; color:var(--text-faint); font-size:14px; padding:16px; text-align:center">
-          screenshot → <span class="mono">img/flow-3-green.png</span><br/>the “✅ fixed it — CI is green” result on a green PR
-        </div>
+        <img src="img/flow-3-green.png" alt="'✅ Cyclops fixed it — CI is green' comment with the automated fix commit" loading="lazy" style="width:100%; border-radius:var(--radius); border:1px solid var(--border); display:block" />
         <figcaption style="color:var(--text-dim); font-size:13.5px; margin-top:10px">3 · CI goes green — no logs read by hand</figcaption>
       </figure>
     </div>
