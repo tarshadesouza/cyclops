@@ -232,16 +232,16 @@
 
     <p class="lead" style="margin-top:40px">Every fix is explicit and permission-gated, posts a live status comment, and stops safely — on success, on a dry run, at the iteration cap, or on error.</p>
 
-    <div class="grid" style="margin-top:28px">
-      <figure style="margin:0">
+    <div style="margin-top:32px; max-width:880px; margin-left:auto; margin-right:auto; display:flex; flex-direction:column; gap:34px">
+      <figure style="margin:0; width:100%">
         <img src="img/flow-1-trigger.png" alt="Cyclops CI Analysis comment with root cause and a 'Let Cyclops fix this' checkbox on a failing PR" loading="lazy" style="width:100%; border-radius:var(--radius); border:1px solid var(--border); display:block" />
         <figcaption style="color:var(--text-dim); font-size:13.5px; margin-top:10px">1 · CyclOps analyzes the failure and offers a fix</figcaption>
       </figure>
-      <figure style="margin:0">
+      <figure style="margin:0; width:100%">
         <img src="img/flow-2-onit.png" alt="The fix checkbox ticked, and Cyclops's '🔧 Cyclops is on it' status comment" loading="lazy" style="width:100%; border-radius:var(--radius); border:1px solid var(--border); display:block" />
         <figcaption style="color:var(--text-dim); font-size:13.5px; margin-top:10px">2 · The agent fixes it and verifies against real CI</figcaption>
       </figure>
-      <figure style="margin:0">
+      <figure style="margin:0; width:100%">
         <img src="img/flow-3-green.png" alt="'✅ Cyclops fixed it — CI is green' comment with the automated fix commit" loading="lazy" style="width:100%; border-radius:var(--radius); border:1px solid var(--border); display:block" />
         <figcaption style="color:var(--text-dim); font-size:13.5px; margin-top:10px">3 · CI goes green — no logs read by hand</figcaption>
       </figure>
