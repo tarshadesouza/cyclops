@@ -226,7 +226,7 @@
   <div class="wrap">
     <div class="eyebrow">Autofix</div>
     <h2>It doesn't just explain the failure — it fixes it</h2>
-    <p class="lead">On a fixable failure, CyclOps offers a fix right in the PR — a check-run button or a checkbox in its comment. A coding agent then does the work in an isolated sandbox and verifies against your <em>real</em> CI. You choose how much autonomy to grant, per repo, in <span class="mono">.cyclops.yml</span>.</p>
+    <p class="lead">On a fixable failure, CyclOps drops a checkbox into its PR comment — <strong>“Let Cyclops fix this”</strong>. Tick it, and a coding agent does the work in an isolated sandbox, verifying against your <em>real</em> CI, not a local guess.</p>
 
     <div class="grid" style="text-align:left; margin-top:36px">
       <div class="card">
@@ -246,7 +246,24 @@
       </div>
     </div>
 
-    <p class="lead" style="margin-top:40px">Every fix is explicit and permission-gated, posts a live status comment, and stops safely — on success, on a dry run, at the iteration cap, or on error.</p>
+    <div style="max-width:760px; margin:44px auto 0; text-align:left">
+      <div class="eyebrow" style="text-align:left">Configure it per repo</div>
+      <p class="lead" style="max-width:none; margin-bottom:20px">It's all opt-in, per repo, in <span class="mono">.cyclops.yml</span> — pick a mode, cap the fix loop, choose the model, or dry-run first (propose a fix, commit nothing). And it's <strong>bring-your-own-key</strong>: CyclOps runs on your own Anthropic key, so the spend and your code stay yours.</p>
+      <div class="terminal">
+        <div class="bar"><span></span><span></span><span></span></div>
+        <pre><span class="c-dim"># .cyclops.yml</span>
+autofix:
+  mode: <span class="c-acc">agent</span>            <span class="c-dim"># off · suggest · agent</span>
+  agent:
+    permission: <span class="c-acc">safe</span>     <span class="c-dim"># safe (new PR) · all-in (this branch)</span>
+    maxIterations: <span class="c-acc">3</span>      <span class="c-dim"># re-run against real CI until green</span>
+    model: <span class="c-acc">claude-sonnet-5</span>
+  dryRun: <span class="c-acc">false</span>          <span class="c-dim"># true → propose only, commit nothing</span>
+confidenceThreshold: <span class="c-acc">0.85</span></pre>
+      </div>
+    </div>
+
+    <p class="lead" style="margin-top:44px">Every fix is explicit and permission-gated, posts a live status comment, and stops safely — on success, on a dry run, at the iteration cap, or on error.</p>
 
     <div class="shots">
       <figure>
