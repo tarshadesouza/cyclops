@@ -30,7 +30,7 @@ import {
   findSuggestSession,
 } from "../lib/fix-loop.js";
 import { applySuggestedFix } from "../lib/agent-loop.js";
-import { FIX_CHECKBOX_RE, APPLY_CHECKBOX_RE } from "../lib/github-outputs.js";
+import { FIX_CHECKBOX_RE, APPLY_CHECKBOX_RE, diffNewlyChecked } from "../lib/github-outputs.js";
 import pino from "pino";
 import type { Job } from "bullmq";
 
@@ -224,24 +224,8 @@ async function handleFixCheckbox(
   const newBody: string = payload.comment?.body ?? "";
   const oldBody: string = payload.changes?.body?.from ?? "";
 
-  // Which boxes went [ ]→[x] between the old and new body. `re` must have /g.
-  const newlyChecked = (re: RegExp): Array<[string, string]> => {
-    const parse = (body: string) => {
-      const m = new Map<string, { checked: boolean; extra: string }>();
-      for (const x of body.matchAll(re)) {
-        m.set(x[2], { checked: x[1].toLowerCase() === "x", extra: x[3] ?? "" });
-      }
-      return m;
-    };
-    const now = parse(newBody);
-    const before = parse(oldBody);
-    return [...now.entries()]
-      .filter(([id, v]) => v.checked && !before.get(id)?.checked)
-      .map(([id, v]) => [id, v.extra] as [string, string]);
-  };
-
-  const fixTicks = newlyChecked(FIX_CHECKBOX_RE); // [findingId, level]
-  const applyTicks = newlyChecked(APPLY_CHECKBOX_RE); // [sessionId, ""]
+  const fixTicks = diffNewlyChecked(oldBody, newBody, FIX_CHECKBOX_RE); // [findingId, level]
+  const applyTicks = diffNewlyChecked(oldBody, newBody, APPLY_CHECKBOX_RE); // [sessionId, ""]
   if (fixTicks.length === 0 && applyTicks.length === 0) return;
 
   const db = getTenantClient(installationId);

@@ -54,6 +54,32 @@ export const FIX_CHECKBOX_RE =
 export const APPLY_CHECKBOX_RE =
   /- \[([ xX])\][^\n]*<!-- cyclops-apply:([0-9a-fA-F-]+) -->/g;
 
+// diffNewlyChecked — the boxes that went [ ]→[x] between the old and new comment
+// body for the given marker regex. Returns [id, extra] pairs (extra = capture
+// group 3, e.g. the level for fix boxes; "" for apply). ONLY newly-checked
+// transitions fire — a box already [x], or one that went [x]→[ ], must not
+// re-trigger. Pure + exported so it can be unit-tested in isolation.
+export function diffNewlyChecked(
+  oldBody: string,
+  newBody: string,
+  re: RegExp
+): Array<[string, string]> {
+  const parse = (body: string): Map<string, { checked: boolean; extra: string }> => {
+    const m = new Map<string, { checked: boolean; extra: string }>();
+    // matchAll needs a fresh lastIndex; the /g regex is shared, so reset it.
+    re.lastIndex = 0;
+    for (const x of body.matchAll(re)) {
+      m.set(x[2], { checked: x[1].toLowerCase() === "x", extra: x[3] ?? "" });
+    }
+    return m;
+  };
+  const now = parse(newBody);
+  const before = parse(oldBody);
+  return [...now.entries()]
+    .filter(([id, v]) => v.checked && !before.get(id)?.checked)
+    .map(([id, v]) => [id, v.extra] as [string, string]);
+}
+
 function renderFinding(
   f: {
     id: string;
