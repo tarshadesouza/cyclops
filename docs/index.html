@@ -88,6 +88,18 @@
   }
   .sub { font-size: clamp(16px, 2.2vw, 20px); color: var(--text-dim); max-width: 620px; margin: 0 auto 38px; }
   .cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .hero-shot { max-width: 860px; margin: 52px auto 0; }
+  .hero-shot img {
+    width: 100%; display: block; border-radius: var(--radius);
+    border: 1px solid var(--border); box-shadow: 0 30px 70px rgba(0,0,0,0.55);
+  }
+  .hero-shot .cap { margin-top: 14px; color: var(--text-dim); font-size: 14.5px; }
+  /* flow screenshots (Autofix section) */
+  .shots { max-width: 1000px; margin: 36px auto 0; display: flex; flex-direction: column; gap: 40px; }
+  .shots figure { margin: 0; width: 100%; }
+  .shots img { width: 100%; display: block; border-radius: var(--radius); border: 1px solid var(--border); }
+  .shots figcaption { margin-top: 14px; font-size: 16px; font-weight: 600; color: var(--text); }
+  .shots figcaption .num { color: var(--accent); }
   .btn.lg { padding: 14px 26px; font-size: 15.5px; }
 
   /* section */
@@ -172,6 +184,10 @@
       <a class="btn lg" href="#install">Add to GitHub</a>
       <a class="btn lg ghost" href="#how">See how it works</a>
     </div>
+    <div class="hero-shot">
+      <img src="img/flow-3-green.png" alt="Cyclops comment reading '✅ Cyclops fixed it — CI is green', with the automated fix commit below it" />
+      <div class="cap">A real fix on a real PR — analyzed, fixed, and green, hands-off.</div>
+    </div>
   </div>
 </header>
 
@@ -232,18 +248,18 @@
 
     <p class="lead" style="margin-top:40px">Every fix is explicit and permission-gated, posts a live status comment, and stops safely — on success, on a dry run, at the iteration cap, or on error.</p>
 
-    <div style="margin-top:32px; max-width:880px; margin-left:auto; margin-right:auto; display:flex; flex-direction:column; gap:34px">
-      <figure style="margin:0; width:100%">
-        <img src="img/flow-1-trigger.png" alt="Cyclops CI Analysis comment with root cause and a 'Let Cyclops fix this' checkbox on a failing PR" loading="lazy" style="width:100%; border-radius:var(--radius); border:1px solid var(--border); display:block" />
-        <figcaption style="color:var(--text-dim); font-size:13.5px; margin-top:10px">1 · CyclOps analyzes the failure and offers a fix</figcaption>
+    <div class="shots">
+      <figure>
+        <img src="img/flow-1-trigger.png" alt="Cyclops CI Analysis comment with root cause and a 'Let Cyclops fix this' checkbox on a failing PR" loading="lazy" />
+        <figcaption><span class="num">1 ·</span> CyclOps analyzes the failure and offers a fix</figcaption>
       </figure>
-      <figure style="margin:0; width:100%">
-        <img src="img/flow-2-onit.png" alt="The fix checkbox ticked, and Cyclops's '🔧 Cyclops is on it' status comment" loading="lazy" style="width:100%; border-radius:var(--radius); border:1px solid var(--border); display:block" />
-        <figcaption style="color:var(--text-dim); font-size:13.5px; margin-top:10px">2 · The agent fixes it and verifies against real CI</figcaption>
+      <figure>
+        <img src="img/flow-2-onit.png" alt="Cyclops's '🔧 Cyclops is on it' status comment" loading="lazy" />
+        <figcaption><span class="num">2 ·</span> The agent fixes it and verifies against real CI</figcaption>
       </figure>
-      <figure style="margin:0; width:100%">
-        <img src="img/flow-3-green.png" alt="'✅ Cyclops fixed it — CI is green' comment with the automated fix commit" loading="lazy" style="width:100%; border-radius:var(--radius); border:1px solid var(--border); display:block" />
-        <figcaption style="color:var(--text-dim); font-size:13.5px; margin-top:10px">3 · CI goes green — no logs read by hand</figcaption>
+      <figure>
+        <img src="img/flow-3-green.png" alt="'✅ Cyclops fixed it — CI is green' comment with the automated fix commit" loading="lazy" />
+        <figcaption><span class="num">3 ·</span> CI goes green — no logs read by hand</figcaption>
       </figure>
     </div>
   </div>
