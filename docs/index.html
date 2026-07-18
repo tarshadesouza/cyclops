@@ -152,6 +152,14 @@
   .terminal .c-good { color: var(--good); }
   .terminal .c-warn { color: var(--warn); }
 
+  /* config section */
+  .config-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; margin-top: 44px; text-align: left; align-items: start; }
+  @media (max-width: 860px){ .config-cols { grid-template-columns: 1fr; } }
+  .config-list { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+  .config-list li { position: relative; padding-left: 26px; color: var(--text-dim); font-size: 15.5px; }
+  .config-list li::before { content: ""; position: absolute; left: 0; top: 9px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px rgba(77,208,225,0.6); }
+  .config-list strong { color: var(--text); font-weight: 650; }
+
   /* cta band */
   .band { text-align: center; background: linear-gradient(180deg, var(--bg-elev), var(--bg)); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 
@@ -169,6 +177,7 @@
       <a href="#how">How it works</a>
       <a href="#detectors">Detectors</a>
       <a href="#autofix">Autofix</a>
+      <a href="#config">Configurable</a>
       <a href="#features">Features</a>
       <a class="btn" href="#install">Install</a>
     </div>
@@ -246,24 +255,7 @@
       </div>
     </div>
 
-    <div style="max-width:760px; margin:44px auto 0; text-align:left">
-      <div class="eyebrow" style="text-align:left">Configure it per repo</div>
-      <p class="lead" style="max-width:none; margin-bottom:20px">It's all opt-in, per repo, in <span class="mono">.cyclops.yml</span> — pick a mode, cap the fix loop, choose the model, or dry-run first (propose a fix, commit nothing). And it's <strong>bring-your-own-key</strong>: CyclOps runs on your own Anthropic key, so the spend and your code stay yours.</p>
-      <div class="terminal">
-        <div class="bar"><span></span><span></span><span></span></div>
-        <pre><span class="c-dim"># .cyclops.yml</span>
-autofix:
-  mode: <span class="c-acc">agent</span>            <span class="c-dim"># off · suggest · agent</span>
-  agent:
-    permission: <span class="c-acc">safe</span>     <span class="c-dim"># safe (new PR) · all-in (this branch)</span>
-    maxIterations: <span class="c-acc">3</span>      <span class="c-dim"># re-run against real CI until green</span>
-    model: <span class="c-acc">claude-sonnet-5</span>
-  dryRun: <span class="c-acc">false</span>          <span class="c-dim"># true → propose only, commit nothing</span>
-confidenceThreshold: <span class="c-acc">0.85</span></pre>
-      </div>
-    </div>
-
-    <p class="lead" style="margin-top:44px">Every fix is explicit and permission-gated, posts a live status comment, and stops safely — on success, on a dry run, at the iteration cap, or on error.</p>
+    <p class="lead" style="margin-top:40px">Every fix is explicit and permission-gated, posts a live status comment, and stops safely — on success, on a dry run, at the iteration cap, or on error.</p>
 
     <div class="shots">
       <figure>
@@ -278,6 +270,43 @@ confidenceThreshold: <span class="c-acc">0.85</span></pre>
         <img src="img/flow-3-green.png" alt="'✅ Cyclops fixed it — CI is green' comment with the automated fix commit" loading="lazy" />
         <figcaption><span class="num">3 ·</span> CI goes green — no logs read by hand</figcaption>
       </figure>
+    </div>
+  </div>
+</section>
+
+<section id="config" class="band">
+  <div class="wrap">
+    <div class="center">
+      <div class="eyebrow">Configurable</div>
+      <h2>Zero-config to start — yours to tune</h2>
+      <p class="lead">Install and go: safe defaults work out of the box. Drop a <span class="mono">.cyclops.yml</span> in any repo to shape exactly what CyclOps does — versioned with your code, no dashboards.</p>
+    </div>
+    <div class="config-cols">
+      <ul class="config-list">
+        <li><strong>Autofix mode</strong> — off, suggest (diff + apply), or a full agent loop</li>
+        <li><strong>Autonomy</strong> — fix on a new PR (<span class="mono">safe</span>) or on the PR's own branch (<span class="mono">all-in</span>)</li>
+        <li><strong>The loop</strong> — cap iterations, choose the model, or dry-run first</li>
+        <li><strong>Detectors</strong> — per-class kill switches: lint, tests, flaky, build, secrets, env</li>
+        <li><strong>Confidence threshold</strong> — how sure the AI must be before it acts</li>
+        <li><strong>Output channels</strong> — check runs, PR comments, GitHub issues, Slack</li>
+        <li><strong>Bring your own key</strong> — your Anthropic key; spend and code stay yours</li>
+      </ul>
+      <div class="terminal" style="margin-top:0">
+        <div class="bar"><span></span><span></span><span></span></div>
+        <pre><span class="c-dim"># .cyclops.yml — every field optional</span>
+autofix:
+  mode: <span class="c-acc">agent</span>            <span class="c-dim"># off · suggest · agent</span>
+  agent:
+    permission: <span class="c-acc">safe</span>     <span class="c-dim"># safe · all-in</span>
+    maxIterations: <span class="c-acc">3</span>      <span class="c-dim"># re-run vs real CI until green</span>
+    model: <span class="c-acc">claude-sonnet-5</span>
+  dryRun: <span class="c-acc">false</span>          <span class="c-dim"># propose only, commit nothing</span>
+confidenceThreshold: <span class="c-acc">0.85</span>
+detectors: { lint: <span class="c-acc">true</span>, flakyTest: <span class="c-acc">true</span>, build: <span class="c-acc">true</span> }
+prComments: <span class="c-acc">true</span>
+notifications:
+  slack: { enabled: <span class="c-acc">true</span>, channel: <span class="c-good">"#ci"</span> }</pre>
+      </div>
     </div>
   </div>
 </section>
