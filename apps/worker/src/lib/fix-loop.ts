@@ -22,6 +22,7 @@ export type FixSessionStatus =
   | "failed_max_iterations"
   | "failed_no_progress"
   | "failed_budget"
+  | "dry_run"
   | "error";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -342,6 +343,7 @@ const TERMINAL_HEADLINE: Record<Exclude<FixSessionStatus, "running">, string> = 
   failed_max_iterations: "### ⛔ Cyclops stopped — max fix attempts reached",
   failed_no_progress: "### ⛔ Cyclops stopped — the same failure kept recurring",
   failed_budget: "### ⛔ Cyclops stopped — monthly AI token budget reached",
+  dry_run: "### 🔍 Cyclops dry run — fix proposed, nothing committed",
   error: "### ⚠️ Cyclops stopped — an error interrupted the fix loop",
 };
 

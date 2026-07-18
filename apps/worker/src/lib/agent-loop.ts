@@ -451,10 +451,10 @@ export async function runAgentFixSession(
         await finalizeFixSession(
           target,
           session,
-          "succeeded",
-          `Dry run — proposed fix is at \`${sha.slice(0, 7)}\` on \`refs/cyclops/session-${session.id}\`. Nothing was promoted.`
+          "dry_run",
+          `Proposed fix is at \`${sha.slice(0, 7)}\` on \`refs/cyclops/session-${session.id}\`. Nothing was promoted (\`dryRun: true\`). Flip \`dryRun\` off to let Cyclops apply it.`
         );
-        return { status: "succeeded" };
+        return { status: "dry_run" };
       }
 
       // 4. promote → fires the real CI
