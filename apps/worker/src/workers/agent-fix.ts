@@ -9,7 +9,7 @@ import { getTenantClient } from "@cyclops/db";
 import { getInstallationClient } from "@cyclops/github";
 import { fetchConfig } from "@cyclops/config";
 import { checkInstallationActive } from "../lib/installation.js";
-import { runAgentFixSession } from "../lib/agent-loop.js";
+import { runAgentFixSession, runSuggestSession } from "../lib/agent-loop.js";
 import pino from "pino";
 
 const logger = pino({ level: process.env["LOG_LEVEL"] ?? "info" });
@@ -68,18 +68,21 @@ export function createAgentFixWorker(): Worker<AgentFixJob> {
         "Agent fix: running session"
       );
 
-      const result = await runAgentFixSession(
-        {
-          octokit,
-          db,
-          owner,
-          repo,
-          installationId,
-          repositoryId,
-          log: jobLog as pino.Logger,
-        },
-        { session, finding, config }
-      );
+      const deps = {
+        octokit,
+        db,
+        owner,
+        repo,
+        installationId,
+        repositoryId,
+        log: jobLog as pino.Logger,
+      };
+      // "suggest" runs the agent once and proposes a diff (no loop); the agent
+      // modes loop until CI is green.
+      const result =
+        session.mode === "suggest"
+          ? await runSuggestSession(deps, { session, finding, config })
+          : await runAgentFixSession(deps, { session, finding, config });
 
       jobLog.info({ sessionId, result }, "Agent fix: session complete");
       return result;

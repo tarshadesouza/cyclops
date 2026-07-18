@@ -5,6 +5,7 @@ import {
   IMPLEMENT_FIX_ACTION_ID,
   AGENT_FIX_SAFE_ACTION_ID,
   AGENT_FIX_ALLIN_ACTION_ID,
+  AGENT_SUGGEST_ACTION_ID,
   isAutofixEligible,
   isAgentFixEligible,
 } from "./github-autofix.js";
@@ -46,7 +47,12 @@ const SEVERITY_ICON: Record<string, string> = {
 // issue_comment `edited` webhook can map a newly-checked box back to its finding.
 // Capture groups: 1 = checkbox state (" " or "x"), 2 = findingId, 3 = permission.
 export const FIX_CHECKBOX_RE =
-  /- \[([ xX])\][^\n]*<!-- cyclops-fix:([0-9a-fA-F-]+):(safe|all-in) -->/g;
+  /- \[([ xX])\][^\n]*<!-- cyclops-fix:([0-9a-fA-F-]+):(safe|all-in|suggest) -->/g;
+
+// APPLY_CHECKBOX_RE — the "Apply this fix" box in a suggest-mode diff comment.
+// Capture groups: 1 = state (" "/"x"), 2 = sessionId.
+export const APPLY_CHECKBOX_RE =
+  /- \[([ xX])\][^\n]*<!-- cyclops-apply:([0-9a-fA-F-]+) -->/g;
 
 function renderFinding(
   f: {
@@ -104,17 +110,23 @@ function renderFinding(
   // tab). Ticking it fires an issue_comment `edited` webhook; the hidden marker
   // maps it back to this finding + level. Only repo writers can edit the bot's
   // comment, so the box is inherently permission-gated. Agent mode only.
+  const mode = config.autofix.mode;
   if (
     !f.autofixPrNumber &&
-    config.autofix.mode === "agent" &&
+    (mode === "agent" || mode === "suggest") &&
     isAgentFixEligible(f as unknown as Finding, config)
   ) {
-    const perm = config.autofix.agent.permission;
-    const where =
-      perm === "all-in" ? "commits to this branch" : "opens a separate fix PR";
-    parts.push(
-      `- [ ] 🤖 **Let Cyclops fix this** — the agent ${where} and works until CI is green <!-- cyclops-fix:${f.id}:${perm} -->`
-    );
+    if (mode === "agent") {
+      const perm = config.autofix.agent.permission;
+      const where = perm === "all-in" ? "commits to this branch" : "opens a separate fix PR";
+      parts.push(
+        `- [ ] 🤖 **Let Cyclops fix this** — the agent ${where} and works until CI is green <!-- cyclops-fix:${f.id}:${perm} -->`
+      );
+    } else {
+      parts.push(
+        `- [ ] 🤖 **Let Cyclops suggest a fix** — I'll post a diff you can review and apply <!-- cyclops-fix:${f.id}:suggest -->`
+      );
+    }
     parts.push("");
   }
   return parts.join("\n");
@@ -344,12 +356,12 @@ export async function handleUpdateCheckRun(
                 identifier: AGENT_FIX_SAFE_ACTION_ID,
               },
             ];
-    } else if (config.autofix.mode === "suggest" && isAutofixEligible(finding, config)) {
+    } else if (config.autofix.mode === "suggest" && isAgentFixEligible(finding, config)) {
       actions = [
         {
-          label: "Implement fix",
-          description: "Open a PR with cyclops's fix",
-          identifier: IMPLEMENT_FIX_ACTION_ID,
+          label: "Suggest a fix",
+          description: "Agent drafts a diff you can apply",
+          identifier: AGENT_SUGGEST_ACTION_ID,
         },
       ];
     }

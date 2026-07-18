@@ -23,6 +23,7 @@ export const IMPLEMENT_FIX_ACTION_ID = "cyclops-fix";
 // suggestedFix path behind IMPLEMENT_FIX_ACTION_ID.
 export const AGENT_FIX_SAFE_ACTION_ID = "cyclops-agent-safe"; // 18 chars
 export const AGENT_FIX_ALLIN_ACTION_ID = "cyclops-agent-allin"; // 19 chars
+export const AGENT_SUGGEST_ACTION_ID = "cyclops-suggest"; // 15 chars — one-pass diff
 
 // ---------------------------------------------------------------------------
 // autofixActionTypeFor — the autofix action a detector's fix should run as.

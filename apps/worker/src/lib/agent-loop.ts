@@ -5,6 +5,10 @@ import {
   upsertLoopComment,
   progressBody,
   startingBody,
+  suggestStartingBody,
+  suggestReadyBody,
+  suggestAppliedBody,
+  suggestNoneBody,
   resolveOpenPrForBranch,
   type GitHubTarget,
 } from "./fix-loop.js";
@@ -494,6 +498,167 @@ export async function runAgentFixSession(
     deps.log.error({ sessionId: session.id, err }, "Agent fix: loop errored");
     await finalizeFixSession(target, session, "error", "An unexpected error interrupted the loop.");
     await deleteSessionRef(deps, session.id);
+    return { status: "error" };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// compareDiff — unified diff of base...head via the compare API, for showing
+// the agent's proposed change in the suggest comment.
+// ---------------------------------------------------------------------------
+async function compareDiff(deps: AgentLoopDeps, base: string, head: string): Promise<string> {
+  try {
+    const resp = await deps.octokit.request(
+      "GET /repos/{owner}/{repo}/compare/{basehead}",
+      { owner: deps.owner, repo: deps.repo, basehead: `${base}...${head}` }
+    );
+    const files = (resp.data.files ?? []) as Array<{ filename: string; patch?: string }>;
+    return files
+      .filter((f) => f.patch)
+      .map((f) => `--- ${f.filename}\n${f.patch}`)
+      .join("\n\n");
+  } catch {
+    return "";
+  }
+}
+
+// ---------------------------------------------------------------------------
+// runSuggestSession — the "suggest" level: run the agent ONCE, propose a diff,
+// and stop (status awaiting_apply). Nothing is committed until the user ticks
+// Apply (see applySuggestedFix). No CI-wait, no re-dispatch loop.
+// ---------------------------------------------------------------------------
+export async function runSuggestSession(
+  deps: AgentLoopDeps,
+  params: { session: FixSession; finding: Finding; config: CyclopsConfig }
+): Promise<{ status: string }> {
+  const sleep = deps.sleep ?? realSleep;
+  const now = deps.now ?? Date.now;
+  const timings = { ...DEFAULT_TIMINGS, ...(deps.timings ?? {}) };
+  const target: GitHubTarget = {
+    octokit: deps.octokit,
+    db: deps.db,
+    owner: deps.owner,
+    repo: deps.repo,
+  };
+  let session = params.session;
+  const { finding, config } = params;
+
+  try {
+    if (!session.prNumber) {
+      const pr = await resolveOpenPrForBranch(
+        deps.octokit,
+        deps.owner,
+        deps.repo,
+        session.baseBranch
+      );
+      if (pr) {
+        session = await deps.db.fixSession.update({
+          where: { id: session.id },
+          data: { prNumber: pr },
+        });
+      }
+    }
+    try {
+      await upsertLoopComment(target, session, suggestStartingBody());
+    } catch {
+      /* cosmetic */
+    }
+
+    const beforeSha = await getBranchHead(deps, session.baseBranch);
+    const dispatchAtMs = now();
+    await dispatchAgent(deps, session, seedFromFinding(finding), {
+      max_iterations: 1,
+      max_turns: timings.agentMaxTurns,
+      model: config.autofix.agent.model,
+      dry_run: true,
+    });
+
+    let runId: number | null = null;
+    const appearDeadline = now() + timings.runAppearTimeoutMs;
+    while (now() < appearDeadline && runId === null) {
+      await sleep(timings.pollIntervalMs);
+      runId = await findSandboxRun(deps, dispatchAtMs);
+    }
+    if (runId === null) {
+      await finalizeFixSession(target, session, "error", "Sandbox run never appeared.");
+      return { status: "error" };
+    }
+    const sandbox = await waitForRun(deps, runId, timings.sandboxTimeoutMs, sleep, now);
+    if (sandbox !== "success") {
+      await finalizeFixSession(target, session, "error", `Agent run did not succeed (${sandbox}).`);
+      await deleteSessionRef(deps, session.id);
+      return { status: "error" };
+    }
+
+    const sha = await readSessionRef(deps, session.id);
+    if (!sha || (beforeSha && sha === beforeSha)) {
+      try {
+        await upsertLoopComment(target, session, suggestNoneBody());
+      } catch {
+        /* cosmetic */
+      }
+      await deps.db.fixSession.update({
+        where: { id: session.id },
+        data: { status: "failed_no_progress" },
+      });
+      await deleteSessionRef(deps, session.id);
+      return { status: "failed_no_progress" };
+    }
+
+    const diff = await compareDiff(deps, session.baseBranch, sha);
+    session = await deps.db.fixSession.update({
+      where: { id: session.id },
+      data: { status: "awaiting_apply", lastSha: sha },
+    });
+    // Keep the session ref alive — Apply promotes it later.
+    try {
+      await upsertLoopComment(target, session, suggestReadyBody(diff, session.id));
+    } catch {
+      /* cosmetic */
+    }
+    deps.log.info({ sessionId: session.id, sha }, "Suggest: diff proposed, awaiting apply");
+    return { status: "awaiting_apply" };
+  } catch (err) {
+    deps.log.error({ sessionId: session.id, err }, "Suggest: errored");
+    await finalizeFixSession(target, session, "error", "An error interrupted the suggestion.");
+    await deleteSessionRef(deps, session.id);
+    return { status: "error" };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// applySuggestedFix — the user ticked Apply. Promote the proposed SHA onto the
+// PR branch ONCE (this fires CI), mark the session done, update the comment.
+// ---------------------------------------------------------------------------
+export async function applySuggestedFix(
+  deps: AgentLoopDeps,
+  session: FixSession
+): Promise<{ status: string }> {
+  const target: GitHubTarget = {
+    octokit: deps.octokit,
+    db: deps.db,
+    owner: deps.owner,
+    repo: deps.repo,
+  };
+  if (!session.lastSha) {
+    return { status: "error" };
+  }
+  try {
+    await promoteToBranch(deps, session.branchName, session.lastSha);
+    const updated = await deps.db.fixSession.update({
+      where: { id: session.id },
+      data: { status: "succeeded" },
+    });
+    try {
+      await upsertLoopComment(target, updated, suggestAppliedBody(session.lastSha));
+    } catch {
+      /* cosmetic */
+    }
+    await deleteSessionRef(deps, session.id);
+    deps.log.info({ sessionId: session.id, sha: session.lastSha }, "Suggest: fix applied");
+    return { status: "succeeded" };
+  } catch (err) {
+    deps.log.error({ sessionId: session.id, err }, "Suggest: apply failed");
     return { status: "error" };
   }
 }

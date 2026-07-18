@@ -18,6 +18,7 @@ import {
   IMPLEMENT_FIX_ACTION_ID,
   AGENT_FIX_SAFE_ACTION_ID,
   AGENT_FIX_ALLIN_ACTION_ID,
+  AGENT_SUGGEST_ACTION_ID,
   autofixActionTypeFor,
 } from "../lib/github-autofix.js";
 import {
@@ -25,8 +26,11 @@ import {
   findActiveSessionByFinding,
   finalizeFixSession,
   startAgentSession,
+  startSuggestSession,
+  findSuggestSession,
 } from "../lib/fix-loop.js";
-import { FIX_CHECKBOX_RE } from "../lib/github-outputs.js";
+import { applySuggestedFix } from "../lib/agent-loop.js";
+import { FIX_CHECKBOX_RE, APPLY_CHECKBOX_RE } from "../lib/github-outputs.js";
 import pino from "pino";
 import type { Job } from "bullmq";
 
@@ -170,6 +174,34 @@ async function startAgentFix(
   return true;
 }
 
+// startSuggest — the "suggest" level: run the agent once and propose a diff.
+async function startSuggest(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  db: any,
+  installationId: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  finding: any,
+  jobLog: pino.Logger
+): Promise<boolean> {
+  const existing = await findActiveSessionByFinding(db, installationId, finding.id);
+  if (existing) {
+    jobLog.info({ findingId: finding.id }, "suggest: session already running — skipping");
+    return false;
+  }
+  const session = await startSuggestSession(db, {
+    installationId,
+    repositoryId: finding.repositoryId,
+    finding,
+  });
+  await agentFixQueue.add("run", {
+    sessionId: session.id,
+    installationId,
+    repositoryId: finding.repositoryId,
+  });
+  jobLog.info({ sessionId: session.id, findingId: finding.id }, "suggest session started");
+  return true;
+}
+
 // handleFixCheckbox — a repo writer ticked the "Let Cyclops fix this" checkbox
 // in our PR comment (issue_comment `edited`). Diff the old vs new comment body
 // for a checkbox that went [ ]→[x], map it back to its finding + level via the
@@ -192,29 +224,65 @@ async function handleFixCheckbox(
   const newBody: string = payload.comment?.body ?? "";
   const oldBody: string = payload.changes?.body?.from ?? "";
 
-  const parse = (body: string): Map<string, { checked: boolean; permission: "safe" | "all-in" }> => {
-    const out = new Map<string, { checked: boolean; permission: "safe" | "all-in" }>();
-    for (const m of body.matchAll(FIX_CHECKBOX_RE)) {
-      out.set(m[2], { checked: m[1].toLowerCase() === "x", permission: m[3] as "safe" | "all-in" });
-    }
-    return out;
+  // Which boxes went [ ]→[x] between the old and new body. `re` must have /g.
+  const newlyChecked = (re: RegExp): Array<[string, string]> => {
+    const parse = (body: string) => {
+      const m = new Map<string, { checked: boolean; extra: string }>();
+      for (const x of body.matchAll(re)) {
+        m.set(x[2], { checked: x[1].toLowerCase() === "x", extra: x[3] ?? "" });
+      }
+      return m;
+    };
+    const now = parse(newBody);
+    const before = parse(oldBody);
+    return [...now.entries()]
+      .filter(([id, v]) => v.checked && !before.get(id)?.checked)
+      .map(([id, v]) => [id, v.extra] as [string, string]);
   };
-  const now = parse(newBody);
-  const before = parse(oldBody);
-  const newlyChecked = [...now.entries()].filter(
-    ([id, v]) => v.checked && !before.get(id)?.checked
-  );
-  if (newlyChecked.length === 0) return;
+
+  const fixTicks = newlyChecked(FIX_CHECKBOX_RE); // [findingId, level]
+  const applyTicks = newlyChecked(APPLY_CHECKBOX_RE); // [sessionId, ""]
+  if (fixTicks.length === 0 && applyTicks.length === 0) return;
 
   const db = getTenantClient(installationId);
   const octokit = await getInstallationClient(installationId);
-  for (const [findingId, v] of newlyChecked) {
+
+  // Fix checkboxes → start a session (suggest = one pass, safe/all-in = loop).
+  for (const [findingId, level] of fixTicks) {
     const finding = await db.finding.findUnique({ where: { id: findingId } });
     if (!finding) {
       jobLog.warn({ findingId }, "fix checkbox: finding not found — skipping");
       continue;
     }
-    await startAgentFix(db, octokit, installationId, finding, v.permission, jobLog);
+    if (level === "suggest") {
+      await startSuggest(db, installationId, finding, jobLog);
+    } else {
+      await startAgentFix(db, octokit, installationId, finding, level as "safe" | "all-in", jobLog);
+    }
+  }
+
+  // Apply checkboxes → promote the proposed fix once (no loop).
+  for (const [sessionId] of applyTicks) {
+    const session = await findSuggestSession(db, installationId, sessionId);
+    if (!session) {
+      jobLog.warn({ sessionId }, "apply checkbox: no awaiting_apply session — skipping");
+      continue;
+    }
+    const repoResp = await (octokit as any).request("GET /repositories/{repository_id}", {
+      repository_id: session.repositoryId,
+    });
+    await applySuggestedFix(
+      {
+        octokit,
+        db,
+        owner: repoResp.data.owner.login,
+        repo: repoResp.data.name,
+        installationId,
+        repositoryId: session.repositoryId,
+        log: jobLog,
+      },
+      session
+    );
   }
 }
 
@@ -240,8 +308,9 @@ async function handleRequestedAction(
   const identifier: string | undefined = payload.requested_action?.identifier;
   const isAgentSafe = identifier === AGENT_FIX_SAFE_ACTION_ID;
   const isAgentAllIn = identifier === AGENT_FIX_ALLIN_ACTION_ID;
-  const isSuggest = identifier === IMPLEMENT_FIX_ACTION_ID;
-  if (!isAgentSafe && !isAgentAllIn && !isSuggest) {
+  const isAgentSuggest = identifier === AGENT_SUGGEST_ACTION_ID;
+  const isSuggest = identifier === IMPLEMENT_FIX_ACTION_ID; // legacy one-shot
+  if (!isAgentSafe && !isAgentAllIn && !isAgentSuggest && !isSuggest) {
     jobLog.info({ identifier }, "requested_action: unrecognized identifier — skipping");
     return;
   }
@@ -277,6 +346,12 @@ async function handleRequestedAction(
       isAgentAllIn ? "all-in" : "safe",
       jobLog
     );
+    return;
+  }
+
+  // Suggest level: agent runs once and proposes a diff (Apply lands it).
+  if (isAgentSuggest) {
+    await startSuggest(db, installationId, finding, jobLog);
     return;
   }
 

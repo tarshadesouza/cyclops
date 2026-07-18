@@ -149,6 +149,84 @@ export async function startAgentSession(
   });
 }
 
+// ---------------------------------------------------------------------------
+// startSuggestSession — Phase 7 "suggest" level. The agent runs ONE pass and
+// proposes a diff; nothing is promoted until the user ticks Apply. mode
+// "suggest"; branchName == baseBranch == the PR head (where Apply commits).
+// ---------------------------------------------------------------------------
+export async function startSuggestSession(
+  db: Db,
+  params: { installationId: number; repositoryId: number; finding: Finding }
+): Promise<FixSession> {
+  const { installationId, repositoryId, finding } = params;
+  const headBranch = (finding.ref ?? "main").replace(/^refs\/heads\//, "");
+  return db.fixSession.create({
+    data: {
+      installationId,
+      repositoryId,
+      findingId: finding.id,
+      detectorType: finding.detectorType,
+      mode: "suggest",
+      branchName: headBranch,
+      baseBranch: headBranch,
+      maxIterations: 1,
+    },
+  });
+}
+
+// findSuggestSession — the awaiting-apply suggest session for an Apply tick.
+export async function findSuggestSession(
+  db: Db,
+  installationId: number,
+  sessionId: string
+): Promise<FixSession | null> {
+  return db.fixSession.findFirst({
+    where: { id: sessionId, installationId, status: "awaiting_apply" },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Suggest-level comment bodies.
+// ---------------------------------------------------------------------------
+export function suggestStartingBody(): string {
+  return [
+    "### 🔎 Cyclops is drafting a fix",
+    "",
+    "Running the agent once to propose a change — I'll post a diff here you can review and apply.",
+  ].join("\n");
+}
+
+export function suggestReadyBody(diff: string, sessionId: string): string {
+  const clipped = diff.length > 30000 ? `${diff.slice(0, 30000)}\n… (diff truncated)` : diff;
+  return [
+    "### 💡 Cyclops suggested a fix",
+    "",
+    "Review the proposed change, then tick the box to commit it to this branch (one commit, no loop):",
+    "",
+    `- [ ] ✅ **Apply this fix** <!-- cyclops-apply:${sessionId} -->`,
+    "",
+    "```diff",
+    clipped,
+    "```",
+  ].join("\n");
+}
+
+export function suggestAppliedBody(sha: string): string {
+  return [
+    "### ✅ Cyclops applied the fix",
+    "",
+    `Committed \`${sha.slice(0, 7)}\` to this branch. CI will re-run — I won't loop on it in suggest mode.`,
+  ].join("\n");
+}
+
+export function suggestNoneBody(): string {
+  return [
+    "### ⚠️ Cyclops couldn't draft a fix",
+    "",
+    "The agent didn't produce a change for this failure. You can try an agent mode (which loops until CI is green) instead.",
+  ].join("\n");
+}
+
 // setFixSessionStatus — flip status without touching GitHub. For callers with
 // no octokit handy (e.g. the AI budget gate) that just need to close the loop.
 export async function setFixSessionStatus(
