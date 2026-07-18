@@ -4,6 +4,7 @@ export {
   detectorDispatchQueue,
   aiAnalysisQueue,
   actionExecutionQueue,
+  agentFixQueue,
   dlqQueue,
   billingQueue,
 } from "./queues.js";
@@ -13,6 +14,7 @@ export type {
   DetectorDispatchJob,
   AiAnalysisJob,
   ActionExecutionJob,
+  AgentFixJob,
   ActionType,
   MarketplacePurchaseJob,
 } from "./jobs.js";
@@ -21,6 +23,7 @@ export {
   DetectorDispatchJobSchema,
   AiAnalysisJobSchema,
   ActionExecutionJobSchema,
+  AgentFixJobSchema,
   ACTION_TYPES,
   MarketplacePurchaseJobSchema,
 } from "./jobs.js";

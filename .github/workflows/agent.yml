@@ -1,0 +1,234 @@
+# Cyclops agentic autofix — reusable workflow (Phase 7)
+#
+# This is the SANDBOX where an autonomous coding agent (Claude Code, headless)
+# repairs a failing CI. It is called by a tiny stub in each client repo:
+#
+#   # client repo .github/workflows/cyclops-agent.yml (added once, never changes)
+#   on: { repository_dispatch: { types: [cyclops-agent] } }
+#   permissions: { contents: write, actions: read }
+#   jobs:
+#     fix:
+#       uses: tarshadesouza/cyclops/.github/workflows/agent.yml@v1
+#       secrets: inherit
+#       with: { payload: ${{ toJSON(github.event.client_payload) }} }
+#
+# The whole contract lives HERE (CyclOps-controlled), so payload fields can
+# change without ever touching client repos — the stub forwards one opaque blob.
+#
+# Design (see Phase 7 spec):
+#   * The agent EDITS code and verifies locally (inner loop = its own --max-turns).
+#   * The job then commits the result and pushes it to a throwaway ref
+#     refs/cyclops/session-<session_id> using ONLY the ambient GITHUB_TOKEN.
+#     That push deliberately does NOT trigger the client's CI (GitHub's
+#     anti-recursion carve-out for the Actions token).
+#   * CyclOps (outer loop) reads that ref by name, promotes its SHA onto the real
+#     target branch with an App token (THAT push fires the real CI), polls the
+#     real run, and re-dispatches this workflow with fresh logs if still red —
+#     up to caps.max_iterations. Correlation is purely session_id <-> ref name;
+#     no job outputs needed.
+#   * "Green" is ALWAYS the real client CI, never the sandbox's local test run.
+#
+# Secrets: the client provides ANTHROPIC_API_KEY as a repo/org Actions secret;
+# `secrets: inherit` in the stub forwards it here. This workflow is
+# dispatch-only (never pull_request-triggered) so secrets are never exposed to
+# fork PRs.
+
+name: Cyclops Agent
+
+on:
+  workflow_call:
+    inputs:
+      payload:
+        description: >-
+          Opaque JSON string (the CyclOps client_payload). Parsed in-job.
+          Fields: session_id, installation_id, pr_number, target_ref, level
+          (suggest|agent-safe|agent-all-in), failed_run_id,
+          seed {detector, summary, affected_files},
+          caps {max_iterations, max_turns, model, dry_run}.
+        required: true
+        type: string
+    secrets:
+      ANTHROPIC_API_KEY:
+        description: BYO Anthropic API key that powers the coding agent.
+        required: true
+
+# The ambient GITHUB_TOKEN needs to read Actions logs (agent may inspect the
+# failed run) and write the throwaway session ref. It must NOT be able to fire
+# CI — that is intentional (see header): promotion happens later via App token.
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    # Wall-clock guard (inner loop). One outer iteration = one job; a stuck local
+    # loop can't burn indefinitely. CyclOps caps the number of outer iterations.
+    timeout-minutes: 30
+    steps:
+      # ---------------------------------------------------------------------
+      # 1. Materialize the payload to a file (via env — never inline-interpolate
+      #    untrusted JSON into a shell), then extract fields with jq. Keeping the
+      #    blob in a file avoids $GITHUB_ENV quoting hazards for the free-text
+      #    summary and the affected_files array.
+      # ---------------------------------------------------------------------
+      - name: Parse payload
+        id: payload
+        env:
+          PAYLOAD: ${{ inputs.payload }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$PAYLOAD" > "$RUNNER_TEMP/payload.json"
+
+          jqf() { jq -r "$1 // empty" "$RUNNER_TEMP/payload.json"; }
+
+          SESSION_ID="$(jqf '.session_id')"
+          if [ -z "$SESSION_ID" ]; then
+            echo "::error::payload is missing session_id"; exit 1
+          fi
+
+          {
+            echo "session_id=$SESSION_ID"
+            echo "target_ref=$(jqf '.target_ref')"
+            echo "level=$(jqf '.level')"
+            echo "failed_run_id=$(jqf '.failed_run_id')"
+            echo "model=$(jqf '.caps.model')"
+            echo "max_turns=$(jqf '.caps.max_turns')"
+          } >> "$GITHUB_OUTPUT"
+
+      # ---------------------------------------------------------------------
+      # 2. Check out the branch the agent must repair (the PR head, for every
+      #    level — the agent needs the current failing code). Full history so it
+      #    can inspect prior commits / diff against the base if useful.
+      # ---------------------------------------------------------------------
+      - name: Checkout target ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ fromJSON(inputs.payload).target_ref }}
+          fetch-depth: 0
+          # Ambient token: enough to push the throwaway session ref, not enough
+          # to trigger CI. Promotion to the real branch is CyclOps's job.
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # ---------------------------------------------------------------------
+      # 3. Node is needed to run Claude Code itself. The CLIENT'S toolchain
+      #    (pnpm/npm/etc.) is NOT set up here on purpose — the agent reproduces
+      #    CI locally by reading the workflow file and running its commands via
+      #    Bash, installing whatever the repo needs. That keeps this reusable
+      #    workflow stack-agnostic.
+      # ---------------------------------------------------------------------
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      # ---------------------------------------------------------------------
+      # 4. Build the agent task prompt from the lean seed. The seed is a HINT,
+      #    not a crutch: the agent's real signal is reproducing the checks
+      #    locally. We tell it exactly that.
+      # ---------------------------------------------------------------------
+      - name: Build task prompt
+        env:
+          PAYLOAD_FILE: ${{ runner.temp }}/payload.json
+          FAILED_RUN_ID: ${{ steps.payload.outputs.failed_run_id }}
+        run: |
+          set -euo pipefail
+          DETECTOR="$(jq -r '.seed.detector // "unknown"' "$PAYLOAD_FILE")"
+          SUMMARY="$(jq -r '.seed.summary // ""' "$PAYLOAD_FILE")"
+          AFFECTED="$(jq -r '.seed.affected_files[]? // empty' "$PAYLOAD_FILE" | sed 's/^/  - /')"
+
+          {
+            echo "You are Cyclops, an autonomous engineer fixing a FAILING CI check on this repository. You are running inside the repo's own CI, on the branch that is failing."
+            echo
+            echo "## What is failing (a hint — verify it yourself)"
+            echo "- Detector: ${DETECTOR}"
+            echo "- Summary: ${SUMMARY}"
+            if [ -n "$AFFECTED" ]; then
+              echo "- Affected files:"
+              echo "$AFFECTED"
+            fi
+            if [ -n "${FAILED_RUN_ID}" ]; then
+              echo "- The failing run id is ${FAILED_RUN_ID}. You may inspect it with:"
+              echo '      gh run view '"${FAILED_RUN_ID}"' --log-failed'
+            fi
+            echo
+            echo "## How to work"
+            echo "1. REPRODUCE the failure locally. Read the failing workflow under .github/workflows, run the SAME commands it runs (install deps first — detect the package manager from the repo), and confirm you see the failure yourself. The summary above is only a starting point."
+            echo "2. Fix the ROOT CAUSE with the smallest change that makes the check pass. Do not touch unrelated code."
+            echo "3. NEVER make a check pass by deleting/skipping/weakening tests, loosening lint rules, or commenting out assertions. Fix the real problem."
+            echo "4. Re-run the reproduced command until it passes locally. Iterate."
+            echo "5. Leave all changes in the working tree. Do NOT git commit or git push — the surrounding CI job commits and pushes your result. Do NOT open PRs."
+            echo
+            echo "## Environment"
+            echo "- gh CLI is authenticated (GH_TOKEN is set) for read-only inspection of the failing run."
+            echo "- Make code edits with your file tools; run commands with Bash."
+          } > "$RUNNER_TEMP/task.md"
+
+          echo "----- task prompt -----"
+          cat "$RUNNER_TEMP/task.md"
+          echo "-----------------------"
+
+      # ---------------------------------------------------------------------
+      # 5. Run the coding agent, headless. It loops internally (edit -> local
+      #    test -> repeat) up to --max-turns, then exits. Output streams to the
+      #    job log for debugging a token-burning run.
+      #
+      #    TODO(hardening): add `--bare` once verified against the installed CLI
+      #    version — it would skip the CLIENT'S .claude hooks / MCP / auto-memory
+      #    so we never execute their config inside our agent. Omitted for now
+      #    because the first live target is our own cyclops-test (no hostile
+      #    config) and a wrong flag wastes a token-burning run.
+      # ---------------------------------------------------------------------
+      - name: Run coding agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CYCLOPS_MODEL: ${{ steps.payload.outputs.model }}
+          CYCLOPS_MAX_TURNS: ${{ steps.payload.outputs.max_turns }}
+        run: |
+          set -euo pipefail
+          MODEL="${CYCLOPS_MODEL:-claude-sonnet-5}"
+          MAX_TURNS="${CYCLOPS_MAX_TURNS:-40}"
+
+          claude -p "$(cat "$RUNNER_TEMP/task.md")" \
+            --model "$MODEL" \
+            --max-turns "$MAX_TURNS" \
+            --dangerously-skip-permissions \
+            --allowedTools "Bash,Edit,Read,Write,Glob,Grep" \
+            --verbose \
+            --output-format stream-json
+
+      # ---------------------------------------------------------------------
+      # 6. Commit whatever the agent changed and push it to the throwaway
+      #    session ref. This push uses the ambient GITHUB_TOKEN and thus does
+      #    NOT trigger the client's CI (intended). CyclOps reads this ref by
+      #    name, promotes the SHA with its App token, and confirms against the
+      #    real CI.
+      #
+      #    If the agent made no changes, HEAD == the original target SHA; we
+      #    still push, and CyclOps detects the no-op (ref SHA unchanged) and
+      #    stops the session as "no fix produced".
+      # ---------------------------------------------------------------------
+      - name: Commit and push result to session ref
+        if: always()
+        env:
+          SESSION_ID: ${{ steps.payload.outputs.session_id }}
+        run: |
+          set -euo pipefail
+          git config user.name "cyclops[bot]"
+          git config user.email "cyclops[bot]@users.noreply.github.com"
+
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -m "cyclops: automated fix (session ${SESSION_ID})"
+          else
+            echo "Agent produced no file changes — pushing unchanged HEAD so CyclOps can detect the no-op."
+          fi
+
+          # Force: an outer re-dispatch reuses the same session_id, so the ref
+          # is intentionally overwritten each iteration.
+          git push --force origin "HEAD:refs/cyclops/session-${SESSION_ID}"
+          echo "Pushed $(git rev-parse HEAD) -> refs/cyclops/session-${SESSION_ID}"

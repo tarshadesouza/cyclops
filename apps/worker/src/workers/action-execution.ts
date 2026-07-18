@@ -6,12 +6,17 @@ import {
   type ActionExecutionJob,
   type ActionType,
 } from "@cyclops/queue";
-import { getTenantClient, type Finding } from "@cyclops/db";
+import { getTenantClient, type Finding, type FixSession } from "@cyclops/db";
 import { getInstallationClient } from "@cyclops/github";
 import { fetchConfig, type CyclopsConfig } from "@cyclops/config";
 import { checkInstallationActive } from "../lib/installation.js";
 import { handleUpsertPrComment, handleUpdateCheckRun } from "../lib/github-outputs.js";
 import { handleAutofixLint, handleAutofixSnapshot } from "../lib/github-autofix.js";
+import {
+  findActiveSessionByBranch,
+  findActiveSessionByFinding,
+  startFixSession,
+} from "../lib/fix-loop.js";
 import {
   handleRerunWorkflow,
   handleCancelWorkflow,
@@ -42,6 +47,13 @@ export interface ActionContext {
   config: CyclopsConfig;
   owner: string;
   repo: string;
+  // manual = triggered by the "Implement fix" check-run button. Autofix handlers
+  // use this to bypass dedup/rate-limit and honor autofixMode for branch target.
+  manual: boolean;
+  // loopSession = the active fix-loop session this action belongs to (Phase 6
+  // step 2). When set, autofix handlers commit an iteration onto the session
+  // branch instead of a one-shot fix.
+  loopSession: FixSession | null;
 }
 
 type HandlerResult = { skipped: true; reason?: string } | { ok: true };
@@ -69,7 +81,7 @@ export function isActionKillSwitched(
       return !config.checkRuns;
     case "create-autofix-pr-lint":
     case "create-autofix-pr-snapshot":
-      return !config.autofix;
+      return !config.autofixEnabled;
     default:
       return false;
   }
@@ -123,6 +135,7 @@ export function createActionExecutionWorker(): Worker<ActionExecutionJob> {
         actionType,
         sha,
         ref,
+        manual,
       } = parsed.data;
 
       // 2. TEN-04: Installation active gate
@@ -152,8 +165,40 @@ export function createActionExecutionWorker(): Worker<ActionExecutionJob> {
       // 7. Load config (kill switch source) — requires owner/repo/ref
       const config = await fetchConfig(octokit as any, owner, repo, ref || "HEAD", repositoryId);
 
-      // 8. Enforce kill switches (ACT-14, CFG-01)
-      if (isActionKillSwitched(actionType, config, finding.detectorType)) {
+      // 7b. Fix-loop session resolution (Phase 6 step 2). For autofix actions:
+      //   - a manual button press starts (or reuses) a loop session;
+      //   - a later pipeline run on a session branch is picked up as the next
+      //     loop iteration via branch match (finding.ref == session.branchName).
+      // Either case is treated as manual → bypasses the kill switch below.
+      let loopSession: FixSession | null = null;
+      const isAutofixAction =
+        actionType === "create-autofix-pr-lint" ||
+        actionType === "create-autofix-pr-snapshot";
+      if (isAutofixAction) {
+        loopSession = await findActiveSessionByBranch(
+          db,
+          installationId,
+          repositoryId,
+          finding.ref
+        );
+        if (!loopSession && manual) {
+          loopSession =
+            (await findActiveSessionByFinding(db, installationId, finding.id)) ??
+            (await startFixSession(db, {
+              installationId,
+              repositoryId,
+              finding,
+              mode: config.autofixMode,
+            }));
+        }
+      }
+      const isManual = manual || loopSession !== null;
+
+      // 8. Enforce kill switches (ACT-14, CFG-01). A MANUAL action (the user
+      //    pressed "Implement fix") or a loop iteration bypasses the kill switch
+      //    — the button is explicit consent, and it must work even when autofix
+      //    is OFF.
+      if (!isManual && isActionKillSwitched(actionType, config, finding.detectorType)) {
         jobLog.info(
           { actionType, detectorType: finding.detectorType },
           "Action kill-switched by config — skipping"
@@ -184,6 +229,8 @@ export function createActionExecutionWorker(): Worker<ActionExecutionJob> {
         config,
         owner,
         repo,
+        manual: isManual,
+        loopSession,
       };
 
       const result = await handler(ctx);

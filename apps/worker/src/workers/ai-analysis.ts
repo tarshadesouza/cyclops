@@ -12,6 +12,10 @@ import { decryptApiKey } from "@cyclops/internal";
 import { analyzeFailure, checkTokenBudget, type AnalyzeResult } from "@cyclops/ai";
 import type { DetectorType } from "@tdesouza/cyclops";
 import { checkInstallationActive } from "../lib/installation.js";
+import {
+  findActiveSessionByBranch,
+  setFixSessionStatus,
+} from "../lib/fix-loop.js";
 import pino from "pino";
 
 const logger = pino({ level: process.env["LOG_LEVEL"] ?? "info" });
@@ -81,6 +85,18 @@ export function createAiAnalysisWorker(): Worker<AiAnalysisJob> {
           where: { id: findingId },
           data: { budgetExceeded: true },
         });
+        // Close any active fix loop on this branch — it can't make progress
+        // without AI (Phase 6 step 2). Status only; no octokit here to comment.
+        const finding = await db.finding.findUniqueOrThrow({ where: { id: findingId } });
+        const session = await findActiveSessionByBranch(
+          db,
+          installationId,
+          repositoryId,
+          finding.ref
+        );
+        if (session) {
+          await setFixSessionStatus(db, session.id, "failed_budget");
+        }
         jobLog.warn(
           { used: budget.used, cap: budget.cap },
           "Monthly token budget exceeded — skipping AI"

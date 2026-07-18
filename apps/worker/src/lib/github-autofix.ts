@@ -1,4 +1,84 @@
+import type { ActionType } from "@cyclops/queue";
+import type { CyclopsConfig } from "@cyclops/config";
+import type { Finding, FixSession } from "@cyclops/db";
 import type { ActionContext } from "../workers/action-execution.js";
+import {
+  failureSignature,
+  finalizeFixSession,
+  upsertLoopComment,
+  progressBody,
+  resolveOpenPrForBranch,
+} from "./fix-loop.js";
+
+// ---------------------------------------------------------------------------
+// "Implement fix" button — check-run action identifier. Pressing the button
+// fires a `check_run` `requested_action` webhook carrying this identifier;
+// webhook-ingestion matches on it to enqueue a manual autofix action.
+// GitHub caps identifiers at 20 chars.
+// ---------------------------------------------------------------------------
+export const IMPLEMENT_FIX_ACTION_ID = "cyclops-fix";
+
+// Phase 7 agent-loop button identifiers (GitHub caps identifiers at 20 chars).
+// These trigger the autonomous coding-agent loop instead of the one-shot
+// suggestedFix path behind IMPLEMENT_FIX_ACTION_ID.
+export const AGENT_FIX_SAFE_ACTION_ID = "cyclops-agent-safe"; // 18 chars
+export const AGENT_FIX_ALLIN_ACTION_ID = "cyclops-agent-allin"; // 19 chars
+export const AGENT_SUGGEST_ACTION_ID = "cyclops-suggest"; // 15 chars — one-pass diff
+
+// ---------------------------------------------------------------------------
+// autofixActionTypeFor — the autofix action a detector's fix should run as.
+// Only Lint and Snapshot produce full-file suggested fixes today.
+// ---------------------------------------------------------------------------
+export function autofixActionTypeFor(detectorType: string): ActionType | null {
+  switch (detectorType.toLowerCase()) {
+    case "lint":
+      return "create-autofix-pr-lint";
+    case "snapshot":
+      return "create-autofix-pr-snapshot";
+    default:
+      return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// isAutofixEligible — whether to render the "Implement fix" button for this
+// finding. Requires a fixable detector, a usable suggested fix, at least one
+// affected file, and confidence at/above the threshold (the handler enforces
+// the same confidence guard, so button presence ⇔ the handler will act).
+// ---------------------------------------------------------------------------
+export function isAutofixEligible(
+  finding: Finding,
+  config: CyclopsConfig
+): boolean {
+  if (!autofixActionTypeFor(finding.detectorType)) return false;
+  if (!finding.suggestedFix || finding.affectedFiles.length === 0) return false;
+  if (finding.confidence == null || finding.confidence < config.confidenceThreshold) {
+    return false;
+  }
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// isAgentFixEligible — whether to render an "Agent fix" button (Phase 7). The
+// coding agent generates its own fix, so — unlike isAutofixEligible — it does
+// NOT require a precomputed suggestedFix. Gate on a code-fixable detector plus
+// the confidence threshold. Non-code failures (missing env / expired secret)
+// are excluded: a coding agent can't fix those.
+// ---------------------------------------------------------------------------
+const AGENT_FIXABLE_DETECTORS = new Set([
+  "lint",
+  "testfailure",
+  "build",
+  "snapshot",
+  "flakytest",
+]);
+
+export function isAgentFixEligible(finding: Finding, config: CyclopsConfig): boolean {
+  if (finding.confidence == null || finding.confidence < config.confidenceThreshold) {
+    return false;
+  }
+  return AGENT_FIXABLE_DETECTORS.has(finding.detectorType.toLowerCase());
+}
 
 // ---------------------------------------------------------------------------
 // isRateLimited — ACT-12: max autofixRateLimit (default 3) autofix PRs per
@@ -61,13 +141,247 @@ function isValidFileContent(
 }
 
 // ---------------------------------------------------------------------------
-// handleAutofixLint — ACT-05: Git Data API 5-step chain for lint fixes
+// commitFix — build the fix commit via the Git Data API, then place it based
+// on config.autofixMode:
+//   "autofix" → fast-forward the PR's own head branch directly onto the new
+//               commit (never force — a moved branch surfaces as an error, not
+//               a clobber). No PR, no AutofixPr row.
+//   "locked"  → create a fresh cyclops/autofix/* branch + open a review PR,
+//               and record the AutofixPr row (dedup source).
+// Shared by the lint and snapshot handlers so the mode logic lives in one place.
+// ---------------------------------------------------------------------------
+// buildFixCommit — the Git Data API commit-build (tree + commit), parented on
+// the failing sha (= current branch head). Returns the new commit sha. Placing
+// it (branch/PR vs direct) is the caller's job. The file path travels in the
+// tree body, so it's never URL-encoded.
+async function buildFixCommit(
+  ctx: ActionContext,
+  filePath: string,
+  content: string,
+  commitMessage: string
+): Promise<string> {
+  const { octokit, finding, owner, repo } = ctx;
+  const { sha } = finding;
+
+  const commitResp = await (octokit as any).request(
+    "GET /repos/{owner}/{repo}/git/commits/{commit_sha}",
+    { owner, repo, commit_sha: sha }
+  );
+  const treeResp = await (octokit as any).request(
+    "POST /repos/{owner}/{repo}/git/trees",
+    {
+      owner,
+      repo,
+      base_tree: commitResp.data.tree.sha,
+      tree: [{ path: filePath, mode: "100644", type: "blob", content }],
+    }
+  );
+  const newCommitResp = await (octokit as any).request(
+    "POST /repos/{owner}/{repo}/git/commits",
+    { owner, repo, message: commitMessage, tree: treeResp.data.sha, parents: [sha] }
+  );
+  return newCommitResp.data.sha as string;
+}
+
+// createBranchRef / updateBranchRef — `{+ref}` keeps the slash in heads/<branch>
+// unencoded; force:false so a non-fast-forward errors rather than clobbering.
+async function createBranchRef(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  octokit: any,
+  owner: string,
+  repo: string,
+  branch: string,
+  sha: string
+): Promise<void> {
+  await octokit.request("POST /repos/{owner}/{repo}/git/refs", {
+    owner,
+    repo,
+    ref: `refs/heads/${branch}`,
+    sha,
+  });
+}
+
+async function updateBranchRef(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  octokit: any,
+  owner: string,
+  repo: string,
+  branch: string,
+  sha: string
+): Promise<void> {
+  await octokit.request("PATCH /repos/{owner}/{repo}/git/refs/{+ref}", {
+    owner,
+    repo,
+    ref: `heads/${branch}`,
+    sha,
+    force: false,
+  });
+}
+
+async function commitFix(
+  ctx: ActionContext,
+  opts: {
+    filePath: string;
+    content: string;
+    commitMessage: string;
+    branchPrefix: "lint" | "snapshot";
+    prTitle: string;
+    prBody: string;
+  }
+): Promise<{ ok: true }> {
+  const { octokit, db, finding, owner, repo, config, log } = ctx;
+  const { installationId, repositoryId, detectorType, sha, ref } = finding;
+
+  const newCommitSha = await buildFixCommit(ctx, opts.filePath, opts.content, opts.commitMessage);
+  const headBranch = (ref ?? "main").replace(/^refs\/heads\//, "");
+
+  if (config.autofixMode === "autofix") {
+    // Commit DIRECTLY to the PR's own head branch.
+    await updateBranchRef(octokit, owner, repo, headBranch, newCommitSha);
+    log.info(
+      { headBranch, newCommitSha, findingId: finding.id },
+      "Autofix committed directly to head branch (autofix mode)"
+    );
+    return { ok: true as const };
+  }
+
+  // locked mode: new branch + review PR
+  const branchName = `cyclops/autofix/${opts.branchPrefix}/${sha.slice(0, 7)}-${Date.now()}`;
+  await createBranchRef(octokit, owner, repo, branchName, newCommitSha);
+  const prResp = await (octokit as any).request(
+    "POST /repos/{owner}/{repo}/pulls",
+    {
+      owner,
+      repo,
+      title: opts.prTitle,
+      body: opts.prBody,
+      head: branchName,
+      base: headBranch,
+      draft: false,
+    }
+  );
+  await db.autofixPr.create({
+    data: {
+      installationId,
+      repositoryId,
+      detectorType,
+      sha,
+      branchName,
+      prNumber: prResp.data.number,
+    },
+  });
+  log.info(
+    { branchName, prNumber: prResp.data.number },
+    "Autofix PR created (locked mode)"
+  );
+  return { ok: true as const };
+}
+
+// ---------------------------------------------------------------------------
+// applyFixForSession — one iteration of the fix LOOP (Phase 6 step 2). Enforces
+// the no-progress and max-iteration stop conditions, commits the fix onto the
+// session's stable branch (creating the branch + review PR on the first locked
+// iteration), then advances the session and updates its progress comment.
+// ---------------------------------------------------------------------------
+async function applyFixForSession(
+  ctx: ActionContext,
+  session: FixSession,
+  opts: {
+    filePath: string;
+    content: string;
+    commitMessage: string;
+    prTitle: string;
+    prBody: string;
+  }
+): Promise<{ skipped: true; reason?: string } | { ok: true }> {
+  const { octokit, db, finding, owner, repo, log } = ctx;
+  const target = { octokit, db, owner, repo };
+
+  // no-progress: this failure is identical to the previous iteration's failure
+  const sig = failureSignature(finding);
+  if (session.lastFailureSig && session.lastFailureSig === sig) {
+    log.warn(
+      { sessionId: session.id },
+      "Fix loop: no progress (identical failure signature) — stopping"
+    );
+    await finalizeFixSession(target, session, "failed_no_progress");
+    return { skipped: true as const, reason: "no_progress" };
+  }
+
+  // max-iteration cap (webhook-ingestion also gates re-dispatch; belt-and-suspenders)
+  if (session.iteration >= session.maxIterations) {
+    log.warn({ sessionId: session.id }, "Fix loop: max iterations reached — stopping");
+    await finalizeFixSession(target, session, "failed_max_iterations");
+    return { skipped: true as const, reason: "max_iterations" };
+  }
+
+  const newCommitSha = await buildFixCommit(ctx, opts.filePath, opts.content, opts.commitMessage);
+
+  let prNumber = session.prNumber ?? undefined;
+  if (session.mode === "autofix") {
+    // commit directly onto the PR's own head branch (== session.branchName)
+    await updateBranchRef(octokit, owner, repo, session.branchName, newCommitSha);
+    // resolve the PR so the loop can post its progress/terminal comment
+    if (!prNumber) {
+      prNumber = await resolveOpenPrForBranch(octokit, owner, repo, session.branchName);
+    }
+  } else if (session.iteration === 0 && !prNumber) {
+    // first locked iteration — create the fix branch and open the review PR
+    await createBranchRef(octokit, owner, repo, session.branchName, newCommitSha);
+    const prResp = await (octokit as any).request(
+      "POST /repos/{owner}/{repo}/pulls",
+      {
+        owner,
+        repo,
+        title: opts.prTitle,
+        body: opts.prBody,
+        head: session.branchName,
+        base: session.baseBranch,
+        draft: false,
+      }
+    );
+    prNumber = prResp.data.number;
+  } else {
+    // subsequent locked iteration — fast-forward the existing fix branch
+    await updateBranchRef(octokit, owner, repo, session.branchName, newCommitSha);
+  }
+
+  const iteration = session.iteration + 1;
+  const updated: FixSession = await db.fixSession.update({
+    where: { id: session.id },
+    data: {
+      iteration,
+      lastSha: newCommitSha,
+      lastFailureSig: sig,
+      ...(prNumber ? { prNumber } : {}),
+    },
+  });
+
+  try {
+    await upsertLoopComment(
+      target,
+      updated,
+      progressBody(updated.mode, iteration, updated.maxIterations)
+    );
+  } catch {
+    // best-effort — progress comment is cosmetic
+  }
+
+  log.info(
+    { sessionId: session.id, iteration, newCommitSha, branch: session.branchName },
+    "Fix loop: pushed fix iteration"
+  );
+  return { ok: true as const };
+}
+
+// ---------------------------------------------------------------------------
+// handleAutofixLint — ACT-05: Git Data API chain for lint fixes
 // ---------------------------------------------------------------------------
 export async function handleAutofixLint(
   ctx: ActionContext
 ): Promise<{ skipped: true; reason?: string } | { ok: true }> {
-  const { octokit, db, finding, owner, repo, config, log } = ctx;
-  const { installationId, repositoryId, detectorType, sha, ref, suggestedFix, affectedFiles } =
+  const { db, finding, config, log } = ctx;
+  const { installationId, repositoryId, detectorType, sha, suggestedFix, affectedFiles } =
     finding;
 
   // ACT-05: confidence guard (defense-in-depth — also enforced at dispatch in ai-analysis.ts)
@@ -88,19 +402,22 @@ export async function handleAutofixLint(
     return { skipped: true as const, reason: "no_valid_suggested_content" };
   }
 
-  // ACT-13: dedup check before branch creation
-  if (await isAutofixDeduped(db, installationId, repositoryId, detectorType, sha)) {
-    log.info(
-      { sha, detectorType },
-      "Autofix PR already exists for this SHA — skipping"
-    );
-    return { skipped: true as const, reason: "deduped" };
-  }
-
-  // ACT-12: rate limit check
-  if (await isRateLimited(db, installationId, repositoryId, config.autofixRateLimit)) {
-    log.warn({ repositoryId }, "Autofix rate limit reached — skipping");
-    return { skipped: true as const, reason: "rate_limited" };
+  // ACT-13 dedup + ACT-12 rate limit apply to AUTO-created PRs only. A manual
+  // fix (the user pressed "Implement fix") bypasses both — explicit re-requests
+  // and repeated attempts are intentional, and the loop (Phase 6 step 2) relies
+  // on being able to re-fix the same sha.
+  if (!ctx.manual) {
+    if (await isAutofixDeduped(db, installationId, repositoryId, detectorType, sha)) {
+      log.info(
+        { sha, detectorType },
+        "Autofix PR already exists for this SHA — skipping"
+      );
+      return { skipped: true as const, reason: "deduped" };
+    }
+    if (await isRateLimited(db, installationId, repositoryId, config.autofixRateLimit)) {
+      log.warn({ repositoryId }, "Autofix rate limit reached — skipping");
+      return { skipped: true as const, reason: "rate_limited" };
+    }
   }
 
   // Determine affected file path — use first affectedFile
@@ -110,85 +427,28 @@ export async function handleAutofixLint(
     return { skipped: true as const, reason: "no_affected_files" };
   }
 
-  // Step 1: Get current commit to find tree SHA
-  const commitResp = await (octokit as any).request(
-    "GET /repos/{owner}/{repo}/git/commits/{commit_sha}",
-    { owner, repo, commit_sha: sha }
-  );
-  const baseTreeSha: string = commitResp.data.tree.sha;
+  const fixOpts = {
+    filePath,
+    content: suggestedFix,
+    commitMessage: `fix(lint): auto-fix ESLint violations [cyclops]\n\nFinding: ${finding.id}`,
+    branchPrefix: "lint" as const,
+    prTitle: `fix(lint): auto-fix ESLint violations on ${sha.slice(0, 7)} [cyclops]`,
+    prBody: [
+      "Automated lint fix by cyclops[bot].",
+      "",
+      `**Finding:** ${finding.id}`,
+      `**Confidence:** ${finding.confidence}`,
+      `**Affected file:** \`${filePath}\``,
+      "",
+      "> No auto-merge — please review before merging.",
+    ].join("\n"),
+  };
 
-  // Step 2: Create new tree with fixed content (inline — no separate blob call needed)
-  const treeResp = await (octokit as any).request(
-    "POST /repos/{owner}/{repo}/git/trees",
-    {
-      owner,
-      repo,
-      base_tree: baseTreeSha,
-      tree: [{ path: filePath, mode: "100644", type: "blob", content: suggestedFix }],
-    }
-  );
-
-  // Step 3: Create commit
-  const newCommitResp = await (octokit as any).request(
-    "POST /repos/{owner}/{repo}/git/commits",
-    {
-      owner,
-      repo,
-      message: `fix(lint): auto-fix ESLint violations [cyclops]\n\nFinding: ${finding.id}`,
-      tree: treeResp.data.sha,
-      parents: [sha],
-    }
-  );
-
-  // Step 4: Create branch ref — pattern: cyclops/autofix/lint/{sha7}-{epochMs}
-  const branchName = `cyclops/autofix/lint/${sha.slice(0, 7)}-${Date.now()}`;
-  await (octokit as any).request("POST /repos/{owner}/{repo}/git/refs", {
-    owner,
-    repo,
-    ref: `refs/heads/${branchName}`,
-    sha: newCommitResp.data.sha,
-  });
-
-  // Step 5: Create PR — target the source branch (strip refs/heads/ prefix if present)
-  const targetBranch = (ref ?? "main").replace(/^refs\/heads\//, "");
-  const prResp = await (octokit as any).request(
-    "POST /repos/{owner}/{repo}/pulls",
-    {
-      owner,
-      repo,
-      title: `fix(lint): auto-fix ESLint violations on ${sha.slice(0, 7)} [cyclops]`,
-      body: [
-        "Automated lint fix by cyclops[bot].",
-        "",
-        `**Finding:** ${finding.id}`,
-        `**Confidence:** ${finding.confidence}`,
-        `**Affected file:** \`${filePath}\``,
-        "",
-        "> No auto-merge — please review before merging.",
-      ].join("\n"),
-      head: branchName,
-      base: targetBranch,
-      draft: false,
-    }
-  );
-
-  // Store in AutofixPr table (ACT-13 dedup source)
-  await db.autofixPr.create({
-    data: {
-      installationId,
-      repositoryId,
-      detectorType,
-      sha,
-      branchName,
-      prNumber: prResp.data.number,
-    },
-  });
-
-  log.info(
-    { branchName, prNumber: prResp.data.number },
-    "Autofix lint PR created"
-  );
-  return { ok: true as const };
+  // Loop iteration (Phase 6 step 2) vs one-shot (step 1 / auto pipeline)
+  if (ctx.loopSession) {
+    return applyFixForSession(ctx, ctx.loopSession, fixOpts);
+  }
+  return commitFix(ctx, fixOpts);
 }
 
 // ---------------------------------------------------------------------------
@@ -198,8 +458,8 @@ export async function handleAutofixLint(
 export async function handleAutofixSnapshot(
   ctx: ActionContext
 ): Promise<{ skipped: true; reason?: string } | { ok: true }> {
-  const { octokit, db, finding, owner, repo, config, log } = ctx;
-  const { installationId, repositoryId, detectorType, sha, ref, suggestedFix, affectedFiles } =
+  const { db, finding, config, log } = ctx;
+  const { installationId, repositoryId, detectorType, sha, suggestedFix, affectedFiles } =
     finding;
 
   // ACT-06: confidence guard
@@ -220,22 +480,23 @@ export async function handleAutofixSnapshot(
     return { skipped: true as const, reason: "no_valid_snapshot_content" };
   }
 
-  // ACT-13: dedup check before branch creation
-  if (await isAutofixDeduped(db, installationId, repositoryId, detectorType, sha)) {
-    log.info(
-      { sha, detectorType },
-      "Autofix snapshot PR already exists — skipping"
-    );
-    return { skipped: true as const, reason: "deduped" };
-  }
-
-  // ACT-12: rate limit check
-  if (await isRateLimited(db, installationId, repositoryId, config.autofixRateLimit)) {
-    log.warn(
-      { repositoryId },
-      "Autofix rate limit reached — skipping snapshot autofix"
-    );
-    return { skipped: true as const, reason: "rate_limited" };
+  // dedup + rate limit apply to AUTO-created PRs only — manual fixes bypass both
+  // (see handleAutofixLint for the rationale).
+  if (!ctx.manual) {
+    if (await isAutofixDeduped(db, installationId, repositoryId, detectorType, sha)) {
+      log.info(
+        { sha, detectorType },
+        "Autofix snapshot PR already exists — skipping"
+      );
+      return { skipped: true as const, reason: "deduped" };
+    }
+    if (await isRateLimited(db, installationId, repositoryId, config.autofixRateLimit)) {
+      log.warn(
+        { repositoryId },
+        "Autofix rate limit reached — skipping snapshot autofix"
+      );
+      return { skipped: true as const, reason: "rate_limited" };
+    }
   }
 
   const filePath = affectedFiles[0];
@@ -243,81 +504,24 @@ export async function handleAutofixSnapshot(
     return { skipped: true as const, reason: "no_affected_files" };
   }
 
-  // Step 1: Get current commit to find tree SHA
-  const commitResp = await (octokit as any).request(
-    "GET /repos/{owner}/{repo}/git/commits/{commit_sha}",
-    { owner, repo, commit_sha: sha }
-  );
+  const fixOpts = {
+    filePath,
+    content: suggestedFix,
+    commitMessage: `test(snapshot): regenerate snapshots [cyclops]\n\nFinding: ${finding.id}`,
+    branchPrefix: "snapshot" as const,
+    prTitle: `test(snapshot): regenerate snapshots on ${sha.slice(0, 7)} [cyclops]`,
+    prBody: [
+      "Automated snapshot update by cyclops[bot].",
+      "",
+      `**Finding:** ${finding.id}`,
+      `**Affected file:** \`${filePath}\``,
+      "",
+      "> Review snapshot changes carefully before merging.",
+    ].join("\n"),
+  };
 
-  // Step 2: Create new tree with snapshot content
-  const treeResp = await (octokit as any).request(
-    "POST /repos/{owner}/{repo}/git/trees",
-    {
-      owner,
-      repo,
-      base_tree: commitResp.data.tree.sha,
-      tree: [{ path: filePath, mode: "100644", type: "blob", content: suggestedFix }],
-    }
-  );
-
-  // Step 3: Create commit
-  const newCommitResp = await (octokit as any).request(
-    "POST /repos/{owner}/{repo}/git/commits",
-    {
-      owner,
-      repo,
-      message: `test(snapshot): regenerate snapshots [cyclops]\n\nFinding: ${finding.id}`,
-      tree: treeResp.data.sha,
-      parents: [sha],
-    }
-  );
-
-  // Step 4: Create branch ref — pattern: cyclops/autofix/snapshot/{sha7}-{epochMs}
-  const branchName = `cyclops/autofix/snapshot/${sha.slice(0, 7)}-${Date.now()}`;
-  await (octokit as any).request("POST /repos/{owner}/{repo}/git/refs", {
-    owner,
-    repo,
-    ref: `refs/heads/${branchName}`,
-    sha: newCommitResp.data.sha,
-  });
-
-  // Step 5: Create PR
-  const targetBranch = (ref ?? "main").replace(/^refs\/heads\//, "");
-  const prResp = await (octokit as any).request(
-    "POST /repos/{owner}/{repo}/pulls",
-    {
-      owner,
-      repo,
-      title: `test(snapshot): regenerate snapshots on ${sha.slice(0, 7)} [cyclops]`,
-      body: [
-        "Automated snapshot update by cyclops[bot].",
-        "",
-        `**Finding:** ${finding.id}`,
-        `**Affected file:** \`${filePath}\``,
-        "",
-        "> Review snapshot changes carefully before merging.",
-      ].join("\n"),
-      head: branchName,
-      base: targetBranch,
-      draft: false,
-    }
-  );
-
-  // Store in AutofixPr table (ACT-13 dedup source)
-  await db.autofixPr.create({
-    data: {
-      installationId,
-      repositoryId,
-      detectorType,
-      sha,
-      branchName,
-      prNumber: prResp.data.number,
-    },
-  });
-
-  log.info(
-    { branchName, prNumber: prResp.data.number },
-    "Autofix snapshot PR created"
-  );
-  return { ok: true as const };
+  if (ctx.loopSession) {
+    return applyFixForSession(ctx, ctx.loopSession, fixOpts);
+  }
+  return commitFix(ctx, fixOpts);
 }

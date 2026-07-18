@@ -58,6 +58,7 @@ export const ModelName = {
   PrComment: 'PrComment',
   ActionDedup: 'ActionDedup',
   AutofixPr: 'AutofixPr',
+  FixSession: 'FixSession',
   TrackedIssue: 'TrackedIssue'
 } as const
 
@@ -203,6 +204,29 @@ export const AutofixPrScalarFieldEnum = {
 } as const
 
 export type AutofixPrScalarFieldEnum = (typeof AutofixPrScalarFieldEnum)[keyof typeof AutofixPrScalarFieldEnum]
+
+
+export const FixSessionScalarFieldEnum = {
+  id: 'id',
+  installationId: 'installationId',
+  repositoryId: 'repositoryId',
+  findingId: 'findingId',
+  detectorType: 'detectorType',
+  mode: 'mode',
+  branchName: 'branchName',
+  baseBranch: 'baseBranch',
+  prNumber: 'prNumber',
+  commentId: 'commentId',
+  status: 'status',
+  iteration: 'iteration',
+  maxIterations: 'maxIterations',
+  lastSha: 'lastSha',
+  lastFailureSig: 'lastFailureSig',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FixSessionScalarFieldEnum = (typeof FixSessionScalarFieldEnum)[keyof typeof FixSessionScalarFieldEnum]
 
 
 export const TrackedIssueScalarFieldEnum = {

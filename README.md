@@ -69,6 +69,12 @@ Expected response: `{"ok":true}`
 
 The key is encrypted at rest using AES-256-GCM (`CYCLOPS_ENCRYPTION_KEY`) and decrypted only at the moment of each AI analysis call. It is never logged.
 
+## Per-repo configuration (`.cyclops.yml`)
+
+CyclOps runs zero-config with safe defaults. To customize per repository — detector kill switches, confidence threshold, output channels, and **where fixes land** — add a `.cyclops.yml`. See [docs/configuration.md](./docs/configuration.md) for the full reference.
+
+> ⚠️ **`autofixMode: autofix` commits fixes directly to your PR branches.** The default (`locked`) opens a review PR instead. Read the [disclaimer](./docs/configuration.md#disclaimer-autofix-mode-writes-directly-to-your-branches) before enabling it.
+
 ## Development
 
 ```bash

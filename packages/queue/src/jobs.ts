@@ -60,8 +60,22 @@ export const ActionExecutionJobSchema = z.object({
   actionType:     z.enum(ACTION_TYPES),
   sha:            z.string().length(40),
   ref:            z.string().optional(),
+  // manual = the user pressed the "Implement fix" check-run button. Manual
+  // fixes bypass the autofix kill-switch, dedup, and rate-limit gates (the
+  // user explicitly asked for this fix) and honor autofixMode for branch target.
+  manual:         z.boolean().optional(),
 });
 export type ActionExecutionJob = z.infer<typeof ActionExecutionJobSchema>;
+
+// Phase 7 agent fix loop. A single job drives one whole fix SESSION: the
+// durable state lives on the FixSession row (id == sessionId), so the job only
+// needs to name the session + tenant. The worker loads everything else fresh.
+export const AgentFixJobSchema = z.object({
+  sessionId:      z.string().uuid(),
+  installationId: z.number().int().positive(),
+  repositoryId:   z.number().int().positive(),
+});
+export type AgentFixJob = z.infer<typeof AgentFixJobSchema>;
 
 export const MarketplacePurchaseJobSchema = z.object({
   eventType: z.enum([

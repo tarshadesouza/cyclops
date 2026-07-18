@@ -53,6 +53,11 @@ export type ActionDedup = Prisma.ActionDedupModel
  */
 export type AutofixPr = Prisma.AutofixPrModel
 /**
+ * Model FixSession
+ * 
+ */
+export type FixSession = Prisma.FixSessionModel
+/**
  * Model TrackedIssue
  * 
  */

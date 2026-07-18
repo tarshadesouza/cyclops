@@ -1,4 +1,15 @@
 import type { ActionContext } from "../workers/action-execution.js";
+import type { CyclopsConfig } from "@cyclops/config";
+import type { Finding } from "@cyclops/db";
+import {
+  IMPLEMENT_FIX_ACTION_ID,
+  AGENT_FIX_SAFE_ACTION_ID,
+  AGENT_FIX_ALLIN_ACTION_ID,
+  AGENT_SUGGEST_ACTION_ID,
+  isAutofixEligible,
+  isAgentFixEligible,
+} from "./github-autofix.js";
+import { findActiveSessionByBranch } from "./fix-loop.js";
 
 // ---------------------------------------------------------------------------
 // getPrNumber — resolve the open PR number for a given commit SHA
@@ -31,16 +42,58 @@ const SEVERITY_ICON: Record<string, string> = {
   low: "🔵",
 };
 
-function renderFinding(f: {
-  detectorType: string;
-  confidence: number | null;
-  severity: string | null;
-  rootCause: string | null;
-  suggestedFix: string | null;
-  evidence: string[];
-  affectedFiles: string[];
-  autofixPrNumber?: number | null;
-}): string {
+// FIX_CHECKBOX_RE — parses a cyclops fix checkbox line and its hidden marker.
+// The marker survives the user ticking the box (they only flip [ ]→[x]), so the
+// issue_comment `edited` webhook can map a newly-checked box back to its finding.
+// Capture groups: 1 = checkbox state (" " or "x"), 2 = findingId, 3 = permission.
+export const FIX_CHECKBOX_RE =
+  /- \[([ xX])\][^\n]*<!-- cyclops-fix:([0-9a-fA-F-]+):(safe|all-in|suggest) -->/g;
+
+// APPLY_CHECKBOX_RE — the "Apply this fix" box in a suggest-mode diff comment.
+// Capture groups: 1 = state (" "/"x"), 2 = sessionId.
+export const APPLY_CHECKBOX_RE =
+  /- \[([ xX])\][^\n]*<!-- cyclops-apply:([0-9a-fA-F-]+) -->/g;
+
+// diffNewlyChecked — the boxes that went [ ]→[x] between the old and new comment
+// body for the given marker regex. Returns [id, extra] pairs (extra = capture
+// group 3, e.g. the level for fix boxes; "" for apply). ONLY newly-checked
+// transitions fire — a box already [x], or one that went [x]→[ ], must not
+// re-trigger. Pure + exported so it can be unit-tested in isolation.
+export function diffNewlyChecked(
+  oldBody: string,
+  newBody: string,
+  re: RegExp
+): Array<[string, string]> {
+  const parse = (body: string): Map<string, { checked: boolean; extra: string }> => {
+    const m = new Map<string, { checked: boolean; extra: string }>();
+    // matchAll needs a fresh lastIndex; the /g regex is shared, so reset it.
+    re.lastIndex = 0;
+    for (const x of body.matchAll(re)) {
+      m.set(x[2], { checked: x[1].toLowerCase() === "x", extra: x[3] ?? "" });
+    }
+    return m;
+  };
+  const now = parse(newBody);
+  const before = parse(oldBody);
+  return [...now.entries()]
+    .filter(([id, v]) => v.checked && !before.get(id)?.checked)
+    .map(([id, v]) => [id, v.extra] as [string, string]);
+}
+
+function renderFinding(
+  f: {
+    id: string;
+    detectorType: string;
+    confidence: number | null;
+    severity: string | null;
+    rootCause: string | null;
+    suggestedFix: string | null;
+    evidence: string[];
+    affectedFiles: string[];
+    autofixPrNumber?: number | null;
+  },
+  config: CyclopsConfig
+): string {
   const confidence = f.confidence != null ? `${Math.round(f.confidence * 100)}%` : "—";
   const sev = (f.severity ?? "").toLowerCase();
   const sevBadge = sev ? `${SEVERITY_ICON[sev] ?? "⚪️"} ${sev}` : "";
@@ -78,20 +131,48 @@ function renderFinding(f: {
     parts.push(`✅ **Auto-fix opened:** #${f.autofixPrNumber}`);
     parts.push("");
   }
+  // Phase 7 in-conversation trigger: a tickable checkbox (visible right here in
+  // the PR, unlike the check-run action button which only lives in the Checks
+  // tab). Ticking it fires an issue_comment `edited` webhook; the hidden marker
+  // maps it back to this finding + level. Only repo writers can edit the bot's
+  // comment, so the box is inherently permission-gated. Agent mode only.
+  const mode = config.autofix.mode;
+  if (
+    !f.autofixPrNumber &&
+    (mode === "agent" || mode === "suggest") &&
+    isAgentFixEligible(f as unknown as Finding, config)
+  ) {
+    if (mode === "agent") {
+      const perm = config.autofix.agent.permission;
+      const where = perm === "all-in" ? "commits to this branch" : "opens a separate fix PR";
+      parts.push(
+        `- [ ] 🤖 **Let Cyclops fix this** — the agent ${where} and works until CI is green <!-- cyclops-fix:${f.id}:${perm} -->`
+      );
+    } else {
+      parts.push(
+        `- [ ] 🤖 **Let Cyclops suggest a fix** — I'll post a diff you can review and apply <!-- cyclops-fix:${f.id}:suggest -->`
+      );
+    }
+    parts.push("");
+  }
   return parts.join("\n");
 }
 
-function renderPrCommentBody(findings: Array<{
-  detectorType: string;
-  confidence: number | null;
-  severity: string | null;
-  rootCause: string | null;
-  suggestedFix: string | null;
-  evidence: string[];
-  affectedFiles: string[];
-  autofixPrNumber?: number | null;
-}>): string {
-  const sections = findings.map(renderFinding).join("\n---\n\n");
+function renderPrCommentBody(
+  findings: Array<{
+    id: string;
+    detectorType: string;
+    confidence: number | null;
+    severity: string | null;
+    rootCause: string | null;
+    suggestedFix: string | null;
+    evidence: string[];
+    affectedFiles: string[];
+    autofixPrNumber?: number | null;
+  }>,
+  config: CyclopsConfig
+): string {
+  const sections = findings.map((f) => renderFinding(f, config)).join("\n---\n\n");
   return [
     "## 🔍 Cyclops CI Analysis",
     "",
@@ -124,7 +205,7 @@ export async function handleUpsertPrComment(
     where: { installationId, workflowRunId, deletedAt: null },
   });
 
-  const body = renderPrCommentBody(allFindings);
+  const body = renderPrCommentBody(allFindings, ctx.config);
 
   // ACT-13: check DB before creating — never list GitHub comments
   const existing = await db.prComment.findUnique({
@@ -260,6 +341,64 @@ export async function handleUpdateCheckRun(
       ? "failure"
       : "neutral";
 
+  // "Implement fix" button — rendered on the completed check run when the
+  // finding carries a usable fix. Pressing it fires a `check_run`
+  // `requested_action` webhook (identifier = IMPLEMENT_FIX_ACTION_ID), which
+  // webhook-ingestion turns into a manual autofix action. GitHub caps the
+  // actions array at 3 and each field's length (label ≤ 20, description ≤ 40,
+  // identifier ≤ 20) — keep the strings short.
+  // Suppress the button while a fix loop is already running on this branch —
+  // the per-iteration check runs would otherwise each offer a duplicate
+  // loop-start button (Phase 6 step 2).
+  const loopActive =
+    (await findActiveSessionByBranch(
+      db,
+      finding.installationId,
+      finding.repositoryId,
+      finding.ref
+    )) !== null;
+  // Which button to render is gated by autofix.mode (Phase 7):
+  //   agent + all-in → "Agent fix (all-in)" — autonomous loop on THIS branch
+  //   agent + safe   → "Agent fix (safe)"   — autonomous loop on a fix branch + PR
+  //   suggest        → "Implement fix"      — one-shot suggestedFix (Phase 6 path)
+  //   off            → no button
+  // GitHub caps: label ≤ 20, description ≤ 40, identifier ≤ 20.
+  let actions: { label: string; description: string; identifier: string }[] = [];
+  if (!loopActive) {
+    if (config.autofix.mode === "agent" && isAgentFixEligible(finding, config)) {
+      actions =
+        config.autofix.agent.permission === "all-in"
+          ? [
+              {
+                label: "Fix on this branch",
+                description: "Commits fixes here until CI is green",
+                identifier: AGENT_FIX_ALLIN_ACTION_ID,
+              },
+            ]
+          : [
+              {
+                label: "Fix in a new PR",
+                description: "Fixes on a new branch, opens a PR",
+                identifier: AGENT_FIX_SAFE_ACTION_ID,
+              },
+            ];
+    } else if (config.autofix.mode === "suggest" && isAgentFixEligible(finding, config)) {
+      actions = [
+        {
+          label: "Suggest a fix",
+          description: "Agent drafts a diff you can apply",
+          identifier: AGENT_SUGGEST_ACTION_ID,
+        },
+      ];
+    }
+  }
+
+  // GitHub reliably surfaces the action buttons when the check's conclusion is
+  // "action_required" (the conclusion designed for "the user must do something").
+  // On a plain "failure" conclusion the buttons can be silently dropped. So when
+  // we're offering a button, mark the run action_required.
+  const effectiveConclusion = actions.length > 0 ? "action_required" : conclusion;
+
   if (annotations.length === 0) {
     // Complete with no annotations
     await (octokit as any).request(
@@ -269,9 +408,10 @@ export async function handleUpdateCheckRun(
         repo,
         check_run_id: checkRunId,
         status: "completed",
-        conclusion,
+        conclusion: effectiveConclusion,
         completed_at: new Date().toISOString(),
         output: { title: "Cyclops Analysis", summary, annotations: [] },
+        ...(actions.length ? { actions } : {}),
       }
     );
   } else {
@@ -289,8 +429,9 @@ export async function handleUpdateCheckRun(
           ...(isLast
             ? {
                 status: "completed",
-                conclusion,
+                conclusion: effectiveConclusion,
                 completed_at: new Date().toISOString(),
+                ...(actions.length ? { actions } : {}),
               }
             : {}),
         }

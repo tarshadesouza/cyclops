@@ -37,6 +37,7 @@ model Installation {
   webhookDeliveries WebhookDelivery[]
   findings          Finding[]
   tokenUsages       TokenUsage[]
+  fixSessions       FixSession[]
 
   @@map("installations")
 }
@@ -147,6 +148,45 @@ model AutofixPr {
   @@unique([installationId, repositoryId, detectorType, sha], name: "installationId_repositoryId_detectorType_sha")
   @@index([installationId])
   @@map("autofix_prs")
+}
+
+// FixSession — the agentic fix LOOP (Phase 6 step 2). One row per "Implement
+// fix" button press; tracks iterations as cyclops commits → CI runs → re-fixes
+// until CI is green or a stop condition trips.
+//   branchName   the branch the loop commits to (locked: a cyclops/fix/* branch;
+//                autofix: the PR's own head branch).
+//   baseBranch   the original PR head branch (locked-mode PR base).
+//   lastSha      the fix commit we're awaiting a workflow_run result for.
+//   lastFailureSig  signature of the previous iteration's failure — two equal
+//                signatures in a row = no progress → stop.
+//   status       running | succeeded | failed_max_iterations |
+//                failed_no_progress | failed_budget | error
+model FixSession {
+  id                String    @id @default(uuid())
+  installationId    Int
+  repositoryId      Int
+  findingId         String
+  detectorType      String
+  mode              String
+  branchName        String
+  baseBranch        String
+  prNumber          Int?
+  commentId         BigInt?
+  status            String    @default("running")
+  iteration         Int       @default(0)
+  maxIterations     Int       @default(5)
+  lastSha           String?
+  lastFailureSig    String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  installation      Installation @relation(fields: [installationId], references: [id])
+
+  @@index([installationId])
+  @@index([installationId, repositoryId, branchName])
+  @@index([installationId, findingId])
+  @@index([status])
+  @@map("fix_sessions")
 }
 
 model TrackedIssue {
