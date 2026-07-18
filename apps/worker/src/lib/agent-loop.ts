@@ -4,6 +4,7 @@ import {
   finalizeFixSession,
   upsertLoopComment,
   progressBody,
+  startingBody,
   resolveOpenPrForBranch,
   type GitHubTarget,
 } from "./fix-loop.js";
@@ -292,34 +293,28 @@ async function seedFromRedRun(
 }
 
 // ---------------------------------------------------------------------------
-// ensurePr — resolve (or, in agent-safe mode, open) the PR the loop posts its
-// progress comment on.
-//   all-in → the existing PR whose head is the branch we commit to.
-//   safe   → open a review PR from the fresh cyclops/fix/* branch (once).
+// ensureFixPrForSafe — in agent-safe mode the fix lands on a fresh
+// cyclops/fix/* branch; open a review PR from it into baseBranch (once) so
+// there's something green to merge. Best-effort and independent of the status
+// comment (which stays on the ORIGINAL PR the user triggered from). No-op for
+// all-in (the fix goes straight onto the PR's own branch).
 // ---------------------------------------------------------------------------
-async function ensurePr(
-  deps: AgentLoopDeps,
-  session: FixSession
-): Promise<number | undefined> {
-  if (session.prNumber) return session.prNumber;
-  if (session.mode === "agent-all-in") {
-    return resolveOpenPrForBranch(deps.octokit, deps.owner, deps.repo, session.branchName);
-  }
-  // agent-safe: reuse an already-open fix PR if present, else open one.
+async function ensureFixPrForSafe(deps: AgentLoopDeps, session: FixSession): Promise<void> {
+  if (session.mode !== "agent-safe") return;
   const existing = await resolveOpenPrForBranch(
     deps.octokit,
     deps.owner,
     deps.repo,
     session.branchName
   );
-  if (existing) return existing;
+  if (existing) return;
   try {
-    const resp = await deps.octokit.request("POST /repos/{owner}/{repo}/pulls", {
+    await deps.octokit.request("POST /repos/{owner}/{repo}/pulls", {
       owner: deps.owner,
       repo: deps.repo,
       title: `fix: cyclops automated fix for ${session.detectorType} [cyclops]`,
       body: [
-        "🤖 Automated fix by cyclops — the coding agent is iterating on this branch until CI is green.",
+        "🤖 Automated fix by cyclops — the coding agent iterated on this branch until CI was green.",
         "",
         `Detector: **${session.detectorType}**`,
       ].join("\n"),
@@ -327,9 +322,8 @@ async function ensurePr(
       base: session.baseBranch,
       draft: false,
     });
-    return resp.data.number as number;
   } catch {
-    return undefined;
+    /* best-effort */
   }
 }
 
@@ -375,6 +369,29 @@ export async function runAgentFixSession(
   let seed = seedFromFinding(finding);
 
   try {
+    // Resolve the PR the user triggered from (the failing PR on baseBranch) and
+    // post an IMMEDIATE acknowledgement, so there's instant feedback rather than
+    // silence while the sandbox spins up. Status stays on this PR for both modes.
+    if (!session.prNumber) {
+      const pr = await resolveOpenPrForBranch(
+        deps.octokit,
+        deps.owner,
+        deps.repo,
+        session.baseBranch
+      );
+      if (pr) {
+        session = await deps.db.fixSession.update({
+          where: { id: session.id },
+          data: { prNumber: pr },
+        });
+      }
+    }
+    try {
+      await upsertLoopComment(target, session, startingBody(session.mode, session.maxIterations));
+    } catch {
+      /* cosmetic */
+    }
+
     while (session.iteration < session.maxIterations) {
       const iteration = session.iteration + 1;
       deps.log.info({ sessionId: session.id, iteration }, "Agent fix: starting iteration");
@@ -438,14 +455,10 @@ export async function runAgentFixSession(
 
       // 4. promote → fires the real CI
       await promoteToBranch(deps, session.branchName, sha);
-      const prNumber = await ensurePr(deps, session);
+      await ensureFixPrForSafe(deps, session);
       session = await deps.db.fixSession.update({
         where: { id: session.id },
-        data: {
-          iteration,
-          lastSha: sha,
-          ...(prNumber ? { prNumber } : {}),
-        },
+        data: { iteration, lastSha: sha },
       });
       try {
         await upsertLoopComment(

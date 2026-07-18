@@ -1,4 +1,6 @@
 import type { ActionContext } from "../workers/action-execution.js";
+import type { CyclopsConfig } from "@cyclops/config";
+import type { Finding } from "@cyclops/db";
 import {
   IMPLEMENT_FIX_ACTION_ID,
   AGENT_FIX_SAFE_ACTION_ID,
@@ -39,16 +41,27 @@ const SEVERITY_ICON: Record<string, string> = {
   low: "🔵",
 };
 
-function renderFinding(f: {
-  detectorType: string;
-  confidence: number | null;
-  severity: string | null;
-  rootCause: string | null;
-  suggestedFix: string | null;
-  evidence: string[];
-  affectedFiles: string[];
-  autofixPrNumber?: number | null;
-}): string {
+// FIX_CHECKBOX_RE — parses a cyclops fix checkbox line and its hidden marker.
+// The marker survives the user ticking the box (they only flip [ ]→[x]), so the
+// issue_comment `edited` webhook can map a newly-checked box back to its finding.
+// Capture groups: 1 = checkbox state (" " or "x"), 2 = findingId, 3 = permission.
+export const FIX_CHECKBOX_RE =
+  /- \[([ xX])\][^\n]*<!-- cyclops-fix:([0-9a-fA-F-]+):(safe|all-in) -->/g;
+
+function renderFinding(
+  f: {
+    id: string;
+    detectorType: string;
+    confidence: number | null;
+    severity: string | null;
+    rootCause: string | null;
+    suggestedFix: string | null;
+    evidence: string[];
+    affectedFiles: string[];
+    autofixPrNumber?: number | null;
+  },
+  config: CyclopsConfig
+): string {
   const confidence = f.confidence != null ? `${Math.round(f.confidence * 100)}%` : "—";
   const sev = (f.severity ?? "").toLowerCase();
   const sevBadge = sev ? `${SEVERITY_ICON[sev] ?? "⚪️"} ${sev}` : "";
@@ -86,20 +99,42 @@ function renderFinding(f: {
     parts.push(`✅ **Auto-fix opened:** #${f.autofixPrNumber}`);
     parts.push("");
   }
+  // Phase 7 in-conversation trigger: a tickable checkbox (visible right here in
+  // the PR, unlike the check-run action button which only lives in the Checks
+  // tab). Ticking it fires an issue_comment `edited` webhook; the hidden marker
+  // maps it back to this finding + level. Only repo writers can edit the bot's
+  // comment, so the box is inherently permission-gated. Agent mode only.
+  if (
+    !f.autofixPrNumber &&
+    config.autofix.mode === "agent" &&
+    isAgentFixEligible(f as unknown as Finding, config)
+  ) {
+    const perm = config.autofix.agent.permission;
+    const where =
+      perm === "all-in" ? "commits to this branch" : "opens a separate fix PR";
+    parts.push(
+      `- [ ] 🤖 **Let Cyclops fix this** — the agent ${where} and works until CI is green <!-- cyclops-fix:${f.id}:${perm} -->`
+    );
+    parts.push("");
+  }
   return parts.join("\n");
 }
 
-function renderPrCommentBody(findings: Array<{
-  detectorType: string;
-  confidence: number | null;
-  severity: string | null;
-  rootCause: string | null;
-  suggestedFix: string | null;
-  evidence: string[];
-  affectedFiles: string[];
-  autofixPrNumber?: number | null;
-}>): string {
-  const sections = findings.map(renderFinding).join("\n---\n\n");
+function renderPrCommentBody(
+  findings: Array<{
+    id: string;
+    detectorType: string;
+    confidence: number | null;
+    severity: string | null;
+    rootCause: string | null;
+    suggestedFix: string | null;
+    evidence: string[];
+    affectedFiles: string[];
+    autofixPrNumber?: number | null;
+  }>,
+  config: CyclopsConfig
+): string {
+  const sections = findings.map((f) => renderFinding(f, config)).join("\n---\n\n");
   return [
     "## 🔍 Cyclops CI Analysis",
     "",
@@ -132,7 +167,7 @@ export async function handleUpsertPrComment(
     where: { installationId, workflowRunId, deletedAt: null },
   });
 
-  const body = renderPrCommentBody(allFindings);
+  const body = renderPrCommentBody(allFindings, ctx.config);
 
   // ACT-13: check DB before creating — never list GitHub comments
   const existing = await db.prComment.findUnique({
@@ -297,15 +332,15 @@ export async function handleUpdateCheckRun(
         config.autofix.agent.permission === "all-in"
           ? [
               {
-                label: "Agent fix (all-in)",
-                description: "Loops on this branch until CI is green",
+                label: "Fix on this branch",
+                description: "Commits fixes here until CI is green",
                 identifier: AGENT_FIX_ALLIN_ACTION_ID,
               },
             ]
           : [
               {
-                label: "Agent fix (safe)",
-                description: "Loop on a fix branch until CI is green",
+                label: "Fix in a new PR",
+                description: "Fixes on a new branch, opens a PR",
                 identifier: AGENT_FIX_SAFE_ACTION_ID,
               },
             ];

@@ -71,7 +71,11 @@ export async function webhookRoutes(app: FastifyInstance): Promise<void> {
       // For CI events, persist the full payload so the ingestion worker can load it
       // (it enqueues identifier-only jobs). The WebhookDelivery FK requires the
       // Installation row to exist, which it does for CI events (installed earlier).
-      if (eventName === "workflow_run" || eventName === "check_run") {
+      if (
+        eventName === "workflow_run" ||
+        eventName === "check_run" ||
+        eventName === "issue_comment"
+      ) {
         try {
           await getDb().webhookDelivery.create({
             data: { deliveryId, installationId, eventName, action: action ?? null, payload: body },

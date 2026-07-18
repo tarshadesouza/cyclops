@@ -227,6 +227,24 @@ function withModeBanner(mode: string, lines: string[]): string {
   return mode === "autofix" ? `${AUTOFIX_MODE_BANNER}\n\n${body}` : body;
 }
 
+// startingBody — the immediate acknowledgement posted the moment a fix is
+// triggered (button or checkbox), BEFORE the agent has done anything. Gives the
+// user instant "I'm on it" feedback instead of silence while the sandbox spins
+// up (which can take a minute).
+export function startingBody(mode: string, maxIterations: number): string {
+  const where =
+    mode === "agent-all-in"
+      ? "committing fixes directly to this branch"
+      : "working on a separate fix branch";
+  return withModeBanner(mode, [
+    "### 🔧 Cyclops is on it",
+    "",
+    `Spinning up the fix agent — it'll reproduce the failure, ${where}, and keep going until CI is green (up to **${maxIterations}** attempts).`,
+    "",
+    "_I'll update this comment as it progresses._",
+  ]);
+}
+
 export function progressBody(
   mode: string,
   iteration: number,

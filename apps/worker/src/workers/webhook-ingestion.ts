@@ -26,6 +26,7 @@ import {
   finalizeFixSession,
   startAgentSession,
 } from "../lib/fix-loop.js";
+import { FIX_CHECKBOX_RE } from "../lib/github-outputs.js";
 import pino from "pino";
 import type { Job } from "bullmq";
 
@@ -124,6 +125,99 @@ async function handleInstallationUnsuspended(installationId: number): Promise<vo
   logger.info({ installationId }, "Installation unsuspended");
 }
 
+// startAgentFix — shared by the check-run button and the PR-comment checkbox.
+// Dedupes on an already-running session for the finding, resolves the iteration
+// cap from config, creates the FixSession, and enqueues the long-running
+// agent-fix job. Returns true when a session was started.
+async function startAgentFix(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  db: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  octokit: any,
+  installationId: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  finding: any,
+  permission: "safe" | "all-in",
+  jobLog: pino.Logger
+): Promise<boolean> {
+  const existing = await findActiveSessionByFinding(db, installationId, finding.id);
+  if (existing) {
+    jobLog.info({ findingId: finding.id }, "agent fix: session already running — skipping");
+    return false;
+  }
+  const repoResp = await octokit.request("GET /repositories/{repository_id}", {
+    repository_id: finding.repositoryId,
+  });
+  const owner: string = repoResp.data.owner.login;
+  const repo: string = repoResp.data.name;
+  const config = await fetchConfig(octokit, owner, repo, finding.ref ?? "HEAD", finding.repositoryId);
+  const session = await startAgentSession(db, {
+    installationId,
+    repositoryId: finding.repositoryId,
+    finding,
+    permission,
+    maxIterations: config.autofix.agent.maxIterations,
+  });
+  await agentFixQueue.add("run", {
+    sessionId: session.id,
+    installationId,
+    repositoryId: finding.repositoryId,
+  });
+  jobLog.info(
+    { sessionId: session.id, findingId: finding.id, mode: session.mode },
+    "agent fix session started"
+  );
+  return true;
+}
+
+// handleFixCheckbox — a repo writer ticked the "Let Cyclops fix this" checkbox
+// in our PR comment (issue_comment `edited`). Diff the old vs new comment body
+// for a checkbox that went [ ]→[x], map it back to its finding + level via the
+// hidden marker, and start the agent loop — same path as the check-run button,
+// but triggerable right in the PR conversation. Editing a bot comment requires
+// write access, so the box is inherently permission-gated.
+async function handleFixCheckbox(
+  installationId: number,
+  deliveryId: string,
+  jobLog: pino.Logger
+): Promise<void> {
+  const delivery = await getDb().webhookDelivery.findUnique({ where: { deliveryId } });
+  if (!delivery) return;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const payload = delivery.payload as any;
+
+  if (payload.comment?.user?.login !== "cyclops-app[bot]") {
+    return; // only our own comment carries the trigger
+  }
+  const newBody: string = payload.comment?.body ?? "";
+  const oldBody: string = payload.changes?.body?.from ?? "";
+
+  const parse = (body: string): Map<string, { checked: boolean; permission: "safe" | "all-in" }> => {
+    const out = new Map<string, { checked: boolean; permission: "safe" | "all-in" }>();
+    for (const m of body.matchAll(FIX_CHECKBOX_RE)) {
+      out.set(m[2], { checked: m[1].toLowerCase() === "x", permission: m[3] as "safe" | "all-in" });
+    }
+    return out;
+  };
+  const now = parse(newBody);
+  const before = parse(oldBody);
+  const newlyChecked = [...now.entries()].filter(
+    ([id, v]) => v.checked && !before.get(id)?.checked
+  );
+  if (newlyChecked.length === 0) return;
+
+  const db = getTenantClient(installationId);
+  const octokit = await getInstallationClient(installationId);
+  for (const [findingId, v] of newlyChecked) {
+    const finding = await db.finding.findUnique({ where: { id: findingId } });
+    if (!finding) {
+      jobLog.warn({ findingId }, "fix checkbox: finding not found — skipping");
+      continue;
+    }
+    await startAgentFix(db, octokit, installationId, finding, v.permission, jobLog);
+  }
+}
+
 // requested_action → find the analyzed finding behind the pressed check run and
 // enqueue a manual autofix action. No-ops (with a log) on any mismatch rather
 // than throwing, so a stray button press never poisons the queue.
@@ -174,39 +268,14 @@ async function handleRequestedAction(
   // dispatch → poll → promote → re-dispatch loop. The pressed button (not
   // config) decides the permission; config supplies the iteration cap.
   if (isAgentSafe || isAgentAllIn) {
-    const existing = await findActiveSessionByFinding(db, installationId, finding.id);
-    if (existing) {
-      jobLog.info({ findingId: finding.id }, "requested_action: agent session already running — skipping");
-      return;
-    }
     const octokit = await getInstallationClient(installationId);
-    const repoResp = await (octokit as any).request("GET /repositories/{repository_id}", {
-      repository_id: finding.repositoryId,
-    });
-    const owner: string = repoResp.data.owner.login;
-    const repo: string = repoResp.data.name;
-    const config = await fetchConfig(
-      octokit as any,
-      owner,
-      repo,
-      finding.ref ?? "HEAD",
-      finding.repositoryId
-    );
-    const session = await startAgentSession(db, {
+    await startAgentFix(
+      db,
+      octokit,
       installationId,
-      repositoryId: finding.repositoryId,
       finding,
-      permission: isAgentAllIn ? "all-in" : "safe",
-      maxIterations: config.autofix.agent.maxIterations,
-    });
-    await agentFixQueue.add("run", {
-      sessionId: session.id,
-      installationId,
-      repositoryId: finding.repositoryId,
-    });
-    jobLog.info(
-      { sessionId: session.id, findingId: finding.id, mode: session.mode },
-      "requested_action: agent fix session started"
+      isAgentAllIn ? "all-in" : "safe",
+      jobLog
     );
     return;
   }
@@ -370,6 +439,13 @@ export function createWebhookIngestionWorker(): Worker<WebhookIngestionJob> {
       // exists and was analyzed) and dispatches straight to action-execution.
       if (eventName === "check_run" && action === "requested_action") {
         await handleRequestedAction(installationId, deliveryId, jobLog as pino.Logger);
+        return { processed: true, eventName, action };
+      }
+
+      // PR-comment checkbox ticked (issue_comment `edited`) — the in-conversation
+      // trigger for the agent fix loop.
+      if (eventName === "issue_comment" && action === "edited") {
+        await handleFixCheckbox(installationId, deliveryId, jobLog as pino.Logger);
         return { processed: true, eventName, action };
       }
 
