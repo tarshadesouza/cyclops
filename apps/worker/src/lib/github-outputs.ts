@@ -399,22 +399,6 @@ export async function handleUpdateCheckRun(
   // we're offering a button, mark the run action_required.
   const effectiveConclusion = actions.length > 0 ? "action_required" : conclusion;
 
-  log.info(
-    {
-      findingId: finding.id,
-      detectorType: finding.detectorType,
-      confidence: finding.confidence,
-      autofixMode: (config as { autofix?: { mode?: string } }).autofix?.mode,
-      permission: (config as { autofix?: { agent?: { permission?: string } } }).autofix?.agent
-        ?.permission,
-      loopActive,
-      agentEligible: isAgentFixEligible(finding, config),
-      effectiveConclusion,
-      actions: JSON.stringify(actions),
-    },
-    "check-run button decision"
-  );
-
   if (annotations.length === 0) {
     // Complete with no annotations
     await (octokit as any).request(
