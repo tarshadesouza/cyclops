@@ -2,6 +2,8 @@
 
 When a CI job fails, CyclOps tells you exactly why and — with one tick in the PR — fixes it with a coding agent that iterates until CI is green, eliminating the manual log-reading cycle that wastes engineering time.
 
+![CyclOps analyzing a failing PR, fixing it with a coding agent, and CI going green](docs/img/demo.gif)
+
 ## Autofix
 
 When a failure is fixable, CyclOps drops a checkbox into its PR comment — **"Let Cyclops fix this"**. Tick it and a coding agent fixes the code in an isolated sandbox, verifying against your **real** CI (not a local guess). Editing the bot's comment requires write access, so the trigger is permission-gated.
