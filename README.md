@@ -132,3 +132,13 @@ Key variables:
 See [docs/env-vars.md](./docs/env-vars.md) for Railway-specific configuration (PgBouncer, Redis settings, private key formatting).
 
 Only `apps/api` runs `db:migrate` on deploy (prevents concurrent migration races).
+
+## Contributing
+
+Contributions welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md). Please report
+security issues privately per [SECURITY.md](./SECURITY.md), and be kind per our
+[Code of Conduct](./CODE_OF_CONDUCT.md).
+
+## License
+
+[MIT](./LICENSE) © Tarsha de Souza
