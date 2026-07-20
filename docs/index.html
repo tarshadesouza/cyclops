@@ -166,6 +166,58 @@
   footer { padding: 44px 0; color: var(--text-faint); font-size: 13.5px; }
   footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
   footer a:hover { color: var(--text-dim); }
+
+  /* Mobile CTA button in nav (hidden on desktop) */
+  .nav-cta-mobile { display: none; }
+
+  /* ── Mobile ─────────────────────────────────────────── */
+  @media (max-width: 640px) {
+    /* Nav: hide the links group, show standalone CTA button */
+    .nav-links { display: none; }
+    .nav-cta-mobile { display: inline-block; }
+    nav .wrap { height: 54px; }
+
+    /* Hero: less vertical padding */
+    .hero { padding: 60px 0 48px; }
+
+    /* Sections: tighter */
+    section { padding: 52px 0; }
+
+    /* Side padding */
+    .wrap { padding: 0 16px; }
+
+    /* Pipeline: single column on phones */
+    .pipe { grid-template-columns: 1fr; gap: 10px; }
+
+    /* Hero shot and flow screenshots: full-width, no overflow */
+    .hero-shot, .shots { max-width: 100%; }
+
+    /* Autofix grid: single column */
+    .grid { grid-template-columns: 1fr; }
+
+    /* Detectors band: reduce padding */
+    .band { padding: 52px 0; }
+
+    /* Code terminal: prevent parent overflow */
+    .terminal { max-width: 100%; }
+    .terminal pre { font-size: 12px; }
+
+    /* Config list: slightly smaller text */
+    .config-list li { font-size: 14.5px; }
+
+    /* CTA row: stack buttons vertically */
+    .cta-row { flex-direction: column; align-items: center; }
+    .btn.lg { width: 100%; max-width: 280px; text-align: center; }
+
+    /* Footer: stack vertically */
+    footer .wrap { flex-direction: column; gap: 12px; }
+  }
+
+  @media (max-width: 400px) {
+    h1 { font-size: 28px; }
+    .pill { font-size: 12px; }
+    .terminal pre { font-size: 11px; padding: 14px 14px; }
+  }
 </style>
 </head>
 <body>
@@ -181,6 +233,7 @@
       <a href="#features">Features</a>
       <a class="btn" href="#install">Install</a>
     </div>
+    <a class="btn nav-cta-mobile" href="#install">Install</a>
   </div>
 </nav>
 
